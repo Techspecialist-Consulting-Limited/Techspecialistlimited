@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — TechSpecialist HR</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0d1f3c;
+      --primary-light: #1a3a6e;
+      --accent: #4584ed;
+      --accent-hover: #2d65c4;
+      --text: #2f2f2f;
+      --text-muted: #5f6368;
+      --border: #e5e7eb;
+      --bg: #f8fafc;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--primary);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .sidebar-logo img {
+      height: 36px;
+      width: auto;
+    }
+
+    .sidebar-logo span {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .sidebar-footer {
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .user-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: 260px;
+      padding: 32px;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-icon.jobs {
+      background: #eff6ff;
+      color: var(--accent);
+    }
+
+    .stat-icon.applications {
+      background: #f0fdf4;
+      color: var(--success);
+    }
+
+    .stat-icon.pending {
+      background: #fef3c7;
+      color: var(--warning);
+    }
+
+    .stat-icon.reviewed {
+      background: #f3e8ff;
+      color: #9333ea;
+    }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Quick Actions */
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .action-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .action-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(69, 132, 237, 0.1);
+    }
+
+    .action-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+
+    .action-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .action-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Recent Activity */
+    .recent-section {
+      margin-top: 32px;
+    }
+
+    .recent-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .recent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .recent-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .recent-link {
+      font-size: 14px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .recent-link:hover {
+      color: var(--accent-hover);
+    }
+
+    .recent-list {
+      list-style: none;
+    }
+
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .recent-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-item-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+    }
+
+    .recent-item-content {
+      flex: 1;
+    }
+
+    .recent-item-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .recent-item-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .empty-state p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 80px;
+        padding: 16px;
+      }
+
+      .sidebar-logo span,
+      .nav-item span,
+      .user-details,
+      .logout-btn span {
+        display: none;
+      }
+
+      .nav-item {
+        justify-content: center;
+        padding: 12px;
+      }
+
+      .logout-btn {
+        justify-content: center;
+        padding: 12px;
+      }
+
+      .main {
+        margin-left: 80px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist">
+    
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/admin" class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="9" rx="1"/>
+          <rect x="14" y="3" width="7" height="5" rx="1"/>
+          <rect x="14" y="12" width="7" height="9" rx="1"/>
+          <rect x="3" y="16" width="7" height="5" rx="1"/>
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/admin/jobs" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1"/>
+        </svg>
+        <span>Jobs</span>
+      </a>
+      <a href="/admin/applications" class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>Applications</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-details">
+          <div class="user-name" id="user-name">Admin</div>
+          <div class="user-email" id="user-email">admin@techspecialist.com</div>
+        </div>
+      </div>
+      <button class="logout-btn" id="logout-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Welcome back! Here's an overview of your recruitment activities.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon jobs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value" id="stat-jobs">0</div>
+          <div class="stat-label">Active Jobs</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon applications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value" id="stat-applications">0</div>
+          <div class="stat-label">Total Applications</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value" id="stat-pending">0</div>
+          <div class="stat-label">Pending Review</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon reviewed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value" id="stat-reviewed">0</div>
+          <div class="stat-label">Reviewed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h2 class="section-title">Quick Actions</h2>
+    <div class="actions-grid">
+      <a href="/admin/jobs?action=new" class="action-card">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+          </svg>
+        </div>
+        <div class="action-title">Post New Job</div>
+        <div class="action-desc">Create a new job opening</div>
+      </a>
+      <a href="/admin/applications" class="action-card">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div class="action-title">Review Applications</div>
+        <div class="action-desc">View incoming applications</div>
+      </a>
+      <a href="/admin/jobs" class="action-card">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+            <line x1="4" y1="9" x2="20" y2="9"/>
+            <line x1="4" y1="15" x2="20" y2="15"/>
+            <line x1="10" y1="3" x2="8" y2="21"/>
+            <line x1="16" y1="3" x2="14" y2="21"/>
+          </svg>
+        </div>
+        <div class="action-title">Manage Jobs</div>
+        <div class="action-desc">Edit or remove job postings</div>
+      </a>
+    </div>
+
+    <!-- Recent Applications -->
+    <div class="recent-section">
+      <div class="recent-card">
+        <div class="recent-header">
+          <h3 class="recent-title">Recent Applications</h3>
+          <a href="/admin/applications" class="recent-link">View All →</a>
+        </div>
+        <ul class="recent-list" id="recent-applications">
+          <li class="empty-state">
+            <p>No applications yet. Applications will appear here when candidates apply.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1151-t0RDGn1bz0GwMr4Uv0uA4E6bnoo",
+      authDomain: "techspecialist-careers.firebaseapp.com",
+      projectId: "techspecialist-careers",
+      storageBucket: "techspecialist-careers.firebasestorage.app",
+      messagingSenderId: "68286942864",
+      appId: "1:68286942864:web:06748d637d7422f0ccd215"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Check auth
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      // Set user info
+      document.getElementById('user-name').textContent = user.displayName || 'Admin';
+      document.getElementById('user-email').textContent = user.email;
+      document.getElementById('user-avatar').textContent = (user.displayName || 'A')[0].toUpperCase();
+
+      // Load stats
+      loadStats();
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = '/admin/login';
+    });
+
+    // Load dashboard stats
+    async function loadStats() {
+      try {
+        // Get jobs count
+        const jobsSnap = await getDocs(collection(db, 'jobs'));
+        const activeJobs = jobsSnap.docs.filter(d => d.data().status !== 'closed').length;
+        document.getElementById('stat-jobs').textContent = activeJobs;
+
+        // Get applications
+        const appsSnap = await getDocs(collection(db, 'applications'));
+        const apps = appsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        document.getElementById('stat-applications').textContent = apps.length;
+
+        const pending = apps.filter(a => a.status === 'new' || !a.status).length;
+        document.getElementById('stat-pending').textContent = pending;
+
+        const reviewed = apps.filter(a => a.status && a.status !== 'new').length;
+        document.getElementById('stat-reviewed').textContent = reviewed;
+
+        // Load recent applications
+        const recentQuery = query(
+          collection(db, 'applications'),
+          orderBy('appliedAt', 'desc'),
+          limit(5)
+        );
+        const recentSnap = await getDocs(recentQuery);
+        const recentApps = recentSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const recentList = document.getElementById('recent-applications');
+        if (recentApps.length === 0) {
+          recentList.innerHTML = `
+            <li class="empty-state">
+              <p>No applications yet. Applications will appear here when candidates apply.</p>
+            </li>
+          `;
+        } else {
+          recentList.innerHTML = recentApps.map(app => {
+            const date = app.appliedAt?.toDate ? app.appliedAt.toDate().toLocaleDateString() : 'Recently';
+            return `
+              <li class="recent-item">
+                <div class="recent-item-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <div class="recent-item-content">
+                  <div class="recent-item-title">${app.applicantName || 'Anonymous'}</div>
+                  <div class="recent-item-meta">${app.jobTitle || 'Unknown Position'} • ${date}</div>
+                </div>
+              </li>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+  </script>
+</body>
+</html>
