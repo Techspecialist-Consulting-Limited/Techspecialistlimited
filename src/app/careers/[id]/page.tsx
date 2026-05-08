@@ -14,6 +14,11 @@ export default function CareerDetail() {
   async function loadJob(id: string | string[] | undefined) {
     if (!id || Array.isArray(id)) return;
     try {
+      if (!supabase) {
+        setJob(null);
+        setIsLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from('jobs')
         .select('*')

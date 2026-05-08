@@ -13,6 +13,11 @@ export default function Careers() {
 
   async function loadJobs() {
     try {
+      if (!supabase) {
+        setJobs([]);
+        setIsLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from('jobs')
         .select('*')

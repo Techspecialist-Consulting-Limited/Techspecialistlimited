@@ -28,6 +28,10 @@ function ApplyForm() {
     if (!jobId) return;
     (async () => {
       try {
+        if (!supabase) {
+          setLoading(false);
+          return;
+        }
         const { data, error } = await supabase
           .from('jobs')
           .select('*')
