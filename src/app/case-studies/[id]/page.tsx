@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getCaseStudy, getRelatedCaseStudies } from '@/data/case-studies';
 
 export default function CaseStudyDetail() {
@@ -28,7 +29,7 @@ export default function CaseStudyDetail() {
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={cs.heroImage} alt={cs.title} className="h-full w-full object-cover" />
+          <Image src={cs.heroImage} alt={cs.title} className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0b1020]/95 via-[#0b1020]/80 to-[#0b1020]/60" />
         </div>
         <div className="relative px-4 pb-20 pt-28 sm:px-6 lg:px-8 lg:pb-28 lg:pt-36">
@@ -204,7 +205,7 @@ export default function CaseStudyDetail() {
                   className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-lg hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
                 >
                   <div className="aspect-[16/9] overflow-hidden">
-                    <img src={item.heroImage} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                    <Image src={item.heroImage} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-6">
                     <div className="mb-1 text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">{item.client}</div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
 
@@ -94,7 +95,7 @@ export default function Header() {
       >
         <div className="mx-auto flex h-[68px] max-w-[1400px] items-center justify-between px-5">
           <Link href="/" aria-label="Home">
-            <img src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" className="block h-10 w-auto" />
+            <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" className="block h-10 w-auto" width={40} height={40} />
           </Link>
 
           <div className="desktop-nav flex items-center gap-6">

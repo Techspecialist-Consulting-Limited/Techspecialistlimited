@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { sendDiscoveryCallEmail } from '../../lib/emailjs';
 
 const serviceData: Record<string, {
@@ -340,9 +341,9 @@ export default function Services() {
 
       {/* HERO */}
       <section className="services-hero">
-        <div className="services-hero-bg">
-          <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80" alt="Digital infrastructure" />
-        </div>
+<div className="services-hero-bg">
+            <Image src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80" alt="Digital infrastructure" fill className="object-cover" />
+          </div>
         <div className="hero-content">
           <div className="hero-left">
             <div className="hero-badge">
@@ -541,7 +542,7 @@ export default function Services() {
 
           <article className="service-card featured" data-service="advisory" onClick={() => openPanel('advisory')}>
             <div className="service-img-wrap">
-              <img src="https://res.cloudinary.com/daqmbfctv/image/upload/v1770221473/WhatsApp_Image_2026-02-04_at_17.00.42_2_n8mwjp.jpg" alt="Digital Transformation Advisory" />
+              <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/v1770221473/WhatsApp_Image_2026-02-04_at_17.00.42_2_n8mwjp.jpg" alt="Digital Transformation Advisory" fill className="object-cover" />
               <div className="service-overlay"></div>
               <div className="service-num-badge">01</div>
             </div>
@@ -567,7 +568,7 @@ export default function Services() {
           ].map((s, i) => (
             <article key={i} className="service-card" data-service={s.service} onClick={() => openPanel(s.service)}>
               <div className="service-img-wrap">
-                <img src={s.img} alt={s.title} />
+                <Image src={s.img} alt={s.title} fill className="object-cover" />
                 <div className="service-overlay"></div>
                 <div className="service-num-badge">{s.num}</div>
               </div>
@@ -826,7 +827,7 @@ export default function Services() {
             </div>
 
             <div className="panel-img">
-              <img src={service.img} alt={service.title} />
+              <Image src={service.img} alt={service.title} fill className="object-cover" />
             </div>
 
             <div className="panel-content">

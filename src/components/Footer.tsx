@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
   return (
@@ -6,7 +7,7 @@ export default function Footer() {
       <div className="footer-top max-w-6xl mx-auto px-4 sm:px-8 py-10 sm:py-16 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="footer-brand">
           <div className="footer-logo mb-4">
-            <img src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" className="h-10 w-auto" />
+            <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" className="h-10 w-auto" width={40} height={40} />
           </div>
           <div className="footer-tagline text-sm text-white/60 mb-4">Automate the Work, Empower your Workforce</div>
           <div className="footer-social flex gap-4">

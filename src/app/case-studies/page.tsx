@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { caseStudies } from '@/data/case-studies';
 
 const categories = ['All', 'Government & Public Sector', 'Financial Services'];
@@ -83,10 +84,11 @@ export default function CaseStudiesPage() {
                   className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    <img
+                    <Image
                       src={cs.heroImage}
                       alt={cs.title}
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      fill
+                      className="object-cover transition duration-700 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4">

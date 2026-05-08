@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 
 const TOKEN_ENDPOINT = 'https://fa64327063b1ee6cb6ac5ab348f9f9.01.environment.api.powerplatform.com/powervirtualagents/botsbyschema/cr86a_robinaIntelligenceGuide/directline/token?api-version=2022-03-01-preview';
 
@@ -157,7 +158,7 @@ export default function ChatBot() {
 
           <div className="ts-header-left">
             <div className="ts-avatar-stack">
-              <img
+              <Image
                 className="ts-avatar"
                 src="https://res.cloudinary.com/daqmbfctv/image/upload/v1773840810/TBS_7274.jpg_gmfio2.jpg"
                 alt="Robina"
@@ -311,7 +312,7 @@ export default function ChatBot() {
         disabled={isLoading}
       >
         <span className="ts-launcher-ping"></span>
-        <img
+        <Image
           className="ts-launcher-avatar"
           src="https://res.cloudinary.com/daqmbfctv/image/upload/v1773840810/TBS_7274.jpg_gmfio2.jpg"
           alt=""
