@@ -410,17 +410,17 @@ export default function Home() {
           <div className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-white/55 whitespace-nowrap min-w-28">Trusted across Africa</div>
           <div className="flex-1 overflow-hidden" style={{ maskImage: 'linear-gradient(to right,transparent 0%,#000 8%,#000 92%,transparent 100%)', WebkitMaskImage: 'linear-gradient(to right,transparent 0%,#000 8%,#000 92%,transparent 100%)' }}>
             <div className="partners-track flex items-center gap-14 w-max animate-scroll">
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714011/vitesse-africa_hw9uhc.svg" alt="Vitesse Africa" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_faqimage/Nigeria_Sovereign_Investment_Authority_logo.svg_ot8hus" alt="NSIA" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714010/logo.jpg_i1jmtu.jpg" alt="Partner" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714011/International_IDEA_logo_2023.svg_v8p6ve.png" alt="International IDEA" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1769426792/ITF_rqhfac.jpg" alt="ITF" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/macarthur_foundation_logo_bgu5s4" alt="MacArthur Foundation" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714007/british-copy_pgm3yr.png" alt="British Council" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/images_4_luyjae" alt="FCCPC" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/images_3_n78nql" alt="NMRC" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1769426792/neca_doibsu.jpg" alt="NECA" /></div>
-              <div className="flex items-center justify-center py-1"><Image className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/imfhf10w_400x400_hl9mwd" alt="GF" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714011/vitesse-africa_hw9uhc.svg" alt="Vitesse Africa" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_faqimage/Nigeria_Sovereign_Investment_Authority_logo.svg_ot8hus" alt="NSIA" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714010/logo.jpg_i1jmtu.jpg" alt="Partner" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714011/International_IDEA_logo_2023.svg_v8p6ve.png" alt="International IDEA" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1769426792/ITF_rqhfac.jpg" alt="ITF" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/macarthur_foundation_logo_bgu5s4" alt="MacArthur Foundation" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772714007/british-copy_pgm3yr.png" alt="British Council" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/images_4_luyjae" alt="FCCPC" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/images_3_n78nql" alt="NMRC" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/v1769426792/neca_doibsu.jpg" alt="NECA" /></div>
+              <div className="flex items-center justify-center py-1"><Image width={160} height={48} className="h-12 w-auto max-w-40 object-contain opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition-all" src="https://res.cloudinary.com/daqmbfctv/image/upload/t_new/imfhf10w_400x400_hl9mwd" alt="GF" /></div>
             </div>
           </div>
         </div>
@@ -788,7 +788,7 @@ export default function Home() {
             ].map((tool, i) => (
               <div key={i} className="msft-tile bg-white dark:bg-[#101827] rounded-xl p-4 text-center border border-gray-200 dark:border-white/10 hover:border-[#4584ed] hover:shadow-md transition">
                 <div className="msft-tile-icon flex items-center justify-center mb-2">
-                  <Image src={tool.img} alt={tool.name} className="h-10 w-auto" />
+                  <Image src={tool.img} alt={tool.name} width={40} height={40} className="h-10 w-auto" />
                 </div>
                 <div className="msft-tile-name text-xs text-gray-600 dark:text-white/60">{tool.name}</div>
               </div>
@@ -816,7 +816,7 @@ export default function Home() {
           <div className="team-featured-row">
             <div className="team-card-founder" onClick={() => (window as any).revealFounderBio?.()}>
               <div className="founder-photo" id="founderPhoto">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_3112,w_4016/NEW_CHAIR_PHOTO_gpgfga.jpg" alt="founder" />
+                <Image fill src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_3112,w_4016/NEW_CHAIR_PHOTO_gpgfga.jpg" alt="founder" />
               </div>
               <div className="founder-body">
                 <div className="fc-role-tag">Founder & CEO</div>
@@ -834,7 +834,7 @@ export default function Home() {
             </div>
             <div className="team-card-large">
               <div className="large-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_930,w_1024/ChatGPT_Image_Mar_23_2026_12_32_54_PM_gdcoow.png" alt="Oluwagbolahan Aina" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_930,w_1024/ChatGPT_Image_Mar_23_2026_12_32_54_PM_gdcoow.png" alt="Oluwagbolahan Aina" />
               </div>
               <div className="large-body">
                 <div className="sc-role">Client Technology Specialist</div>
@@ -844,7 +844,7 @@ export default function Home() {
             </div>
             <div className="team-card-large">
               <div className="large-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2930,w_3106/TBS_7248.jpg_ipltwe.jpg" alt="Joy Adah" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2930,w_3106/TBS_7248.jpg_ipltwe.jpg" alt="Joy Adah" />
               </div>
               <div className="large-body">
                 <div className="sc-role">People &amp; Culture Manager</div>
@@ -858,7 +858,7 @@ export default function Home() {
           <div className="team-secondary-row masked" id="teamSecondaryRow">
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2502,w_2696/tbs_7279jpg_iwkhrb_68362b.jpg" alt="Suleman Olalomi" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2502,w_2696/tbs_7279jpg_iwkhrb_68362b.jpg" alt="Suleman Olalomi" />
               </div>
               <div className="small-body">
                 <div className="lc-role">Project Management</div>
@@ -868,7 +868,7 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_459,w_407/team8_yingf2.png" alt="Zainab Sanni" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_459,w_407/team8_yingf2.png" alt="Zainab Sanni" />
               </div>
               <div className="small-body">
                 <div className="lc-role">Head of Technical Services &amp; Information Security</div>
@@ -878,7 +878,7 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_995,w_1024/IMG_0582_bs7gmt.png" alt="Ejike Etolue" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_995,w_1024/IMG_0582_bs7gmt.png" alt="Ejike Etolue" />
               </div>
               <div className="small-body">
                 <div className="sc-role">Cybersecurity Analyst &amp; IT Infrastructure Specialist</div>
@@ -888,7 +888,7 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2206,w_2696/tbs_7297jpg_myh9kb_68362b.jpg" alt="Charles Onyeso" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2206,w_2696/tbs_7297jpg_myh9kb_68362b.jpg" alt="Charles Onyeso" />
               </div>
               <div className="small-body">
                 <div className="sc-role">Microsoft 365 Solutions Engineer</div>
@@ -898,7 +898,7 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1115,w_1024/ChatGPT_Image_Mar_23_2026_02_41_23_PM_cuwmuf.png" alt="Abbas Taofeeq" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1115,w_1024/ChatGPT_Image_Mar_23_2026_02_41_23_PM_cuwmuf.png" alt="Abbas Taofeeq" />
               </div>
               <div className="small-body">
                 <div className="sc-role">Business Automation Associate</div>
@@ -908,7 +908,7 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1008,w_1024/tobe_twnd5m.png" alt="Praise Jacob" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1008,w_1024/tobe_twnd5m.png" alt="Praise Jacob" />
               </div>
               <div className="small-body">
                 <div className="sc-role">Growth Specialist</div>
@@ -918,7 +918,7 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2206,w_2696/tbs_7274jpg_gmfio2_68362b.jpg" alt="Robinah Abdulaziz" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2206,w_2696/tbs_7274jpg_gmfio2_68362b.jpg" alt="Robinah Abdulaziz" />
               </div>
               <div className="small-body">
                 <div className="sc-role">Marketing &amp; Communications Associate</div>

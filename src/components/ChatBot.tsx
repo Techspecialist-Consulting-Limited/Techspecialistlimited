@@ -159,6 +159,8 @@ export default function ChatBot() {
           <div className="ts-header-left">
             <div className="ts-avatar-stack">
               <Image
+                width={48}
+                height={48}
                 className="ts-avatar"
                 src="https://res.cloudinary.com/daqmbfctv/image/upload/v1773840810/TBS_7274.jpg_gmfio2.jpg"
                 alt="Robina"
@@ -313,6 +315,8 @@ export default function ChatBot() {
       >
         <span className="ts-launcher-ping"></span>
         <Image
+          width={44}
+          height={44}
           className="ts-launcher-avatar"
           src="https://res.cloudinary.com/daqmbfctv/image/upload/v1773840810/TBS_7274.jpg_gmfio2.jpg"
           alt=""
