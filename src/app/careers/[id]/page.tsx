@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { startTransition, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 export default function CareerDetail() {
   const params = useParams();
@@ -12,113 +13,29 @@ export default function CareerDetail() {
 
   async function loadJob(id: string | string[] | undefined) {
     if (!id || Array.isArray(id)) return;
-    setIsLoading(true);
     try {
-      const { initializeApp, getApps } = await import('firebase/app');
-      const { getFirestore, doc, getDoc } = await import('firebase/firestore');
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('id', id)
+        .single()
 
-      if (!getApps().length) {
-        initializeApp({
-          apiKey: "AIzaSyD1151-t0RDGn1bz0GwMr4Uv0uA4E6bnoo",
-          authDomain: "techspecialist-careers.firebaseapp.com",
-          projectId: "techspecialist-careers",
-          storageBucket: "techspecialist-careers.firebasestorage.app",
-          messagingSenderId: "68286942864",
-          appId: "1:68286942864:web:06748d637d7422f0ccd215"
-        });
-      }
+      if (error) throw error
 
-      const db = getFirestore();
-      const docRef = doc(db, 'jobs', id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setJob({ id: docSnap.id, ...docSnap.data() });
+      if (data) {
+        setJob(data);
       } else {
-        // Sample job data
-        const sampleJobs: Record<string, any> = {
-          '1': {
-            id: '1',
-            title: 'Senior Frontend Developer',
-            department: 'Engineering',
-            location: 'Abuja',
-            type: 'Full-time',
-            description: 'We are looking for an experienced Frontend Developer to join our team. You will work with cutting-edge Microsoft technologies to build executive intelligence dashboards and agentic workflows.',
-            requirements: [
-              '5+ years of experience in frontend development',
-              'Expert knowledge of React, Next.js, and modern JavaScript',
-              'Experience with Tailwind CSS and responsive design',
-              'Strong understanding of web performance optimization',
-              'Excellent problem-solving and communication skills',
-              'Bachelor\'s degree in Computer Science or related field'
-            ],
-            responsibilities: [
-              'Develop and maintain responsive web applications',
-              'Collaborate with designers and backend developers',
-              'Write clean, maintainable, and well-documented code',
-              'Participate in code reviews and technical discussions',
-              'Optimize applications for maximum speed and scalability'
-            ],
-            benefits: [
-              'Competitive salary and equity package',
-              'Health insurance coverage',
-              'Flexible working hours',
-              'Professional development budget',
-              'Modern office environment'
-            ]
-          },
-          '2': {
-            id: '2',
-            title: 'Product Manager',
-            department: 'Product',
-            location: 'Remote',
-            type: 'Full-time',
-            description: 'Lead product strategy and development for our enterprise solutions. You will work directly with clients across Africa to understand their needs and translate them into technical requirements.',
-            requirements: [
-              '3+ years of product management experience',
-              'Strong analytical and problem-solving skills',
-              'Experience with agile development methodologies',
-              'Excellent communication and leadership abilities',
-              'Bachelor\'s degree in relevant field'
-            ],
-            responsibilities: [
-              'Define product vision and roadmap',
-              'Gather and prioritize requirements',
-              'Work closely with engineering and design teams',
-              'Analyze market trends and competition',
-              'Drive product launches and feature releases'
-            ],
-            benefits: [
-              'Competitive compensation',
-              'Remote work flexibility',
-              'Health and wellness benefits',
-              'Stock options',
-              'Professional growth opportunities'
-            ]
-          }
-        };
-        setJob(sampleJobs[id] || sampleJobs['1']);
+        setJob(null);
       }
     } catch (error) {
       console.error('Error loading job:', error);
-      // Fallback
-      setJob({
-        id: id,
-        title: 'Software Developer',
-        department: 'Engineering',
-        location: 'Abuja',
-        type: 'Full-time',
-        description: 'Join our engineering team to build innovative solutions.',
-        requirements: ['Passion for technology', 'Problem-solving skills'],
-        responsibilities: ['Develop software solutions'],
-        benefits: ['Competitive salary', 'Great work environment']
-      });
+      setJob(null);
     }
     setIsLoading(false);
   }
 
   useEffect(() => {
-    queueMicrotask(() => loadJob(params.id));
+    startTransition(() => { loadJob(params.id); });
   }, [params.id]);
 
   const handleApply = () => {
@@ -138,7 +55,6 @@ export default function CareerDetail() {
         console.log('Share cancelled');
       }
     } else {
-      // Fallback - copy to clipboard
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }

@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 export default function Careers() {
   const [jobs, setJobs] = useState<Record<string, any>[]>([]);
@@ -11,49 +12,28 @@ export default function Careers() {
   const [isLoading, setIsLoading] = useState(true);
 
   async function loadJobs() {
-    setIsLoading(true);
     try {
-      const { initializeApp, getApps } = await import('firebase/app');
-      const { getFirestore, collection, getDocs } = await import('firebase/firestore');
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
 
-      if (!getApps().length) {
-        initializeApp({
-          apiKey: "AIzaSyD1151-t0RDGn1bz0GwMr4Uv0uA4E6bnoo",
-          authDomain: "techspecialist-careers.firebaseapp.com",
-          projectId: "techspecialist-careers",
-          storageBucket: "techspecialist-careers.firebasestorage.app",
-          messagingSenderId: "68286942864",
-          appId: "1:68286942864:web:06748d637d7422f0ccd215"
-        });
-      }
+      if (error) throw error
 
-      const db = getFirestore();
-      const snapshot = await getDocs(collection(db, 'jobs'));
-      const jobsData: Record<string, any>[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      if (jobsData.length > 0) {
-        setJobs(jobsData.filter(job => job.status !== 'closed'));
+      if (data && data.length > 0) {
+        setJobs(data);
       } else {
-        // Sample data
-        setJobs([
-          { id: '1', title: 'Senior Frontend Developer', department: 'Engineering', location: 'Abuja', type: 'Full-time', description: 'We are looking for an experienced Frontend Developer to join our team.' },
-          { id: '2', title: 'Product Manager', department: 'Product', location: 'Remote', type: 'Full-time', description: 'Lead product strategy and development for our enterprise solutions.' },
-          { id: '3', title: 'Cloud Solutions Architect', department: 'Engineering', location: 'Lagos', type: 'Full-time', description: 'Design and implement scalable cloud infrastructure solutions.' }
-        ]);
+        setJobs([]);
       }
     } catch (error) {
       console.error('Error loading jobs:', error);
-      // Fallback to sample data
-      setJobs([
-        { id: '1', title: 'Senior Frontend Developer', department: 'Engineering', location: 'Abuja', type: 'Full-time', description: 'We are looking for an experienced Frontend Developer to join our team.' },
-        { id: '2', title: 'Product Manager', department: 'Product', location: 'Remote', type: 'Full-time', description: 'Lead product strategy and development for our enterprise solutions.' }
-      ]);
+      setJobs([]);
     }
     setIsLoading(false);
   }
 
   useEffect(() => {
-    // Scroll progress
     const progressBar = document.getElementById('scrollProgress');
     const updateScrollProgress = () => {
       if (!progressBar) return;
@@ -67,7 +47,7 @@ export default function Careers() {
       window.addEventListener('scroll', updateScrollProgress);
     }
 
-    queueMicrotask(loadJobs);
+    startTransition(() => { loadJobs(); });
 
     return () => window.removeEventListener('scroll', updateScrollProgress);
   }, []);
@@ -110,7 +90,7 @@ export default function Careers() {
       </div>
 
       {/* HEADER */}
-      <header className="border-b border-gray-200 bg-[#f7f9fc] px-4 py-20 dark:border-white/10 dark:bg-white/[0.03] sm:px-6 lg:px-8 lg:py-24">
+      <header className="border-b border-gray-200 bg-[#f7f9fc] px-4 py-24 dark:border-white/10 dark:bg-white/[0.03] sm:px-6 lg:px-8 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#4584ed]">Join Our Team</p>
           <h1 className="font-serif text-5xl font-normal leading-tight tracking-[-0.03em] text-[#2f2f2f] dark:text-white sm:text-6xl">Build Your Future With Us</h1>
@@ -121,11 +101,11 @@ export default function Careers() {
       </header>
 
       {/* STATS */}
-      <section className="border-b border-gray-200 bg-[#f7f9fc] px-4 py-10 dark:border-white/10 dark:bg-white/[0.03] sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-6 sm:grid-cols-3">
-          <div><div id="stat-positions" className="text-4xl font-bold text-[#2f2f2f] dark:text-white">{jobs.length}</div><div className="text-sm text-[#5f6368] dark:text-white/60">Open Positions</div></div>
-          <div><div id="stat-departments" className="text-4xl font-bold text-[#2f2f2f] dark:text-white">{departments.length}</div><div className="text-sm text-[#5f6368] dark:text-white/60">Departments</div></div>
-          <div><div id="stat-locations" className="text-4xl font-bold text-[#2f2f2f] dark:text-white">{locations.length}</div><div className="text-sm text-[#5f6368] dark:text-white/60">Locations</div></div>
+      <section className="border-b border-gray-200 bg-[#f7f9fc] px-4 py-6 dark:border-white/10 dark:bg-white/[0.03] sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 sm:grid sm:grid-cols-3">
+          <div className="text-center"><div id="stat-positions" className="text-3xl sm:text-4xl font-bold text-[#2f2f2f] dark:text-white">{jobs.length}</div><div className="text-xs sm:text-sm text-[#5f6368] dark:text-white/60">Open Positions</div></div>
+          <div className="text-center"><div id="stat-departments" className="text-3xl sm:text-4xl font-bold text-[#2f2f2f] dark:text-white">{departments.length}</div><div className="text-xs sm:text-sm text-[#5f6368] dark:text-white/60">Departments</div></div>
+          <div className="text-center"><div id="stat-locations" className="text-3xl sm:text-4xl font-bold text-[#2f2f2f] dark:text-white">{locations.length}</div><div className="text-xs sm:text-sm text-[#5f6368] dark:text-white/60">Locations</div></div>
         </div>
       </section>
 

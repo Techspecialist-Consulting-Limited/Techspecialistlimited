@@ -1,23 +1,29 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const TOKEN_ENDPOINT = 'https://fa64327063b1ee6cb6ac5ab348f9f9.01.environment.api.powerplatform.com/powervirtualagents/botsbyschema/cr86a_robinaIntelligenceGuide/directline/token?api-version=2022-03-01-preview';
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const webchatRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
   const webChatRenderedRef = useRef(false);
   const storeRef = useRef<any>(null);
   const pendingMessageRef = useRef('');
 
-  const openChat = useCallback(async (initialMessage = '') => {
+  async function openChat(initialMessage = '') {
     setIsOpen(true);
-    if (!webchatRef.current) return;
+    setIsLoading(true);
+    if (!webchatRef.current) {
+      setIsLoading(false);
+      return;
+    }
 
     if (webChatRenderedRef.current) {
+      setIsLoading(false);
       if (initialMessage && storeRef.current) {
         storeRef.current.dispatch({
           type: 'WEB_CHAT/SEND_MESSAGE',
@@ -44,6 +50,7 @@ export default function ChatBot() {
         {},
         ({ dispatch }: any) => (next: any) => (action: any) => {
           if (action.type === 'DIRECT_LINE/CONNECT_FULFILLED') {
+            setIsLoading(false);
             if (initialMessage) {
               dispatch({ type: 'WEB_CHAT/SEND_MESSAGE', payload: { text: initialMessage } });
             } else if (pendingMessageRef.current) {
@@ -104,10 +111,11 @@ export default function ChatBot() {
 
       webChatRenderedRef.current = true;
     } catch (err) {
+      setIsLoading(false);
       console.error('[TechSpecialist Copilot]', err);
       alert('The chat assistant could not be loaded.\nPlease check the Direct Line token endpoint and web channel settings.');
     }
-  }, []);
+  }
 
   function closeChat() {
     setIsOpen(false);
@@ -135,7 +143,8 @@ export default function ChatBot() {
   }, []);
 
   return (
-    <div className="ts-widget" id="tsChatWidget" ref={widgetRef}>
+    <>
+      <div className="ts-widget" id="tsChatWidget" ref={widgetRef}>
       <div
         className={`ts-panel ${isOpen ? 'open' : ''}`}
         id="tsChatPanel"
@@ -299,6 +308,7 @@ export default function ChatBot() {
         onClick={handleToggle}
         aria-label="Chat with Robina, TechSpecialist's intelligence guide"
         aria-expanded={isOpen}
+        disabled={isLoading}
       >
         <span className="ts-launcher-ping"></span>
         <img
@@ -308,21 +318,32 @@ export default function ChatBot() {
           aria-hidden="true"
         />
         <div className="ts-launcher-copy">
-          <span className="ts-launcher-label">Chat with Robina</span>
-          <span className="ts-launcher-sub">Intelligence Guide · Online now</span>
+          <span className="ts-launcher-label">
+            {isLoading ? 'Loading...' : 'Chat with Robina'}
+          </span>
+          <span className="ts-launcher-sub">
+            {isLoading ? 'Connecting...' : 'Intelligence Guide · Online now'}
+          </span>
         </div>
         <span className="ts-launcher-chevron" aria-hidden="true">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M2.5 4.5L6 8l3.5-3.5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {isLoading ? (
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="animate-spin">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeDasharray="31.416" strokeDashoffset="31.416"/>
+            </svg>
+          ) : (
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2.5 4.5L6 8l3.5-3.5"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
         </span>
       </button>
-    </div>
+      </div>
+    </>
   );
 }

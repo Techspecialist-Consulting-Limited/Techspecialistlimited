@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { sendDiscoveryCallEmail } from '../../lib/emailjs';
 
 const serviceData: Record<string, {
   num: string;
@@ -295,17 +296,7 @@ export default function Services() {
         if (btnSpinner) btnSpinner.style.display = 'inline';
 
         try {
-          if ((window as any).emailjs) {
-            await (window as any).emailjs.send(
-              'service_fmpndgn',
-              'template_z47v9aq',
-              {
-                user_email: email,
-                subject: 'New Discovery Call Request — TechSpecialist',
-                message: `Email: ${email}\nTimestamp: ${new Date().toUTCString()}`,
-              }
-            );
-          }
+          await sendDiscoveryCallEmail(email);
           showMsg('Thank you! Our team will be in touch within 24 hours.', 'success');
           if (input) input.value = '';
         } catch (err) {

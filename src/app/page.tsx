@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ExecutivePanel from '../components/ExecutivePanel';
+import { sendDiscoveryCallEmail } from '../lib/emailjs';
 
 export default function Home() {
   useEffect(() => {
@@ -91,41 +92,6 @@ export default function Home() {
       }, 16);
     }
 
-    // Mobile menu
-    const navMenu = document.getElementById('navMenu');
-    const navHamburger = document.getElementById('navHamburger');
-
-    function closeMobileMenu() {
-      navMenu?.classList.add('hidden');
-      navHamburger?.setAttribute('aria-expanded', 'false');
-    }
-
-    function openMobileMenu() {
-      navMenu?.classList.remove('hidden');
-      navHamburger?.setAttribute('aria-expanded', 'true');
-    }
-
-    navHamburger?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isExpanded = navHamburger.getAttribute('aria-expanded') === 'true';
-      isExpanded ? closeMobileMenu() : openMobileMenu();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (
-        navMenu &&
-        !navMenu.classList.contains('hidden') &&
-        !navMenu.contains(e.target as Node) &&
-        !navHamburger?.contains(e.target as Node)
-      ) {
-        closeMobileMenu();
-      }
-    });
-
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 1024) closeMobileMenu();
-    });
-
     // Sticky section nav
     const stickyNav = document.getElementById('stickySectionNav');
     const homeSections = ['problem', 'how', 'cases', 'outcomes', 'client-voices', 'our-team'];
@@ -147,45 +113,6 @@ export default function Home() {
     }
 
     // Smooth scroll
-    // Video player
-    const video = document.getElementById('founderVideo') as HTMLVideoElement;
-    const overlay = document.getElementById('videoOverlay');
-    const videoWrap = document.getElementById('videoWrap');
-    const problemSection = document.getElementById('problem');
-
-    if (video && overlay) {
-      function playVid() {
-        video.play();
-        overlay!.classList.add('playing');
-      }
-      function pauseVid() {
-        video.pause();
-        overlay!.classList.remove('playing');
-      }
-
-      (videoWrap || overlay).addEventListener('click', () => {
-        if (video.paused) {
-          playVid();
-        } else {
-          pauseVid();
-        }
-      });
-
-      video.addEventListener('ended', () => overlay.classList.remove('playing'));
-
-      if (problemSection) {
-        new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (!entry.isIntersecting && !video.paused) pauseVid();
-            });
-          },
-          { threshold: 0.08 }
-        ).observe(problemSection);
-      }
-    }
-
-    // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
       anchor.addEventListener('click', (e) => {
         const id = anchor.getAttribute('href');
@@ -195,7 +122,6 @@ export default function Home() {
         e.preventDefault();
         const top = target.getBoundingClientRect().top + window.scrollY - 80;
         window.scrollTo({ top, behavior: 'smooth' });
-        if (window.innerWidth <= 1024) closeMobileMenu();
       });
     });
 
@@ -242,6 +168,23 @@ export default function Home() {
       nextBtn.addEventListener('click', () => goTo(currentIndex + 1));
       buildDots();
       goTo(0);
+
+      // Auto-slide
+      let autoSlideInterval: ReturnType<typeof setInterval>;
+      const startAutoSlide = () => {
+        autoSlideInterval = setInterval(() => {
+          const maxIndex = Math.max(0, cards.length - (window.innerWidth <= 768 ? 1 : 2));
+          if (currentIndex < maxIndex) {
+            goTo(currentIndex + 1);
+          } else {
+            goTo(0);
+          }
+        }, 4000);
+      };
+      const stopAutoSlide = () => clearInterval(autoSlideInterval);
+      startAutoSlide();
+      track.addEventListener('mouseenter', stopAutoSlide);
+      track.addEventListener('mouseleave', startAutoSlide);
 
       window.addEventListener('resize', () => {
         currentIndex = 0;
@@ -357,18 +300,7 @@ export default function Home() {
 
         setLoading(true);
         try {
-          // EmailJS integration
-          if ((window as any).emailjs) {
-            await (window as any).emailjs.send(
-              'service_fmpndgn',
-              'template_z47v9aq',
-              {
-                user_email: email,
-                subject: 'New Discovery Call Request — TechSpecialist',
-                message: `Email: ${email}\nTimestamp: ${new Date().toUTCString()}`,
-              }
-            );
-          }
+          await sendDiscoveryCallEmail(email);
           showMsg('Thank you! Our team will be in touch within 24 hours to schedule your discovery call.', 'success');
           if (input) input.value = '';
         } catch (err) {
@@ -450,20 +382,20 @@ export default function Home() {
               <a href="#how" className="btn-secondary inline-flex items-center gap-2 text-sm font-medium text-white/90 transition hover:text-white"><span className="play-icon">▶</span>See How We Work</a>
             </div>
 
-            <div className="hero-stats flex flex-wrap justify-center gap-6 mt-10 lg:justify-start">
-              <div className="hero-stat">
-                <div className="hero-stat-num text-4xl font-extrabold text-white">10<span className="text-sky-400">wk</span></div>
-                <div className="hero-stat-label text-xs text-white/60 mt-1">To your first live dashboard</div>
+            <div className="hero-stats flex flex-wrap justify-center items-start gap-4 sm:gap-6 mt-8 sm:mt-10 lg:justify-start">
+              <div className="hero-stat text-center sm:text-left">
+                <div className="hero-stat-num text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">10<span className="text-sky-400 text-lg sm:text-xl">wk</span></div>
+                <div className="hero-stat-label text-[10px] sm:text-xs text-white/60 mt-0.5">To your first live dashboard</div>
               </div>
-              <div className="hero-stat-divider w-px h-12 bg-white/20"></div>
-              <div className="hero-stat">
-                <div className="hero-stat-num text-4xl font-extrabold text-white">3<span className="text-sky-400">×</span></div>
-                <div className="hero-stat-label text-xs text-white/60 mt-1">Faster decision cycles</div>
+              <div className="hero-stat-divider hidden sm:block w-px h-10 sm:h-12 bg-white/20"></div>
+              <div className="hero-stat text-center sm:text-left">
+                <div className="hero-stat-num text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">3<span className="text-sky-400 text-lg sm:text-xl">×</span></div>
+                <div className="hero-stat-label text-[10px] sm:text-xs text-white/60 mt-0.5">Faster decision cycles</div>
               </div>
-              <div className="hero-stat-divider w-px h-12 bg-white/20"></div>
-              <div className="hero-stat">
-                <div className="hero-stat-num text-4xl font-extrabold text-white">₦0</div>
-                <div className="hero-stat-label text-xs text-white/60 mt-1">New software to buy</div>
+              <div className="hero-stat-divider hidden sm:block w-px h-10 sm:h-12 bg-white/20"></div>
+              <div className="hero-stat text-center sm:text-left">
+                <div className="hero-stat-num text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">₦0</div>
+                <div className="hero-stat-label text-[10px] sm:text-xs text-white/60 mt-0.5">New software to buy</div>
               </div>
             </div>
           </div>
@@ -544,23 +476,21 @@ export default function Home() {
             </div>
 
             <div className="problem-video-v2">
-              <div className="video-card-v2">
-                <div className="video-label-v2">Founder Message</div>
+              <div className="bg-white dark:bg-[#1a1f2e] rounded-2xl p-5 sm:p-6 shadow-lg border border-gray-100 dark:border-white/10">
                 <div className="video-player-wrap" id="videoWrap">
                   <video
                     id="founderVideo"
                     src="https://res.cloudinary.com/daqmbfctv/video/upload/v1772185357/1772185333283.publer.com_slnguv.mp4"
                     poster="https://res.cloudinary.com/daqmbfctv/image/upload/v1772185357/1772185333283.publer.com_slnguv.jpg"
                     preload="metadata"
-                    playsInline
-                    muted
+                    controls
+                    className="w-full rounded-lg"
                   ></video>
-                  <div className="video-overlay" id="videoOverlay">
-                    <div className="play-btn-icon">
-                      <svg className="play-icon-tri" viewBox="0 0 24 24" fill="none"><polygon points="7,3 21,12 7,21" fill="#1e293b"></polygon></svg>
-                      <svg className="pause-icon-bars" viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="4" height="16" rx="1.5" fill="#1e293b"></rect><rect x="15" y="4" width="4" height="16" rx="1.5" fill="#1e293b"></rect></svg>
-                    </div>
-                  </div>
+                </div>
+                <div className="mt-4 pl-3 border-l-4 border-[#4584ed]">
+                  <p className="text-base sm:text-lg text-gray-700 dark:text-gray-200 leading-relaxed italic">
+                    "We built TechSpecialist because African organisations deserve the same intelligence infrastructure as the world's best-run companies — using tools they already own."
+                  </p>
                 </div>
               </div>
             </div>
@@ -766,7 +696,7 @@ export default function Home() {
               Every metric below is grounded in real deployments — real organisations across Africa that made the shift from data chaos to executive clarity.
             </p>
           </div>
-          <div className="outcomes-grid grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="outcomes-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
               { num: '10×', label: 'Faster Board Reporting', desc: 'From 3-week manual compilations to automated reports.' },
               { num: '80%', label: 'Reduction in Manual Data Entry', desc: 'Agents handle repetitive capture.' },
@@ -775,10 +705,10 @@ export default function Home() {
               { num: '100%', label: 'Audit-Ready at All Times', desc: 'Every action logged, every data point traceable.' },
               { num: '24/7', label: 'Agent Availability', desc: 'Your workflows never sleep.' }
             ].map((outcome, i) => (
-              <div key={i} className="outcome bg-white dark:bg-[#101827] rounded-2xl p-6 border border-gray-200 dark:border-white/10 text-center">
-                <span className="outcome-num block text-4xl font-extrabold text-[#4584ed] mb-2">{outcome.num}</span>
-                <div className="outcome-label text-base font-bold text-heading dark:text-white mb-2">{outcome.label}</div>
-                <div className="outcome-desc text-sm text-gray-500 dark:text-white/60">{outcome.desc}</div>
+              <div key={i} className="outcome bg-white dark:bg-[#101827] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10 text-center">
+                <span className="outcome-num block text-3xl sm:text-4xl font-extrabold text-[#4584ed] mb-1 sm:mb-2">{outcome.num}</span>
+                <div className="outcome-label text-sm sm:text-base font-bold text-heading dark:text-white mb-1 sm:mb-2">{outcome.label}</div>
+                <div className="outcome-desc text-xs sm:text-sm text-gray-500 dark:text-white/60">{outcome.desc}</div>
               </div>
             ))}
           </div>
@@ -800,16 +730,19 @@ export default function Home() {
             </p>
           </div>
           <div className="testimonials-carousel-wrap relative">
-            <button className="carousel-arrow carousel-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-[#101827] rounded-full shadow-lg flex items-center justify-center dark:border dark:border-white/10" id="testimonialPrev">
+            <button className="carousel-arrow carousel-prev hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-[#101827] rounded-full shadow-lg items-center justify-center dark:border dark:border-white/10" id="testimonialPrev">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
             </button>
-            <div className="testimonials-viewport overflow-hidden mx-12">
-              <div className="testimonials-track flex gap-6 transition-transform duration-300" id="testimonialsTrack">
+            <button className="carousel-arrow carousel-next hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-[#101827] rounded-full shadow-lg items-center justify-center dark:border dark:border-white/10" id="testimonialNext">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+            <div className="testimonials-viewport overflow-hidden px-8 sm:mx-12">
+              <div className="testimonials-track flex gap-4 sm:gap-6 transition-transform duration-300" id="testimonialsTrack">
                 {[
                   { badge: 'Government MDA', text: '"For the first time in seven years, I could see the real status of every department on one screen."', author: 'Director General', title: 'Federal Ministry', initials: 'AO' },
                   { badge: 'Private Sector', text: '"My CFO asked why we hadn\'t done this five years ago. The ROI was clear within 60 days."', author: 'CEO', title: 'Financial Services Group', initials: 'BK' }
                 ].map((test, i) => (
-                  <div key={i} className="testimonial min-w-[300px] md:min-w-[400px] bg-white dark:bg-[#101827] rounded-2xl p-6 border border-gray-200 dark:border-white/10">
+                  <div key={i} className="testimonial min-w-[260px] sm:min-w-[300px] md:min-w-[400px] bg-white dark:bg-[#101827] rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10">
                     <div className="testimonial-badge text-[10px] font-bold uppercase tracking-[0.12em] text-[#4584ed] mb-4">{test.badge}</div>
                     <div className="testimonial-text text-base text-gray-600 dark:text-white/60 leading-7 mb-4">&quot;{test.text}&quot;</div>
                     <div className="testimonial-author flex items-center gap-3">
@@ -823,9 +756,6 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <button className="carousel-arrow carousel-next absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-[#101827] rounded-full shadow-lg flex items-center justify-center dark:border dark:border-white/10" id="testimonialNext">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-            </button>
           </div>
           <div className="carousel-dots flex justify-center gap-2 mt-6" id="carouselDots"></div>
         </div>
@@ -851,10 +781,10 @@ export default function Home() {
             {[
               { name: 'Microsoft 365', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1774269850/microsoft_365_icon_p8pvxv.png' },
               { name: 'Power Automate', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1774269850/Power_Automate_icon_kjnhlq.png' },
-              { name: 'Copilot Studio', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1774269850/Copilot_Studio_icon_n7tkby.jpg' },
+              { name: 'Copilot Studio', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1778155427/Copilot_Studio_icon-removebg-preview_wfilbp.png' },
               { name: 'Power BI', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1774269850/power-bi-icon_wczztj.webp' },
               { name: 'Azure Data', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1774269852/Microsoft_Azure.svg_dv1bj1.png' },
-              { name: 'Microsoft Fabric', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1774269850/Microsoft_Fabric_icon_u5tekn.jpg' }
+              { name: 'Microsoft Fabric', img: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1778155426/_2d3d887d-4265-4bb7-9c61-e5d4f25ec182-removebg-preview_rx9j6a.png' }
             ].map((tool, i) => (
               <div key={i} className="msft-tile bg-white dark:bg-[#101827] rounded-xl p-4 text-center border border-gray-200 dark:border-white/10 hover:border-[#4584ed] hover:shadow-md transition">
                 <div className="msft-tile-icon flex items-center justify-center mb-2">

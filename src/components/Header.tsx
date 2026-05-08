@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
+  const isHome = pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -21,7 +24,7 @@ export default function Header() {
 
   useEffect(() => {
     if (!isMenuOpen) return;
-    function handleClick(e: MouseEvent) {
+    function handleOutsideClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
       const menu = document.getElementById('mobileMenu');
       const hamburger = document.getElementById('navHamburger');
@@ -29,11 +32,11 @@ export default function Header() {
       if (hamburger && hamburger.contains(target)) return;
       setIsMenuOpen(false);
     }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
   }, [isMenuOpen]);
 
-  const smoothScroll = (id: string) => {
+  const scrollTo = (id: string) => {
     const el = document.querySelector(id);
     if (el) {
       const top = el.getBoundingClientRect().top + window.scrollY - 68;
@@ -43,89 +46,122 @@ export default function Header() {
   };
 
   const navLinks = [
-    { label: 'The Pain Points', href: '#problem' },
+    ...(isHome ? [] : [{ label: 'Home', href: '/' }]),
+    { label: 'The Pain Points', id: 'problem' },
     { label: 'Services', href: '/services' },
     { label: 'Careers', href: '/careers' },
-    { label: 'How We Work', href: '#how' },
-    { label: 'Use Cases', href: '#cases' },
-    { label: 'Our Team', href: '#our-team' },
+    { label: 'Case Studies', href: '/case-studies' } ,
+    { label: 'How We Work', id: 'how' },
+    { label: 'Use Cases', id: 'cases' },
+    { label: 'Our Team', id: 'our-team' },
   ];
 
-  const isExternal = (href: string) => href.startsWith('/');
+  
+  const renderNavLink = (link: typeof navLinks[0], isMobile: boolean) => {
+    const classes = isMobile
+      ? 'block px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline'
+      : 'text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 no-underline whitespace-nowrap';
 
-  const textColor = theme === 'dark' ? 'rgba(255,255,255,0.65)' : '#5f6368';
-  const borderColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : '#e5e7eb';
-  const bgColor = theme === 'dark' ? '#0b1020' : '#fff';
-  const spanBg = theme === 'dark' ? '#fff' : '#2f2f2f';
-  const hamburgerTransform = isMenuOpen
-    ? [{ transform: 'translateY(7px) rotate(45deg)' }, { opacity: 0 }, { transform: 'translateY(-7px) rotate(-45deg)' }]
-    : [{ transform: 'none' }, { opacity: 1 }, { transform: 'none' }];
+    if ('href' in link && link.href) {
+      return (
+        <Link key={link.label} href={link.href} onClick={() => setIsMenuOpen(false)} className={classes}>
+          {link.label}
+        </Link>
+      );
+    }
+
+    if (isHome) {
+      return (
+        <a key={link.label} href={`#${link.id}`} onClick={(e) => { e.preventDefault(); scrollTo(`#${link.id}`); }} className={classes}>
+          {link.label}
+        </a>
+      );
+    }
+
+    return (
+      <Link key={link.label} href={`/#${link.id}`} onClick={() => setIsMenuOpen(false)} className={classes}>
+        {link.label}
+      </Link>
+    );
+  };
 
   return (
     <>
       <nav
         id="mainNav"
-        style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: bgColor, borderBottom: `1px solid ${borderColor}`, transition: 'box-shadow 0.3s', boxShadow: isScrolled ? '0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)' : 'none' }}
+        className={`fixed left-0 right-0 top-0 z-[9999] border-b bg-white transition-shadow dark:bg-[#0b1020] dark:border-white/10 ${isScrolled ? 'shadow-[0_1px_4px_rgba(0,0,0,0.06),0_2px_8px_rgba(0,0,0,0.04)]' : 'shadow-none'}`}
+        style={{ transition: 'box-shadow 0.3s' }}
       >
-        <div style={{ maxWidth: '1400px', margin: '0 auto', height: '68px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
+        <div className="mx-auto flex h-[68px] max-w-[1400px] items-center justify-between px-5">
           <Link href="/" aria-label="Home">
-            <img src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" style={{ display: 'block', height: '40px', width: 'auto' }} />
+            <img src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" className="block h-10 w-auto" />
           </Link>
 
-          <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            {navLinks.map((link) =>
-              isExternal(link.href) ? (
-                <Link key={link.label} href={link.href} style={{ color: textColor, fontSize: '13.5px', fontWeight: 500, textDecoration: 'none', letterSpacing: '0.01em', whiteSpace: 'nowrap' }}>{link.label}</Link>
-              ) : (
-                <a key={link.label} href={link.href} onClick={(e) => { e.preventDefault(); smoothScroll(link.href); }} style={{ color: textColor, fontSize: '13.5px', fontWeight: 500, textDecoration: 'none', letterSpacing: '0.01em', whiteSpace: 'nowrap' }}>{link.label}</a>
-              )
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '8px' }}>
-              <button onClick={toggleTheme} style={iconStyle(textColor, borderColor)} aria-label="Toggle theme">{theme === 'light' ? '☀️' : '🌙'}</button>
-              <a href="https://www.linkedin.com/company/techspecialist-limited/posts/?feedView=all" target="_blank" rel="noopener" style={iconStyle(textColor, borderColor)}>in</a>
-              <a href="https://x.com/Tclafrica" target="_blank" rel="noopener" style={iconStyle(textColor, borderColor)}>𝕏</a>
-              <a href="mailto:info@techspecialistlimited.com" style={iconStyle(textColor, borderColor)}>✉</a>
+          <div className="desktop-nav flex items-center gap-6">
+            {navLinks.map((link) => renderNavLink(link, false))}
+            <div className="ml-2 flex items-center gap-[6px]">
+<button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="block dark:hidden">
+                  <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden dark:block">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              </button>
+              <a href="https://www.linkedin.com/company/techspecialist-limited/posts/?feedView=all" target="_blank" rel="noopener" className="icon-btn" aria-label="LinkedIn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              </a>
+              <a href="https://x.com/Tclafrica" target="_blank" rel="noopener" className="icon-btn" aria-label="X (Twitter)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+              <a href="mailto:info@techspecialistlimited.com" className="icon-btn" aria-label="Email">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </a>
             </div>
           </div>
 
           <button
             id="navHamburger"
-            className="hamburger-btn"
+            className="lg:hidden flex flex-col items-center justify-center gap-[5px] bg-transparent border-none cursor-pointer p-2 relative z-[1000] min-w-[44px] min-h-[44px]"
             onClick={() => setIsMenuOpen((prev) => !prev)}
             aria-label="Menu"
             aria-expanded={isMenuOpen}
-            style={{ flexDirection: 'column', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', position: 'relative', zIndex: 102 }}
           >
-            <span style={{ display: 'block', width: '24px', height: '2px', background: spanBg, borderRadius: '2px', transition: 'all 0.2s ease', ...hamburgerTransform[0] }}></span>
-            <span style={{ display: 'block', width: '24px', height: '2px', background: spanBg, borderRadius: '2px', transition: 'all 0.2s ease', ...hamburgerTransform[1] }}></span>
-            <span style={{ display: 'block', width: '24px', height: '2px', background: spanBg, borderRadius: '2px', transition: 'all 0.2s ease', ...hamburgerTransform[2] }}></span>
+            <span className={`ham-line ${isMenuOpen ? 'open-1' : ''}`}></span>
+            <span className={`ham-line ${isMenuOpen ? 'open-2' : ''}`}></span>
+            <span className={`ham-line ${isMenuOpen ? 'open-3' : ''}`}></span>
           </button>
         </div>
       </nav>
 
       <div
         id="mobileMenu"
-        style={{ position: 'fixed', top: '68px', left: 0, right: 0, zIndex: 101, display: isMenuOpen ? 'flex' : 'none', flexDirection: 'column', background: bgColor, borderBottom: `1px solid ${borderColor}`, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', overflowY: 'auto', maxHeight: 'calc(100vh - 68px)', paddingTop: '12px', paddingBottom: '16px' }}
+        className={`fixed left-0 right-0 top-[68px] z-[9998] flex-col overflow-y-auto border-b bg-white pb-4 pt-3 shadow-[0_4px_16px_rgba(0,0,0,0.08)] dark:bg-[#0b1020] dark:border-white/10 ${
+          isMenuOpen ? 'flex' : 'hidden'
+        } max-h-[calc(100vh-68px)]`}
       >
-        {navLinks.map((link) =>
-          isExternal(link.href) ? (
-            <Link key={link.label} href={link.href} onClick={() => setIsMenuOpen(false)} style={{ padding: '11px 24px', fontSize: '14px', fontWeight: 500, color: textColor, textDecoration: 'none', display: 'block' }}>{link.label}</Link>
-          ) : (
-            <a key={link.label} href={link.href} onClick={(e) => { e.preventDefault(); smoothScroll(link.href); }} style={{ padding: '11px 24px', fontSize: '14px', fontWeight: 500, color: textColor, textDecoration: 'none', display: 'block' }}>{link.label}</a>
-          )
-        )}
+        {navLinks.map((link) => renderNavLink(link, true))}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', padding: '0 24px' }}>
-          <button onClick={toggleTheme} style={iconStyle(textColor, borderColor)}>{theme === 'light' ? '☀️' : '🌙'}</button>
-          <a href="https://www.linkedin.com/company/techspecialist-limited/posts/?feedView=all" target="_blank" rel="noopener" style={iconStyle(textColor, borderColor)}>in</a>
-          <a href="https://x.com/Tclafrica" target="_blank" rel="noopener" style={iconStyle(textColor, borderColor)}>𝕏</a>
-          <a href="mailto:info@techspecialistlimited.com" style={iconStyle(textColor, borderColor)}>✉</a>
+        <div className="mt-2 flex items-center gap-2 px-6">
+          <button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="block dark:hidden">
+              <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden dark:block">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <a href="https://www.linkedin.com/company/techspecialist-limited/posts/?feedView=all" target="_blank" rel="noopener" className="icon-btn" aria-label="LinkedIn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="https://x.com/Tclafrica" target="_blank" rel="noopener" className="icon-btn" aria-label="X (Twitter)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="mailto:info@techspecialistlimited.com" className="icon-btn" aria-label="Email">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </a>
         </div>
       </div>
     </>
   );
-}
-
-function iconStyle(color: string, border: string) {
-  return { width: '34px', height: '34px', borderRadius: '8px', border: `1.5px solid ${border}`, background: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color, display: 'flex', alignItems: 'center' as const, justifyContent: 'center' as const, textDecoration: 'none' as const };
 }
