@@ -35,6 +35,10 @@ export default function ChatBot() {
     }
 
     try {
+      if (!(window as any).WebChat) {
+        throw new Error('WebChat library not loaded yet — try again in a moment.');
+      }
+
       const res = await fetch(TOKEN_ENDPOINT, {
         method: 'GET',
         headers: { Accept: 'application/json' }
@@ -61,6 +65,9 @@ export default function ChatBot() {
           }
           if (action.type === 'WEB_CHAT/SEND_MESSAGE') {
             setShowIntro(false);
+          }
+          if (action.type === 'DIRECT_LINE/INCOMING_ACTIVITY' && action?.activity?.type === 'trace') {
+            return;
           }
           return next(action);
         }

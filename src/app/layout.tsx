@@ -37,6 +37,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Footer />
               <ChatBot />
             </div>
+            <Script
+              src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"
+              strategy="lazyOnload"
+            />
           </ThemeProvider>
         </ClientOnly>
       </body>
