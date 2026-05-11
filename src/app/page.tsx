@@ -819,7 +819,7 @@ export default function Home() {
                 <Image fill src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_3112,w_4016/NEW_CHAIR_PHOTO_gpgfga.jpg" alt="founder" />
               </div>
               <div className="founder-body">
-                <div className="fc-role-tag">Founder & CEO</div>
+                {/* <div className="fc-role-tag">Founder & CEO</div> */}
                 <div className="fc-name">Kadir Salami</div>
                 <div className="fc-title">CEO &amp; Founder</div>
                 <div className="fc-divider"></div>
