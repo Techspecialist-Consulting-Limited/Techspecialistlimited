@@ -28,7 +28,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'Digital Transformation & Process Automation',
     summary:
       'A complete digital overhaul of the Federal Ministry of Justice\'s case management operations — replacing manual, paper-based workflows with an intelligent, automated system that cut processing time by 70% and eliminated case loss.',
-    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1770221473/WhatsApp_Image_2026-02-04_at_17.00.42_2_n8mwjp.jpg',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1778489905/min-of-justice_eboxix.jpg',
     stats: [
       { label: 'Processing Time Reduced', value: '70%' },
       { label: 'Case Loss Rate', value: '0%' },
@@ -74,7 +74,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'Platform Development & Data Integration',
     summary:
       'Built a digital housing microfinance platform enabling NMRC to originate, process, and manage microfinance loans end-to-end — bringing formal housing finance to previously unbanked populations across Nigeria.',
-    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_735,w_905,x_175,y_75/bacgroundimg_j9yowq.jpg',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/t_nmrc/AUHF-blog_featured-image_NMRC-1024x341_lrttwz.jpg',
     stats: [
       { label: 'Loans Processed Monthly', value: '5,000+' },
       { label: 'Portfolio Growth', value: '200%' },
