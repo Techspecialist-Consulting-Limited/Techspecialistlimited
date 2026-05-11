@@ -3124,8 +3124,9 @@
       gap: 24px;
     }
     .service-filters {
+      display: flex;
       flex-wrap: wrap;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 6px;
     }
     .service-filter-btn {
@@ -3191,12 +3192,20 @@
     }
   }
 
+  /* Tablet/small: 896px — more side breathing room */
+  @media (max-width: 896px) {
+    .services-hero .hero-content {
+      padding-left: 48px;
+      padding-right: 48px;
+    }
+  }
+
   /* Mobile: 480px */
 @media (max-width: 480px) {
   /* Services Hero - Simple mobile fix */
   .services-hero { min-height: auto; }
   .services-hero .hero-content { 
-    padding: 80px 16px 40px; 
+    padding: 80px 24px 40px; 
     display: flex;
     flex-direction: column;
   }
@@ -3273,21 +3282,23 @@
     gap: 0;
   }
   
-  /* Hide hero tabs on very small screens or make them scroll */
+  /* Hero tabs: 3+1 grid layout */
   .services-hero .hero-tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 16px 0;
-    padding: 0 8px;
-    scrollbar-width: none;
-  }
-  .services-hero .hero-tabs::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+    gap: 8px;
+    margin: 16px auto;
+    padding: 0;
+    max-width: 400px;
+    overflow: visible;
   }
   .services-hero .hero-tab {
-    min-width: 80px;
     padding: 8px 12px;
     font-size: 12px;
+  }
+  .services-hero .hero-tab:nth-child(4) {
+    grid-column: 2;
   }
 }
 

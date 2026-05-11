@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { sendDiscoveryCallEmail } from '../../lib/emailjs';
@@ -103,6 +103,7 @@ const relatedServices: Record<string, { id: string; icon: string; name: string; 
 export default function Services() {
   const [panelService, setPanelService] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'included' | 'deliver' | 'industries'>('included');
+  const interactivitySetup = useRef(false);
 
   const openPanel = useCallback((serviceId: string) => {
     setPanelService(serviceId);
@@ -124,6 +125,9 @@ export default function Services() {
   }, [closePanel]);
 
   useEffect(() => {
+    if (interactivitySetup.current) return;
+    interactivitySetup.current = true;
+
     // Scroll progress
     const progressBar = document.getElementById('scrollProgressBar');
     if (progressBar) {
