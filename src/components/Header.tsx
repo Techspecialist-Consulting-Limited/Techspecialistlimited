@@ -6,9 +6,21 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
 
+interface AnchorItem {
+  label: string;
+  id: string;
+}
+
+const dropdownLinks: AnchorItem[] = [
+  { label: 'How We Work', id: 'how' },
+  { label: 'Use Cases', id: 'cases' },
+  { label: 'Our Team', id: 'our-team' },
+];
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileDropOpen, setMobileDropOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const isHome = pathname === '/';
@@ -44,43 +56,37 @@ export default function Header() {
       window.scrollTo({ top, behavior: 'smooth' });
     }
     setIsMenuOpen(false);
+    setMobileDropOpen(false);
   };
 
-  const navLinks = [
+  const routeLinks = [
     ...(isHome ? [] : [{ label: 'Home', href: '/' }]),
-    { label: 'The Pain Points', id: 'problem' },
     { label: 'Services', href: '/services' },
     { label: 'Careers', href: '/careers' },
-    { label: 'Case Studies', href: '/case-studies' } ,
-    { label: 'How We Work', id: 'how' },
-    { label: 'Use Cases', id: 'cases' },
-    { label: 'Our Team', id: 'our-team' },
+    { label: 'Case Studies', href: '/case-studies' },
+    { label: 'Insights', href: '/insights' },
   ];
 
-  
-  const renderNavLink = (link: typeof navLinks[0], isMobile: boolean) => {
-    const classes = isMobile
-      ? 'block px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline'
-      : 'text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 no-underline whitespace-nowrap';
-
-    if ('href' in link && link.href) {
-      return (
-        <Link key={link.label} href={link.href} onClick={() => setIsMenuOpen(false)} className={classes}>
-          {link.label}
-        </Link>
-      );
-    }
-
+  const renderAnchorLink = (link: AnchorItem) => {
     if (isHome) {
       return (
-        <a key={link.label} href={`#${link.id}`} onClick={(e) => { e.preventDefault(); scrollTo(`#${link.id}`); }} className={classes}>
+        <a
+          key={link.id}
+          href={`#${link.id}`}
+          onClick={(e) => { e.preventDefault(); scrollTo(`#${link.id}`); }}
+          className="block px-6 py-[9px] text-sm font-medium text-[#5f6368] transition hover:text-[#4584ed] dark:text-white/65 dark:hover:text-[#4584ed] no-underline"
+        >
           {link.label}
         </a>
       );
     }
-
     return (
-      <Link key={link.label} href={`/#${link.id}`} onClick={() => setIsMenuOpen(false)} className={classes}>
+      <Link
+        key={link.id}
+        href={`/#${link.id}`}
+        onClick={() => { setIsMenuOpen(false); setMobileDropOpen(false); }}
+        className="block px-6 py-[9px] text-sm font-medium text-[#5f6368] transition hover:text-[#4584ed] dark:text-white/65 dark:hover:text-[#4584ed] no-underline"
+      >
         {link.label}
       </Link>
     );
@@ -98,10 +104,53 @@ export default function Header() {
             <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png" alt="TechSpecialist" className="block h-10 w-auto" width={40} height={40} />
           </Link>
 
-          <div className="desktop-nav flex items-center gap-6">
-            {navLinks.map((link) => renderNavLink(link, false))}
+          <div className="desktop-nav hidden lg:flex items-center gap-6">
+            {routeLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 no-underline whitespace-nowrap transition hover:text-[#4584ed] dark:hover:text-[#4584ed]"
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            {/* Desktop dropdown */}
+            <div className="relative group">
+              <span className="inline-flex items-center gap-1 text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 whitespace-nowrap cursor-default">
+                The Pain Points
+                <svg className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </span>
+              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                <div className="w-44 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg dark:border-white/10 dark:bg-[#101827]">
+                  {isHome ? (
+                    dropdownLinks.map((link) => (
+                      <a
+                        key={link.id}
+                        href={`#${link.id}`}
+                        onClick={(e) => { e.preventDefault(); scrollTo(`#${link.id}`); }}
+                        className="block rounded-lg px-4 py-2.5 text-sm font-medium text-[#5f6368] transition hover:bg-gray-50 hover:text-[#4584ed] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-[#4584ed] no-underline"
+                      >
+                        {link.label}
+                      </a>
+                    ))
+                  ) : (
+                    dropdownLinks.map((link) => (
+                      <Link
+                        key={link.id}
+                        href={`/#${link.id}`}
+                        className="block rounded-lg px-4 py-2.5 text-sm font-medium text-[#5f6368] transition hover:bg-gray-50 hover:text-[#4584ed] dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-[#4584ed] no-underline"
+                      >
+                        {link.label}
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="ml-2 flex items-center gap-[6px]">
-<button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">
+              <button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="block dark:hidden">
                   <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                 </svg>
@@ -121,6 +170,7 @@ export default function Header() {
             </div>
           </div>
 
+          {/* Mobile hamburger */}
           <button
             id="navHamburger"
             className="lg:hidden flex flex-col items-center justify-center gap-[5px] bg-transparent border-none cursor-pointer p-2 relative z-[1000] min-w-[44px] min-h-[44px]"
@@ -135,13 +185,72 @@ export default function Header() {
         </div>
       </nav>
 
+      {/* Mobile menu */}
       <div
         id="mobileMenu"
         className={`fixed left-0 right-0 top-[68px] z-[9998] flex-col overflow-y-auto border-b bg-white pb-4 pt-3 shadow-[0_4px_16px_rgba(0,0,0,0.08)] dark:bg-[#0b1020] dark:border-white/10 ${
           isMenuOpen ? 'flex' : 'hidden'
         } max-h-[calc(100vh-68px)]`}
       >
-        {navLinks.map((link) => renderNavLink(link, true))}
+        {routeLinks.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            onClick={() => setIsMenuOpen(false)}
+            className="block px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline"
+          >
+            {link.label}
+          </Link>
+        ))}
+
+        {/* Mobile dropdown trigger */}
+        <div>
+          <button
+            onClick={() => setMobileDropOpen((prev) => !prev)}
+            className="flex w-full items-center justify-between px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline"
+          >
+            The Pain Points
+            <svg
+              className={`h-3.5 w-3.5 transition-transform ${mobileDropOpen ? 'rotate-180' : ''}`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          {mobileDropOpen && (
+            <div className="border-l-2 border-[#4584ed]/30 ml-8 mb-2">
+              {dropdownLinks.map((link) => {
+                if (isHome) {
+                  return (
+                    <a
+                      key={link.id}
+                      href={`#${link.id}`}
+                      onClick={(e) => { e.preventDefault(); scrollTo(`#${link.id}`); }}
+                      className="block px-6 py-[9px] text-sm font-medium text-[#5f6368] transition hover:text-[#4584ed] dark:text-white/65 dark:hover:text-[#4584ed] no-underline"
+                    >
+                      {link.label}
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={link.id}
+                    href={`/#${link.id}`}
+                    onClick={() => { setIsMenuOpen(false); setMobileDropOpen(false); }}
+                    className="block px-6 py-[9px] text-sm font-medium text-[#5f6368] transition hover:text-[#4584ed] dark:text-white/65 dark:hover:text-[#4584ed] no-underline"
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="mt-2 flex items-center gap-2 px-6">
           <button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">

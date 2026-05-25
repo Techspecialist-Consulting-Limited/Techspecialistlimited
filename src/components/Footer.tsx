@@ -20,6 +20,7 @@ export default function Footer() {
         <div className="footer-col">
           <div className="footer-col-title text-sm font-bold uppercase tracking-[0.1em] text-white/80 mb-4">What We Do</div>
           <a href="#how" className="block text-sm text-white/60 hover:text-white mb-2">How We Work</a>
+          <Link href="/insights" className="block text-sm text-white/60 hover:text-white mb-2">Insights</Link>
           <a href="#cases" className="block text-sm text-white/60 hover:text-white mb-2">Government MDAs</a>
           <a href="#cases" className="block text-sm text-white/60 hover:text-white mb-2">International NGOs</a>
           <a href="#cases" className="block text-sm text-white/60 hover:text-white mb-2">Private Sector</a>
