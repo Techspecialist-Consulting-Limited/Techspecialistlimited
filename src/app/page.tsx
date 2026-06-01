@@ -908,11 +908,11 @@ export default function Home() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1008,w_1024/tobe_twnd5m.png" alt="Praise Jacob" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1034,w_1086,y_66/ChatGPT_Image_Jun_1_2026_04_37_34_PM_fyatcn.png" alt="Praise Jacob" />
               </div>
               <div className="small-body">
-                <div className="sc-role">Growth Specialist</div>
-                <div className="sc-name">Praise Jacob</div>
+                <div className="sc-role">Full stack Software Engineer</div>
+                <div className="sc-name">Mike Kanu</div>
                 <div className="sc-divider"></div>
               </div>
             </div>
