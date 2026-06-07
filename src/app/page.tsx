@@ -378,7 +378,7 @@ export default function Home() {
             </p>
 
             <div className="hero-actions flex flex-wrap items-center justify-center gap-4 lg:justify-start">
-              <a href="#discovery" className="btn-primary inline-flex items-center gap-2.5 rounded-[10px] bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)]">Schedule a Consultation</a>
+              <a href="./ai-readiness-assessment" className="btn-primary inline-flex items-center gap-2.5 rounded-[10px] bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)]">Take your AI readiness assessment</a>
               <a href="#how" className="btn-secondary inline-flex items-center gap-2 text-sm font-medium text-white/90 transition hover:text-white"><span className="play-icon">▶</span>See How We Work</a>
             </div>
 

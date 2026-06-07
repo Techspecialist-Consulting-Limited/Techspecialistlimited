@@ -61,6 +61,7 @@ export default function Header() {
 
   const routeLinks = [
     ...(isHome ? [] : [{ label: 'Home', href: '/' }]),
+    { label: 'AI Readiness', href: '/ai-readiness-assessment' },
     { label: 'Services', href: '/services' },
     { label: 'Careers', href: '/careers' },
     { label: 'Case Studies', href: '/case-studies' },
