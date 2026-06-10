@@ -102,6 +102,48 @@ export const caseStudies: CaseStudy[] = [
       'From Opacity to Transparency: Built-in audit trails and access tracking ensure accountability across the ecosystem.',
     ],
   },
+  {
+    id: 'bpp-napoms',
+    title: 'Bureau of Public Procurement — NAPOMS',
+    subtitle: 'From Manual Processes to Intelligent Procurement Governance: Reimagining Officer Management in Nigeria',
+    category: 'Government & Public Sector',
+    client: 'Bureau of Public Procurement (BPP)',
+    industry: 'Government & Public Sector',
+    duration: '8 Months',
+    service: 'Digital Transformation & Process Automation',
+    summary:
+      'Public procurement sits at the center of national development. It determines how governments allocate resources, execute infrastructure projects, and deliver public services at a large scale. Yet across many emerging economies, procurement systems continue to struggle with inefficiency, fragmentation, and limited transparency. In Nigeria, procurement officer management has historically relied on manual workflows, paper-heavy records, and opaque administrative processes. Posting decisions often lacked visibility. Training and certification records were scattered across systems. Approvals moved slowly. Accountability mechanisms remained difficult to enforce consistently across Ministries, Departments, and Agencies (MDAs). At a national level, the consequences were significant—not just for operational efficiency, but for public trust. More than a technology initiative, NAPOMS represents a structural shift toward transparency, fairness, and data-driven governance.',
+    heroImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80',
+    stats: [
+      { label: 'MDAs Connected', value: 'All Federal' },
+      { label: 'Posting Process', value: 'Algorithm-Driven' },
+      { label: 'Stakeholder Access', value: 'Real-Time' },
+      { label: 'Officer Records', value: 'Centralized & Verified' },
+    ],
+    challenge: [
+      'Manual Officer Management: Procurement postings, approvals, and administrative workflows relied heavily on paper-based processes and manual coordination.',
+      'Limited Transparency in Postings: Unequal postings and lobbying practices created perceptions of bias and weakened institutional trust.',
+      'Scattered Training & Certification Records: Professional development data existed across disconnected systems and physical files, making verification and compliance difficult.',
+      'Slow Administrative Cycles: Officers often waited weeks for approvals, postings, or updates to career records.',
+      'Lack of Performance Visibility: Evaluations were largely subjective, with limited standardized metrics for assessing procurement performance across MDAs.',
+    ],
+    solution: [
+      'Enhanced Officer Profiling: Biometric identity verification integrated with NIMC, credential validation, and digital career histories replaced fragmented paper-based records with verified, tamper-resistant profiles.',
+      'Algorithm-Driven Postings: Automated assignment workflows introduced transparent rotation rules, conflict-of-interest checks, and auditable posting records—reducing opportunities for bias and lobbying.',
+      'Professional Development Framework: Continuous Professional Development (CPD) tracking linked to SPESSE certification and LMS integrations enabled structured career growth and ongoing certification management.',
+      'Performance Evaluation System: Data-driven assessments incorporating compliance monitoring, project metrics, and 360-degree feedback replaced inconsistent and subjective review processes.',
+      'Real-Time Stakeholder Access: Interactive dashboards provide visibility for MDAs, oversight bodies, contractors, and civil society stakeholders, improving accountability and institutional transparency.',
+      'Audit & Governance Controls: Immutable audit trails and activity monitoring ensure traceability across postings, approvals, and officer records.',
+    ],
+    results: [
+      'From Paper-Based to Digital: Officer records, postings, and certifications are now centralized within a structured digital platform, eliminating fragmented paper trails.',
+      'From Delayed to Streamlined Processes: Administrative workflows that previously took weeks can now be completed significantly faster through automated approvals and real-time updates.',
+      'From Subjective to Data-Driven Evaluations: Performance management now incorporates measurable indicators, compliance metrics, and structured feedback mechanisms.',
+      'From Opaque to Transparent Postings: Algorithm-driven assignments reduce bias while creating auditable, traceable decision-making processes.',
+      'From Scattered Training Records to Structured Professional Development: Officers now have visibility into certifications, training milestones, and career progression within a unified system.',
+      'From Institutional Silos to Shared Governance: Stakeholders across MDAs now operate within a common framework that improves coordination, oversight, and accountability.',
+    ],
+  },
 ]
 
 export function getCaseStudy(id: string): CaseStudy | undefined {
