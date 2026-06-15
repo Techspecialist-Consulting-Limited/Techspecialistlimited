@@ -2,6 +2,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ChatBot from '../components/ChatBot';
+import BackToTop from '../components/BackToTop';
 import Script from 'next/script';
 import ClientOnly from '../components/ClientOnly';
 import './globals.css';
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
               <Footer />
               <ChatBot />
+              <BackToTop />
             </div>
             <Script
               src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"

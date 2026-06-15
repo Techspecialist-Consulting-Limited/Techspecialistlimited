@@ -67,7 +67,7 @@ export default function Footer() {
       <div className="footer-bottom max-w-6xl mx-auto px-16 flex flex-col sm:flex-row gap-4 justify-between text-xs text-white/40 pt-6 border-t border-white/10">
         <div>© 2026 TechSpecialist Ltd. All rights reserved. Abuja, Nigeria.</div>
         <div>A subsidiary of <a href="https://mswitchgroup.com/" target="_blank" rel="noopener" className="text-white/60 hover:text-white">Mswitch Group</a></div>
-        <div><a href="#" className="hover:text-white">Privacy</a> · <a href="#" className="hover:text-white">Terms</a> · Built on Microsoft · Made in Nigeria 🇳🇬</div>
+        <div><Link href="/privacy" className="hover:text-white">Privacy</Link> · <Link href="/terms" className="hover:text-white">Terms</Link> · Built on Microsoft · Made in Nigeria 🇳🇬</div>
       </div>
     </footer>
   );

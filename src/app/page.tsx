@@ -1056,7 +1056,7 @@ export default function Home() {
           <div className="cookie-banner-desc text-xs text-gray-500 dark:text-white/60">
             TechSpecialist uses cookies to analyse traffic, personalise content,
             and improve performance. By clicking <strong>&quot;Accept All&quot;</strong>,
-            you agree as described in our <a href="#" className="text-[#4584ed]">Privacy Policy</a>.
+            you agree as described in our <Link href="/privacy" className="text-[#4584ed]">Privacy Policy</Link>.
           </div>
         </div>
         <div className="cookie-banner-actions flex gap-3">
