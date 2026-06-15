@@ -179,10 +179,9 @@ export default function AssessmentLanding({ onStart }: Props) {
                     transition={{ delay: i * 0.05, duration: 0.35, ease: EASE_OUT }}
                     whileHover={{ y: -3 }}
                     whileTap={{ scale: 0.98 }}
-                    style={{ borderTopColor: pillar.color }}
                   >
-                    <span className={styles.pillarIcon} style={{ background: `${pillar.color}18`, color: pillar.color }}>
-                      {pillar.icon}
+                    <span className={styles.pillarIcon}>
+                      <span style={{ width: 14, height: 14, borderRadius: '50%', background: pillar.color, display: 'block' }} />
                     </span>
                     <span className={styles.pillarInfo}>
                       <span className={styles.pillarName}>{pillar.name}</span>
