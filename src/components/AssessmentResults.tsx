@@ -52,6 +52,7 @@ export default function AssessmentResults({
   onRetake,
 }: Props) {
   const [email, setEmail] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [submitState, setSubmitState] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
@@ -91,24 +92,37 @@ export default function AssessmentResults({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || submitState === 'loading') return;
+    if (!email || !companyName || submitState === 'loading') return;
     setSubmitState('loading');
     setSubmitMsg('');
 
     try {
-      await sendAssessmentLeadEmail(email, {
-        level: level.name,
-        percentage: results.percentage,
-        totalScore: results.totalScore,
-        maxScore: totalMax,
-        pillarScores: results.pillarScores,
+      const response = await fetch('/api/assessment/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          company_name: companyName,
+          answers,
+          selectedPillars,
+          level: level.name,
+          percentage: results.percentage,
+          totalScore: results.totalScore,
+          maxScore: totalMax,
+          pillarScores: results.pillarScores,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to send report');
+      }
 
       fetch('/api/assessment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
+          company_name: companyName,
           scores: results.pillarScores,
           total_score: results.totalScore,
           max_score: totalMax,
@@ -118,7 +132,7 @@ export default function AssessmentResults({
 
       setSubmitState('success');
       setSubmitMsg(
-        'Thanks! We received your email. A specialist will follow up.'
+        'Report sent! Check your email for your AI Readiness Assessment.'
       );
     } catch {
       setSubmitState('error');
@@ -358,6 +372,15 @@ export default function AssessmentResults({
               placeholder="you@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={submitState === 'loading' || submitState === 'success'}
+            />
+            <input
+              className={styles.resultsCtaInput}
+              type="text"
+              placeholder="Company Name"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
               required
               disabled={submitState === 'loading' || submitState === 'success'}
             />

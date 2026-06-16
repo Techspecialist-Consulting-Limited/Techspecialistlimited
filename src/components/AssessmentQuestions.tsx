@@ -5,11 +5,21 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   PillarId,
   Question,
+  Option,
   pillars,
   EASE_OUT,
 } from '@/data/assessment';
 import AssessmentStepper from './AssessmentStepper';
 import styles from '@/app/ai-readiness-assessment/assessment.module.css';
+
+function shuffleOptions(options: Option[]): Option[] {
+  const shuffled = [...options];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 interface Props {
   selectedPillars: PillarId[];
@@ -70,6 +80,11 @@ export default function AssessmentQuestions({
   const currentPillarId = currentQuestion
     ? pillarForQuestion(currentQuestion.id)
     : undefined;
+
+  const shuffledOptions = useMemo(() => {
+    if (!currentQuestion) return [];
+    return shuffleOptions(currentQuestion.options);
+  }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalQuestions = allQuestions.length;
   const selectedOption = currentQuestion
@@ -318,7 +333,7 @@ export default function AssessmentQuestions({
               <h2 className={styles.questionText}>{currentQuestion.text}</h2>
 
               <div className={styles.questionOptions}>
-                {currentQuestion.options.map((option, index) => {
+                {shuffledOptions.map((option, index) => {
                   const isSelected = selectedOption === option.id;
                   return (
                     <motion.button

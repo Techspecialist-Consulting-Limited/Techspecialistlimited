@@ -15,7 +15,7 @@ function getSupabase() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, scores, total_score, max_score, level } = body
+    const { email, company_name, scores, total_score, max_score, level } = body
 
     if (!email || !scores || total_score === undefined || !level) {
       return NextResponse.json(
@@ -31,10 +31,12 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           email,
+          company_name: company_name || 'Not provided',
           scores,
           total_score,
           max_score: max_score || 75,
           level,
+          followed_up: false,
         },
       ])
       .select()
