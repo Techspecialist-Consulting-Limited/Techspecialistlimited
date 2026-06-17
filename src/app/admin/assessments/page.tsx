@@ -140,74 +140,46 @@ export default function AdminAssessments() {
 
   if (showTokenForm) {
     return (
-      <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-        <h1 style={{ marginBottom: '20px' }}>Admin Access</h1>
-        <form onSubmit={handleTokenSubmit}>
+      <div className="mx-auto max-w-[400px] p-5 sm:p-8">
+        <h1 className="mb-5 text-xl font-bold sm:text-2xl">Admin Access</h1>
+        <form onSubmit={handleTokenSubmit} className="flex flex-col gap-3">
           <input
             type="password"
             placeholder="Enter admin token"
             value={adminToken}
             onChange={(e) => setAdminToken(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px',
-              marginBottom: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '14px',
-            }}
+            className="w-full rounded border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             required
           />
           <button
             type="submit"
-            style={{
-              width: '100%',
-              padding: '10px',
-              background: '#4584ed',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-            }}
+            className="w-full rounded bg-blue-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"
           >
             Login
           </button>
         </form>
-        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>Assessment Dashboard</h1>
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-bold sm:text-2xl">Assessment Dashboard</h1>
         <button
           onClick={handleLogout}
-          style={{
-            padding: '8px 16px',
-            background: '#ef4444',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
+          className="self-start rounded bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 sm:self-auto"
         >
           Logout
         </button>
       </div>
 
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
         <select
           value={filterLevel}
           onChange={(e) => setFilterLevel(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid #ddd',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
+          className="w-full rounded border border-gray-300 px-3 py-2 text-sm sm:w-auto"
         >
           <option value="">All Levels</option>
           <option value="AI Explorer">AI Explorer</option>
@@ -218,98 +190,127 @@ export default function AdminAssessments() {
 
         <button
           onClick={exportToCSV}
-          style={{
-            padding: '8px 16px',
-            background: '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
+          className="w-full rounded bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-600 sm:w-auto"
         >
           Export to CSV
         </button>
 
-        <span style={{ color: '#666', fontSize: '14px' }}>
-          {filteredAssessments.length} assessments
+        <span className="text-sm text-gray-500">
+          {filteredAssessments.length} assessment{filteredAssessments.length !== 1 ? 's' : ''}
         </span>
       </div>
 
       {loading ? (
-        <p>Loading...</p>
+        <p className="text-gray-500">Loading...</p>
       ) : filteredAssessments.length === 0 ? (
-        <p style={{ color: '#999' }}>No assessments found</p>
+        <p className="text-gray-400">No assessments found</p>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #ddd' }}>
-                <th style={{ textAlign: 'left', padding: '12px' }}>Company</th>
-                <th style={{ textAlign: 'left', padding: '12px' }}>Email</th>
-                <th style={{ textAlign: 'center', padding: '12px' }}>Score</th>
-                <th style={{ textAlign: 'center', padding: '12px' }}>Level</th>
-                <th style={{ textAlign: 'center', padding: '12px' }}>Date</th>
-                <th style={{ textAlign: 'center', padding: '12px' }}>Followed Up</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAssessments.map((assessment) => (
-                <tr key={assessment.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>
-                    <strong>{assessment.company_name}</strong>
-                  </td>
-                  <td style={{ padding: '12px' }}>{assessment.email}</td>
-                  <td style={{ textAlign: 'center', padding: '12px' }}>
-                    <span
-                      style={{
-                        background: `${levelColors[assessment.level]}20`,
-                        color: levelColors[assessment.level],
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {assessment.total_score}/{assessment.max_score} ({percentageScore(assessment)}%)
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center', padding: '12px' }}>
-                    <span
-                      style={{
-                        background: `${levelColors[assessment.level]}20`,
-                        color: levelColors[assessment.level],
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                      }}
-                    >
-                      {assessment.level}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center', padding: '12px', fontSize: '13px', color: '#666' }}>
-                    {new Date(assessment.created_at).toLocaleDateString()}
-                  </td>
-                  <td style={{ textAlign: 'center', padding: '12px' }}>
-                    <button
-                      onClick={() => toggleFollowUp(assessment.id, assessment.followed_up || false)}
-                      style={{
-                        padding: '6px 12px',
-                        background: assessment.followed_up ? '#10b981' : '#ef4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                      }}
-                    >
-                      {assessment.followed_up ? '✓ Done' : 'Pending'}
-                    </button>
-                  </td>
+        <>
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto rounded-lg border border-gray-200 md:block">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b-2 border-gray-200 bg-gray-50">
+                  <th className="px-4 py-3 font-semibold">Company</th>
+                  <th className="px-4 py-3 font-semibold">Email</th>
+                  <th className="px-4 py-3 text-center font-semibold">Score</th>
+                  <th className="px-4 py-3 text-center font-semibold">Level</th>
+                  <th className="px-4 py-3 text-center font-semibold">Date</th>
+                  <th className="px-4 py-3 text-center font-semibold">Followed Up</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredAssessments.map((assessment) => (
+                  <tr key={assessment.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">{assessment.company_name}</td>
+                    <td className="px-4 py-3 text-gray-600">{assessment.email}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className="inline-block rounded px-2 py-1 text-sm font-bold"
+                        style={{
+                          background: `${levelColors[assessment.level]}20`,
+                          color: levelColors[assessment.level],
+                        }}
+                      >
+                        {assessment.total_score}/{assessment.max_score} ({percentageScore(assessment)}%)
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <span
+                        className="inline-block rounded px-2 py-1 text-sm"
+                        style={{
+                          background: `${levelColors[assessment.level]}20`,
+                          color: levelColors[assessment.level],
+                        }}
+                      >
+                        {assessment.level}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-500">
+                      {new Date(assessment.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => toggleFollowUp(assessment.id, assessment.followed_up || false)}
+                        className={`rounded px-3 py-1.5 text-xs font-medium text-white transition-colors ${
+                          assessment.followed_up ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-red-500 hover:bg-red-600'
+                        }`}
+                      >
+                        {assessment.followed_up ? '✓ Done' : 'Pending'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filteredAssessments.map((assessment) => (
+              <div
+                key={assessment.id}
+                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+              >
+                <div className="mb-2 flex items-start justify-between">
+                  <div>
+                    <strong className="text-sm">{assessment.company_name}</strong>
+                    <p className="text-xs text-gray-500">{assessment.email}</p>
+                  </div>
+                  <button
+                    onClick={() => toggleFollowUp(assessment.id, assessment.followed_up || false)}
+                    className={`rounded px-2.5 py-1 text-xs font-medium text-white ${
+                      assessment.followed_up ? 'bg-emerald-500' : 'bg-red-500'
+                    }`}
+                  >
+                    {assessment.followed_up ? '✓ Done' : 'Pending'}
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                  <span
+                    className="inline-block rounded px-2 py-0.5 text-xs font-bold"
+                    style={{
+                      background: `${levelColors[assessment.level]}20`,
+                      color: levelColors[assessment.level],
+                    }}
+                  >
+                    {assessment.total_score}/{assessment.max_score} ({percentageScore(assessment)}%)
+                  </span>
+                  <span
+                    className="inline-block rounded px-2 py-0.5 text-xs"
+                    style={{
+                      background: `${levelColors[assessment.level]}20`,
+                      color: levelColors[assessment.level],
+                    }}
+                  >
+                    {assessment.level}
+                  </span>
+                  <span>{new Date(assessment.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
