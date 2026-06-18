@@ -28,6 +28,10 @@ export interface Level {
   description: string;
   color: string;
   accent: string;
+  narrative: string;
+  insight: string;
+  nextSteps: string[];
+  priorityAreas: string[];
 }
 
 export interface Recommendation {
@@ -366,6 +370,21 @@ export const levels: Level[] = [
     description: 'Beginning to understand AI opportunities but lacking foundational capabilities.',
     color: '#94a3b8',
     accent: 'slate',
+    narrative: 'Your organization recognizes that AI is important, but the foundations required for successful adoption are still largely undeveloped. At this stage, AI conversations may be happening informally, but key elements such as strategy, governance, workforce readiness, and data maturity are either missing or not yet coordinated. This doesn\'t mean you\'re behind; it simply means you\'re at the beginning of the journey.',
+    insight: 'The biggest risk is not failing to adopt AI. It\'s investing in AI tools before your organization is ready to support them. Without clear direction, AI initiatives often become isolated experiments that struggle to deliver meaningful business value.',
+    nextSteps: [
+      'Establish leadership alignment and a clear AI vision',
+      'Conduct a data readiness assessment and build infrastructure plans',
+      'Launch workforce AI awareness and literacy programmes',
+      'Develop foundational governance and risk frameworks',
+    ],
+    priorityAreas: [
+      'Leadership alignment',
+      'AI strategy development',
+      'Data readiness',
+      'Workforce awareness',
+      'Governance and risk frameworks',
+    ],
   },
   {
     name: 'AI Builder',
@@ -374,6 +393,22 @@ export const levels: Level[] = [
     description: 'Establishing the strategy, governance, and capabilities required for AI adoption.',
     color: '#f59e0b',
     accent: 'amber',
+    narrative: 'Your organization has moved beyond awareness and has started laying the groundwork for AI adoption. There is evidence of progress, whether through leadership interest, technology investments, pilot projects, or emerging governance structures. However, readiness is uneven across the organization, and several critical capabilities are still developing.',
+    insight: 'The intent is there, but the structure is still catching up. Many organizations at this stage underestimate the importance of change management, governance, and workforce readiness. As a result, AI initiatives may generate excitement but struggle to achieve sustained adoption or measurable outcomes. The opportunity now is to move from experimentation to preparation.',
+    nextSteps: [
+      'Strengthen governance frameworks and AI usage policies',
+      'Build workforce capability through structured training programmes',
+      'Standardise and digitise critical business processes',
+      'Prioritise high-impact AI use cases with clear business cases',
+      'Assign executive sponsorship and accountability for AI initiatives',
+    ],
+    priorityAreas: [
+      'Governance and policy development',
+      'Workforce capability building',
+      'Process standardisation',
+      'AI use case prioritisation',
+      'Executive sponsorship and accountability',
+    ],
   },
   {
     name: 'AI Accelerator',
@@ -382,6 +417,22 @@ export const levels: Level[] = [
     description: 'Ready to implement and scale AI initiatives across key business functions.',
     color: '#4584ed',
     accent: 'blue',
+    narrative: 'Your organization has established many of the capabilities required for successful AI adoption. Leadership is engaged, foundational systems are in place, and there is growing readiness across people, processes, and technology. You are no longer asking whether AI matters \u2014 you are determining how to generate value from it.',
+    insight: 'The challenge at this stage is not readiness \u2014 it\u2019s scale. Many organizations in this category successfully launch pilots but struggle to expand adoption across teams, departments, and business functions. Without a coordinated approach, momentum can stall, and early gains may never translate into enterprise-wide impact. Your organization is well-positioned to move beyond experimentation and begin embedding AI into day-to-day operations.',
+    nextSteps: [
+      'Develop an enterprise-wide AI adoption and rollout plan',
+      'Launch change management and communications programmes',
+      'Mature governance frameworks to meet compliance requirements',
+      'Integrate AI across cross-functional workflows and systems',
+      'Define and track business outcome metrics for AI initiatives',
+    ],
+    priorityAreas: [
+      'Enterprise-wide adoption planning',
+      'Change management programmes',
+      'Governance maturity',
+      'Cross-functional integration',
+      'Measurement of business outcomes',
+    ],
   },
   {
     name: 'AI Leader',
@@ -390,10 +441,26 @@ export const levels: Level[] = [
     description: 'AI is embedded into strategy, operations, and decision-making, driving competitive advantage.',
     color: '#10b981',
     accent: 'emerald',
+    narrative: 'Your organization demonstrates a high level of AI readiness and maturity. AI is not viewed as a standalone initiative; it is becoming part of how decisions are made, processes are optimised, and opportunities are identified across the business. You have established strong foundations across leadership, governance, technology, workforce readiness, and operational execution.',
+    insight: 'The question is no longer \u201cAre we ready for AI?\u201d \u2014 it\u2019s \u201cHow do we maximise the value AI can create across the organisation?\u201d Organizations at this stage are often focused on scaling innovation, improving governance, identifying new opportunities, and maintaining a competitive edge as AI capabilities evolve.',
+    nextSteps: [
+      'Implement advanced AI governance and responsible AI frameworks',
+      'Optimise AI across the entire organisation, not just isolated functions',
+      'Build continuous workforce upskilling and talent development programmes',
+      'Drive innovation programmes that create competitive differentiation',
+      'Establish thought leadership and ecosystem partnerships',
+    ],
+    priorityAreas: [
+      'Advanced AI governance',
+      'Organisation-wide AI optimisation',
+      'Continuous workforce upskilling',
+      'Responsible AI leadership',
+      'Innovation and competitive differentiation',
+    ],
   },
 ];
 
-const recommendationsMap: Record<PillarId, { low: Recommendation; medium: Recommendation; high: Recommendation }> = {
+export const recommendationsMap: Record<PillarId, { low: Recommendation; medium: Recommendation; high: Recommendation }> = {
   strategy: {
     low: {
       text: 'Your organization lacks a formal digital strategy and AI leadership. Without executive sponsorship and clear strategic direction, AI initiatives will struggle to gain traction. Start with a structured Digital Transformation Advisory to build a sector-aligned strategic roadmap.',

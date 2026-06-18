@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jsPDF } from 'jspdf';
 import nodemailer from 'nodemailer';
+import { pillars, type PillarId } from '@/data/assessment';
+import { generateAIReport, type AIReportContent } from '@/lib/ai-report';
 
 interface SendReportRequest {
   email: string;
@@ -14,109 +16,263 @@ interface SendReportRequest {
   pillarScores: Record<string, { score: number; maxScore: number; percentage: number }>;
 }
 
-function generatePDF(data: SendReportRequest): Buffer {
-  const doc = new jsPDF();
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 15;
-  const contentWidth = pageWidth - 2 * margin;
-  let yPosition = margin;
+const EMAIL = 'info@techspecialistlimited.com';
+const WEBSITE = 'techspecialistlimited.com';
+const LOCATION = 'Abuja, Nigeria';
+const MARGIN = 20;
+const PAGE_W = 210;
+const PAGE_H = 297;
+const CONTENT_W = PAGE_W - MARGIN * 2;
+const DARK = [31, 41, 55];
+const BODY = [75, 85, 99];
+const MUTED = [107, 114, 128];
 
-  const colors = {
-    primary: [69, 132, 237],
-    success: [16, 185, 129],
-    warning: [245, 158, 11],
-    danger: [239, 68, 68],
-    dark: [31, 44, 69],
-  };
+function initDoc(): jsPDF {
+  return new jsPDF({ unit: 'mm', format: 'a4' });
+}
 
-  const addLine = (height = 5) => {
-    yPosition += height;
-    if (yPosition > pageHeight - margin) {
-      doc.addPage();
-      yPosition = margin;
-    }
-  };
+function splitText(doc: jsPDF, text: string, maxWidth?: number): string[] {
+  return doc.splitTextToSize(text, maxWidth ?? CONTENT_W);
+}
 
-  const addText = (text: string, size = 12, isBold = false) => {
-    doc.setFontSize(size);
-    doc.setFont('Helvetica', isBold ? 'bold' : 'normal');
-    const lines = doc.splitTextToSize(text, contentWidth);
-    doc.text(lines, margin, yPosition);
-    yPosition += size / 2.5 * lines.length;
-  };
+function hr(doc: jsPDF, y: number) {
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.line(MARGIN, y, PAGE_W - MARGIN, y);
+}
 
-  const addColoredText = (text: string, color: number[], size = 12, isBold = false) => {
-    doc.setFontSize(size);
-    doc.setFont('Helvetica', isBold ? 'bold' : 'normal');
-    doc.setTextColor(color[0], color[1], color[2]);
-    const lines = doc.splitTextToSize(text, contentWidth);
-    doc.text(lines, margin, yPosition);
-    yPosition += size / 2.5 * lines.length;
-    doc.setTextColor(0, 0, 0);
-  };
+function maybePage(doc: jsPDF, y: number, needed: number): number {
+  if (y + needed > PAGE_H - MARGIN - 5) {
+    doc.addPage();
+    return MARGIN + 10;
+  }
+  return y;
+}
 
-  doc.setFont('Helvetica');
+function writePara(doc: jsPDF, text: string, y: number, opts: { size?: number; bold?: boolean; color?: number[]; indent?: number; lh?: number } = {}): number {
+  const { size = 9.5, bold = false, color = BODY, indent = 0, lh = 4 } = opts;
+  const lines = splitText(doc, text.trim());
+  const h = lines.length * lh + 2;
+  y = maybePage(doc, y, h);
+  doc.setFontSize(size);
+  doc.setFont('Helvetica', bold ? 'bold' : 'normal');
+  doc.setTextColor(color[0], color[1], color[2]);
+  doc.text(lines, MARGIN + indent, y);
+  return y + h;
+}
 
-  addColoredText('AI READINESS ASSESSMENT REPORT', colors.primary, 16, true);
-  addLine(2);
-  addText(`${data.company_name}`, 12, true);
-  addText(`Date: ${new Date().toLocaleDateString()}`, 10);
-  addLine(8);
+function writeHeading(doc: jsPDF, text: string, y: number, size: number = 13): number {
+  y = maybePage(doc, y, size * 0.7 + 2);
+  doc.setFontSize(size);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+  doc.text(text, MARGIN, y);
+  return y + size * 0.7 + 2;
+}
 
-  addText('EXECUTIVE SUMMARY', 14, true);
-  addLine(3);
-  doc.setFontSize(11);
-  doc.text(
-    `Your organization achieved a readiness score of ${data.percentage}% across ${data.selectedPillars.length} assessment pillars.`,
-    margin,
-    yPosition
-  );
-  yPosition += 8;
+function writeParagraphs(doc: jsPDF, text: string, y: number): number {
+  for (const p of text.split('\n')) {
+    if (!p.trim()) continue;
+    y = writePara(doc, p.trim(), y, { lh: 4.2 });
+  }
+  return y + 2;
+}
 
-  addColoredText(data.level, colors.primary, 12, true);
-  addLine(3);
-  addText(
-    'This assessment identifies your strengths and priority improvement areas across strategy, data, technology, workforce, governance, and change management.',
-    10
-  );
-  addLine(8);
+function generatePDF(body: SendReportRequest, ai: AIReportContent): Buffer {
+  const doc = initDoc();
+  let y = MARGIN + 10;
 
-  addText('OVERALL SCORE', 14, true);
-  addLine(3);
-  addColoredText(`${data.totalScore}/${data.maxScore} Points (${data.percentage}%)`, colors.primary, 20, true);
-  addLine(8);
+  // ─── HEADER ──────────────────────────────────────────────────
+  doc.setFontSize(18);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+  doc.text('AI Readiness Assessment Report', PAGE_W / 2, y, { align: 'center' });
+  y += 10;
 
-  addText('PILLAR BREAKDOWN', 14, true);
-  addLine(3);
-  Object.entries(data.pillarScores).forEach(([pillar, score]) => {
-    const pillarLabel = pillar.charAt(0).toUpperCase() + pillar.slice(1);
-    doc.setFontSize(11);
-    doc.setFont('Helvetica', 'bold');
-    doc.text(`${pillarLabel}:`, margin, yPosition);
-    yPosition += 6;
-    doc.setFont('Helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Score: ${score.score}/${score.maxScore} (${score.percentage}%)`, margin + 5, yPosition);
-    yPosition += 7;
-  });
-
-  addLine(5);
   doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text(
-    'Next Steps: Contact a specialist to discuss your assessment results and create an AI readiness roadmap tailored to your organization.',
-    margin,
-    yPosition
-  );
+  doc.setFont('Helvetica', 'normal');
+  doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  doc.text(`${body.company_name}  |  ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`, PAGE_W / 2, y, { align: 'center' });
+  y += 8;
+
+  hr(doc, y);
+  y += 8;
+
+  // Score
+  doc.setFontSize(12);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+  doc.text(`Overall Score: ${body.totalScore}/${body.maxScore} (${body.percentage}%)`, MARGIN, y);
+  doc.text(`Level: ${body.level}`, PAGE_W - MARGIN, y, { align: 'right' });
+  y += 12;
+
+  // ─── EXECUTIVE SUMMARY ───────────────────────────────────────
+  y = writeHeading(doc, 'Executive Summary', y, 14);
+  y = writeParagraphs(doc, ai.executiveSummary.narrative, y);
+
+  // Key Insight
+  y = writePara(doc, `Key Insight: ${ai.executiveSummary.keyInsight}`, y, { bold: true, lh: 4.2 });
+  y += 3;
+
+  // Priority Gaps
+  y = writeHeading(doc, 'Priority Gaps', y, 13);
+  for (const gap of ai.executiveSummary.topGaps) {
+    y = maybePage(doc, y, 20);
+    doc.setFontSize(9.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+    doc.text(gap.pillar, MARGIN, y);
+    y += 5;
+    doc.setFont('Helvetica', 'normal');
+    doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+    doc.text(gap.gap, MARGIN + 4, y);
+    y += 5;
+    doc.setFontSize(8);
+    doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+    doc.text(`Impact: ${gap.impact}`, MARGIN + 4, y);
+    y += 7;
+  }
+
+  // ─── PILLAR ANALYSIS ─────────────────────────────────────────
+  y = maybePage(doc, y, 20);
+  hr(doc, y);
+  y += 6;
+  y = writeHeading(doc, 'Pillar Analysis', y, 14);
+
+  for (const pa of ai.pillarAnalyses) {
+    const pillar = pillars.find((p) => p.id === pa.pillarId);
+    if (!pillar) continue;
+
+    y = maybePage(doc, y, 10);
+    hr(doc, y);
+    y += 6;
+
+    y = writeHeading(doc, pillar.name, y, 12);
+
+    const ps = body.pillarScores[pa.pillarId];
+    if (ps) {
+      y = writePara(doc, `Score: ${ps.score}/${ps.maxScore} (${ps.percentage}%)`, y, { size: 9, color: MUTED, lh: 3.8 });
+    }
+
+    y = writePara(doc, pa.overallAssessment, y, { lh: 4.2 });
+
+    for (const qb of pa.questionBreakdown) {
+      y = maybePage(doc, y, 12);
+      hr(doc, y);
+      y += 5;
+
+      doc.setFontSize(9);
+      doc.setFont('Helvetica', 'normal');
+      doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+      const aLines = splitText(doc, qb.assessment);
+      doc.text(aLines, MARGIN, y);
+      y += aLines.length * 4 + 2;
+
+      doc.setFontSize(8.5);
+      doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+      doc.text(`Recommendation: ${qb.recommendation}`, MARGIN, y);
+      y += 6;
+
+      doc.setFontSize(8);
+      doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+      doc.text(`Effort: ${qb.effort.charAt(0).toUpperCase() + qb.effort.slice(1)}`, MARGIN, y);
+      y += 5;
+    }
+  }
+
+  // ─── ACTION PLAN ─────────────────────────────────────────────
+  y = maybePage(doc, y, 10);
+  hr(doc, y);
+  y += 6;
+  y = writeHeading(doc, 'Action Plan', y, 14);
+
+  function writePhase(title: string, items: Array<{ action: string; impact: string }>) {
+    y = writeHeading(doc, title, y, 12);
+    for (const item of items) {
+      y = maybePage(doc, y, 12);
+      doc.setFontSize(9);
+      doc.setFont('Helvetica', 'bold');
+      doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+      const actLines = splitText(doc, item.action);
+      doc.text(actLines, MARGIN, y);
+      y += actLines.length * 4 + 1;
+      doc.setFont('Helvetica', 'normal');
+      doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+      const impLines = splitText(doc, `Impact: ${item.impact}`);
+      doc.text(impLines, MARGIN + 4, y);
+      y += Math.max(impLines.length * 3.8, 4) + 3;
+    }
+  }
+
+  writePhase('Quick Wins (0-30 days)', ai.actionPlan.quickWins);
+  writePhase('Medium-Term (30-90 days)', ai.actionPlan.mediumTerm);
+  writePhase('Strategic Initiatives (90+ days)', ai.actionPlan.strategic);
+
+  // ─── SUCCESS METRICS ─────────────────────────────────────────
+  y = maybePage(doc, y, 15);
+  hr(doc, y);
+  y += 7;
+
+  y = writeHeading(doc, 'Success Metrics', y, 13);
+
+  const colW = CONTENT_W / 3;
+  const col1 = MARGIN;
+  const col2 = MARGIN + colW;
+  const col3 = MARGIN + colW * 2;
+
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+  y = maybePage(doc, y, 6);
+  doc.text('Metric', col1, y);
+  doc.text('Target', col2, y);
+  doc.text('Timeframe', col3, y);
+  y += 5;
+  hr(doc, y);
+  y += 5;
+
+  for (const sm of ai.successMetrics) {
+    const m1 = splitText(doc, sm.metric, colW - 4);
+    const m2 = splitText(doc, sm.target, colW - 4);
+    const m3 = splitText(doc, sm.timeframe, colW - 4);
+    const rowH = Math.max(m1.length, m2.length, m3.length) * 3.8 + 2;
+    y = maybePage(doc, y, rowH + 1);
+    doc.setFont('Helvetica', 'normal');
+    doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+    doc.text(m1, col1, y);
+    doc.text(m2, col2, y);
+    doc.text(m3, col3, y);
+    y += rowH + 2;
+  }
+
+  // ─── CTA FOOTER ──────────────────────────────────────────────
+  y = Math.max(y, PAGE_H - MARGIN - 30);
+  hr(doc, y);
+  y += 6;
+  doc.setFontSize(10);
+  doc.setFont('Helvetica', 'bold');
+  doc.setTextColor(DARK[0], DARK[1], DARK[2]);
+  doc.text('Ready to act on your results?', MARGIN, y);
+  y += 6;
+  doc.setFontSize(9);
+  doc.setFont('Helvetica', 'normal');
+  doc.setTextColor(BODY[0], BODY[1], BODY[2]);
+  doc.text('Contact TechSpecialist Ltd for a free strategy session.', MARGIN, y);
+  y += 5;
+  doc.setFontSize(8);
+  doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
+  doc.text(EMAIL, MARGIN, y);
+  doc.text(WEBSITE, PAGE_W / 2, y, { align: 'center' });
+  doc.text(LOCATION, PAGE_W - MARGIN, y, { align: 'right' });
 
   return Buffer.from(doc.output('arraybuffer'));
 }
 
+// ─── API Route ─────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
     const body: SendReportRequest = await request.json();
-    const { email, company_name, level, percentage, totalScore, maxScore, pillarScores } = body;
+    const { email, company_name, percentage, level, totalScore, maxScore, answers, selectedPillars, pillarScores } = body;
 
     if (!email || !company_name) {
       return NextResponse.json(
@@ -124,6 +280,26 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const aiReport = await generateAIReport({
+      companyName: company_name,
+      totalScore,
+      maxScore,
+      percentage,
+      level,
+      selectedPillars: selectedPillars as PillarId[],
+      pillarScores,
+      answers,
+    });
+
+    if (!aiReport) {
+      return NextResponse.json(
+        { error: 'AI report generation failed. Please try again later.' },
+        { status: 503 }
+      );
+    }
+
+    const pdfBuffer = generatePDF(body, aiReport);
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -133,34 +309,32 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const pdfBuffer = generatePDF(body);
-
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: `Your AI Readiness Assessment Report - ${level}`,
+      subject: `Your AI Readiness Assessment Report — ${company_name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; line-height: 1.6; color: #333;">
           <p><strong>Hello ${company_name},</strong></p>
-
-          <p>Thank you for taking our <strong>AI Readiness Assessment</strong>. We have received your submission with a baseline score of <strong>${percentage}%</strong>.</p>
-
-          <p>Our experts are reviewing your inputs to prepare customized insights around your primary focus area: <strong>${level}</strong>.</p>
-
-          <p>At TechSpecialist, we believe that AI success starts with human-centered alignment and robust governance safeguards.</p>
-
-          <p>We look forward to discussing how we can help you build on your assessment scores.</p>
-
-          <p><strong>A member of our advisory team will be in touch with you shortly to share our tailored recommendations.</strong></p>
-
+          <p>Thank you for completing the <strong>AI Readiness Assessment</strong>.</p>
+          <p>Your organisation achieved a readiness score of <strong>${percentage}%</strong>, placing you at the <strong>${level}</strong> level. A comprehensive report with your pillar-by-pillar breakdown, personalised recommendations, and a priority action plan is attached to this email.</p>
+          <p style="background: #f0fdf4; border-left: 4px solid #059669; padding: 14px 16px; border-radius: 4px;">
+            <strong>What's inside the report:</strong><br/>
+            &bull; Executive summary with score dashboard<br/>
+            &bull; Detailed breakdown across all assessed pillars<br/>
+            &bull; Personalised recommendations for each area<br/>
+            &bull; A 90-day priority action plan ranked by impact<br/>
+            &bull; Strategic next steps and CTA
+          </p>
+          <p>Our advisory team is available to walk you through the findings and help build your AI readiness roadmap.</p>
           <p style="margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #ddd; padding-top: 20px;">
-            Your detailed assessment report is attached to this email.
+            TechSpecialist Ltd &bull; techspecialistlimited.com &bull; Abuja, Nigeria
           </p>
         </div>
       `,
       attachments: [
         {
-          filename: `AI-Readiness-Assessment-${company_name}-${new Date().toISOString().split('T')[0]}.pdf`,
+          filename: `AI-Readiness-Report-${company_name.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`,
           content: pdfBuffer,
           contentType: 'application/pdf',
         },
