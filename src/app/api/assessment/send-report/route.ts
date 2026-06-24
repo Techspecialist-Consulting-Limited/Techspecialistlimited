@@ -1,4 +1,3 @@
-import React from 'react';
 import { NextRequest, NextResponse } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import nodemailer from 'nodemailer';
@@ -21,7 +20,8 @@ interface SendReportRequest {
 const EMAIL = 'info@techspecialistlimited.com';
 
 async function generatePDF(body: SendReportRequest, ai: AIReportContent): Promise<Buffer> {
-  const element = React.createElement(ReportDocument, {
+  // Call as function — returns <Document> element directly
+  const document = ReportDocument({
     companyName: body.company_name,
     date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     totalScore: body.totalScore,
@@ -33,7 +33,8 @@ async function generatePDF(body: SendReportRequest, ai: AIReportContent): Promis
     selectedPillars: body.selectedPillars as PillarId[],
   });
 
-  const pdfBuffer = await renderToBuffer(element);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pdfBuffer = await renderToBuffer(document as any);
   return Buffer.from(pdfBuffer);
 }
 
