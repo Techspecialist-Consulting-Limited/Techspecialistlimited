@@ -136,7 +136,8 @@ export default function AssessmentResults({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send report');
+        const errData = await response.json().catch(() => null);
+        throw new Error(errData?.error || `Failed to send report (${response.status})`);
       }
 
       fetch('/api/assessment', {
@@ -162,9 +163,9 @@ export default function AssessmentResults({
         localStorage.setItem(EMAIL_STORAGE_KEY, email);
         localStorage.setItem(COMPANY_STORAGE_KEY, companyName);
       } catch {}
-    } catch {
+    } catch (err) {
       setSubmitState('error');
-      setSubmitMsg('Something went wrong. Please try again.');
+      setSubmitMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   }
 
@@ -194,12 +195,15 @@ export default function AssessmentResults({
           pillarScores: results.pillarScores,
         }),
       });
-      if (!response.ok) throw new Error('Failed to send report');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => null);
+        throw new Error(errData?.error || `Failed (${response.status})`);
+      }
       setReportState('success');
       setReportMsg('Report sent! Check your email.');
-    } catch {
+    } catch (err) {
       setReportState('error');
-      setReportMsg('Something went wrong. Please try again.');
+      setReportMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   }
 
