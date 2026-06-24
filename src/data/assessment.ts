@@ -15,7 +15,6 @@ export interface Question {
 export interface Pillar {
   id: PillarId;
   name: string;
-  icon: string;
   description: string;
   color: string;
   questions: Question[];
@@ -59,7 +58,6 @@ export const pillars: Pillar[] = [
   {
     id: 'strategy',
     name: 'Strategy & Leadership',
-    icon: '📊',
     description: 'Strategic alignment, executive sponsorship, and innovation budgeting at the leadership level.',
     color: '#4584ed',
     questions: [
@@ -108,7 +106,6 @@ export const pillars: Pillar[] = [
   {
     id: 'data',
     name: 'Data Readiness',
-    icon: '🗄️',
     description: 'Data centralization, quality, governance, and cross-department accessibility.',
     color: '#14b8a6',
     questions: [
@@ -157,7 +154,6 @@ export const pillars: Pillar[] = [
   {
     id: 'technology',
     name: 'Technology Infrastructure',
-    icon: '🖥️',
     description: 'Digitization of processes, cloud adoption, system integration capability, and cybersecurity maturity.',
     color: '#8b5cf6',
     questions: [
@@ -206,7 +202,6 @@ export const pillars: Pillar[] = [
   {
     id: 'workforce',
     name: 'Workforce Readiness',
-    icon: '👥',
     description: 'AI literacy, training programs, technology adoption culture, and digital skills development.',
     color: '#ef6526',
     questions: [
@@ -255,7 +250,6 @@ export const pillars: Pillar[] = [
   {
     id: 'governance',
     name: 'Governance & Risk',
-    icon: '🔒',
     description: 'AI usage policies, privacy compliance, risk management, and ethical AI considerations.',
     color: '#ef4444',
     questions: [
@@ -304,7 +298,6 @@ export const pillars: Pillar[] = [
   {
     id: 'change',
     name: 'Change Management & Adoption',
-    icon: '🔄',
     description: 'User adoption history, change infrastructure, stakeholder engagement, training integration, and adoption metrics.',
     color: '#10b981',
     questions: [

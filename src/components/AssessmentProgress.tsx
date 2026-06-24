@@ -1,6 +1,7 @@
 'use client';
 
 import { PillarId, pillars } from '@/data/assessment';
+import PillarIcon from './PillarIcon';
 import styles from '@/app/ai-readiness-assessment/assessment.module.css';
 import { motion } from 'framer-motion';
 
@@ -37,7 +38,7 @@ export default function AssessmentProgress({
           style={{ background: currentPillar?.color }}
         />
         <span>
-          {currentPillar?.icon} {currentPillar?.name}
+          {currentPillar && <PillarIcon pillarId={currentPillar.id} size={14} color={currentPillar.color} />} {currentPillar?.name}
         </span>
       </div>
       <div className={styles.questionProgressLabel}>

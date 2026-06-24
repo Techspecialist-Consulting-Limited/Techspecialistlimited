@@ -10,6 +10,7 @@ import {
   EASE_OUT,
 } from '@/data/assessment';
 import AssessmentStepper from './AssessmentStepper';
+import PillarIcon from './PillarIcon';
 import styles from '@/app/ai-readiness-assessment/assessment.module.css';
 
 function shuffleOptions(options: Option[]): Option[] {
@@ -205,13 +206,15 @@ export default function AssessmentQuestions({
               animate={{ scale: 1 }}
               transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
             >
-              ✅
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: '50%', background: '#059669' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              </span>
             </motion.div>
             <h2 className={styles.interstitialTitle}>
               {finishedPillar?.name} Complete
             </h2>
             <p className={styles.interstitialSub}>
-              Next up: {nextPillar?.icon} {nextPillar?.name}
+              Next up: {nextPillar && <PillarIcon pillarId={nextPillar.id} size={18} color={nextPillar.color} />} {nextPillar?.name}
             </p>
             <motion.button
               className={styles.interstitialNextBtn}
@@ -269,8 +272,8 @@ export default function AssessmentQuestions({
 
           {currentPillar && (
             <div className={styles.currentPillarPanel}>
-              <span className={styles.currentPillarIcon} style={{ background: `${currentPillar.color}18`, color: currentPillar.color }}>
-                {currentPillar.icon}
+              <span className={styles.currentPillarIcon} style={{ background: `${currentPillar.color}18`, color: currentPillar.color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <PillarIcon pillarId={currentPillar.id} size={20} color={currentPillar.color} />
               </span>
               <div className={styles.currentPillarKicker}>Current pillar</div>
               <h1>{currentPillar.name}</h1>
@@ -318,7 +321,7 @@ export default function AssessmentQuestions({
                     color: currentPillar.color,
                   }}
                 >
-                  {currentPillar.icon} {currentPillar.name}
+                  <PillarIcon pillarId={currentPillar.id} size={14} color={currentPillar.color} /> {currentPillar.name}
                 </span>
               )}
               <span className={styles.questionCounter}>
