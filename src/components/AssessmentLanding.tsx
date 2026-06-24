@@ -64,14 +64,19 @@ export default function AssessmentLanding({ onStart }: Props) {
             </motion.div>
 
             <motion.h1 className={styles.heroTitle} variants={itemVariants}>
-              Reveal the real blockers between your business and AI at scale.
+              Uncover the AI Blockers Quietly Killing Your ROI
             </motion.h1>
 
             <motion.p className={styles.heroSub} variants={itemVariants}>
-              Most AI programmes fail quietly: the technology works, but the
-              organisation is not ready to absorb it. This assessment pinpoints
-              the strategy, data, systems, people, governance, and adoption gaps
-              that decide whether AI becomes value or noise.
+              Over 97% of executives say their company has deployed AI agents in the past year, yet only 29% report significant returns.
+            </motion.p>
+
+            <motion.p className={styles.heroSub} variants={itemVariants}>
+              Most AI programmes don&apos;t fail because the technology breaks.
+              They fail quietly, because the organization underneath was never ready
+              to carry it: the strategy was unclear, the data wasn&apos;t trustworthy,
+              the systems didn&apos;t talk to each other, the right people weren&apos;t
+              bought in, or governance couldn&apos;t keep pace.
             </motion.p>
 
             <motion.div className={styles.heroStats} variants={itemVariants}>
@@ -84,8 +89,8 @@ export default function AssessmentLanding({ onStart }: Props) {
                 <span>readiness pillars</span>
               </div>
               <div>
-                <strong>24+</strong>
-                <span>executive signals</span>
+                <strong>Free</strong>
+                <span>AI roadmap</span>
               </div>
             </motion.div>
 
