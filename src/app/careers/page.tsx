@@ -2,39 +2,44 @@
 
 import { startTransition, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { fetchJobs, type Job } from '@/lib/recruitment-api';
 import { supabase } from '@/lib/supabase';
+import { BrandedLoader, EmptyState } from '@/components/recruitment';
 
 export default function Careers() {
-  const [jobs, setJobs] = useState<Record<string, any>[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   async function loadJobs() {
+    // Try FastAPI backend first, fall back to Supabase
     try {
-      if (!supabase) {
-        setJobs([]);
-        setIsLoading(false);
-        return;
-      }
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
+      const data = await fetchJobs();
+      setJobs(data.filter((j) => j.status === 'active' && !j.is_closed));
+      setIsLoading(false);
+      return;
+    } catch { /* FastAPI unavailable, try Supabase */ }
 
-      if (error) throw error
-
-      if (data && data.length > 0) {
-        setJobs(data);
-      } else {
-        setJobs([]);
+    try {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('status', 'active')
+          .eq('is_closed', false)
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          setJobs(data as Job[]);
+          setIsLoading(false);
+          return;
+        }
       }
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      setJobs([]);
-    }
+    } catch { /* Supabase also unavailable */ }
+
+    setJobs([]);
     setIsLoading(false);
   }
 
@@ -47,34 +52,23 @@ export default function Careers() {
       const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
       progressBar.style.width = `${Math.min(progress, 100)}%`;
     };
-
-    if (progressBar) {
-      window.addEventListener('scroll', updateScrollProgress);
-    }
-
+    if (progressBar) window.addEventListener('scroll', updateScrollProgress);
     startTransition(() => { loadJobs(); });
-
     return () => window.removeEventListener('scroll', updateScrollProgress);
   }, []);
 
   const filteredJobs = useMemo(() => {
     let filtered = [...jobs];
-
     if (searchTerm) {
-      filtered = filtered.filter(job =>
-        job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (job) =>
+          job.title?.toLowerCase().includes(term) ||
+          job.description?.toLowerCase().includes(term),
       );
     }
-
-    if (selectedDepartment) {
-      filtered = filtered.filter(job => job.department === selectedDepartment);
-    }
-
-    if (selectedLocation) {
-      filtered = filtered.filter(job => job.location === selectedLocation);
-    }
-
+    if (selectedDepartment) filtered = filtered.filter((j) => j.department === selectedDepartment);
+    if (selectedLocation) filtered = filtered.filter((j) => j.location === selectedLocation);
     return filtered;
   }, [jobs, searchTerm, selectedDepartment, selectedLocation]);
 
@@ -84,109 +78,232 @@ export default function Careers() {
     setSelectedLocation('');
   };
 
-  const departments = [...new Set(jobs.map(job => job.department).filter(Boolean))].sort();
-  const locations = [...new Set(jobs.map(job => job.location).filter(Boolean))].sort();
+  const departments = [...new Set(jobs.map((j) => j.department).filter(Boolean))].sort();
+  const locations = [...new Set(jobs.map((j) => j.location).filter(Boolean))].sort();
 
   return (
     <div>
       {/* Scroll Progress */}
       <div className="fixed left-0 top-0 z-[70] h-1 w-full">
-        <div className="h-full w-0 bg-[linear-gradient(90deg,#4584ed,#ef6526)]" id="scrollProgress"></div>
+        <div className="h-full w-0 bg-[linear-gradient(90deg,#4584ed,#ef6526)] transition-[width] duration-150" id="scrollProgress" />
       </div>
 
-      {/* HEADER */}
-      <header className="border-b border-gray-200 bg-[#f7f9fc] px-4 py-24 dark:border-white/10 dark:bg-white/[0.03] sm:px-6 lg:px-8 lg:py-28">
-        <div className="mx-auto max-w-6xl">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#4584ed]">Join Our Team</p>
-          <h1 className="font-serif text-5xl font-normal leading-tight tracking-[-0.03em] text-[#2f2f2f] dark:text-white sm:text-6xl">Build Your Future With Us</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5f6368] dark:text-white/60">
-            Explore open positions and become part of a team shaping the future of enterprise technology and operations.
+      {/* Hero */}
+      <header className="border-b border-gray-200 bg-[var(--bg-soft)] px-6 pb-12 pt-28 dark:border-white/10 dark:bg-white/[0.03] lg:px-8 lg:pb-16 lg:pt-32">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="section-tag mb-4">Join Our Team</div>
+          <h1 className="section-title mb-5" style={{ maxWidth: 600 }}>
+            Build Your Future <em>With Us</em>
+          </h1>
+          <p className="max-w-xl text-[15px] leading-7 text-[var(--body)]">
+            Explore open positions and become part of a team shaping the future of enterprise technology and AI-powered business operations.
           </p>
+
+          {/* Stats strip */}
+          <div className="problem-stats-strip mt-8" style={{ maxWidth: 520 }}>
+            <div className="pstat">
+              <div className="pstat-num">{jobs.length}</div>
+              <div className="pstat-label">Open Positions</div>
+            </div>
+            <div className="pstat">
+              <div className="pstat-num">{departments.length}</div>
+              <div className="pstat-label">Departments</div>
+            </div>
+            <div className="pstat">
+              <div className="pstat-num">{locations.length}</div>
+              <div className="pstat-label">Locations</div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* STATS */}
-      <section className="border-b border-gray-200 bg-[#f7f9fc] px-4 py-6 dark:border-white/10 dark:bg-white/[0.03] sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 sm:grid sm:grid-cols-3">
-          <div className="text-center"><div id="stat-positions" className="text-3xl sm:text-4xl font-bold text-[#2f2f2f] dark:text-white">{jobs.length}</div><div className="text-xs sm:text-sm text-[#5f6368] dark:text-white/60">Open Positions</div></div>
-          <div className="text-center"><div id="stat-departments" className="text-3xl sm:text-4xl font-bold text-[#2f2f2f] dark:text-white">{departments.length}</div><div className="text-xs sm:text-sm text-[#5f6368] dark:text-white/60">Departments</div></div>
-          <div className="text-center"><div id="stat-locations" className="text-3xl sm:text-4xl font-bold text-[#2f2f2f] dark:text-white">{locations.length}</div><div className="text-xs sm:text-sm text-[#5f6368] dark:text-white/60">Locations</div></div>
-        </div>
-      </section>
-
-      {/* FILTERS */}
-      <section className="sticky top-16 z-30 border-b border-gray-200 bg-white/95 px-4 py-4 backdrop-blur dark:border-white/10 dark:bg-[#0b1020]/95 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-3 md:grid-cols-[1fr_220px_220px_auto] md:items-end">
-          <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#5f6368] dark:text-white/55">
+      {/* Sticky Filter Bar */}
+      <section className="sticky top-16 z-30 border-b border-gray-200 bg-white/95 px-6 py-4 backdrop-blur dark:border-white/10 dark:bg-[#0b1020]/95 lg:px-8">
+        <div className="mx-auto grid max-w-[1280px] gap-3 md:grid-cols-[1fr_180px_180px_auto_auto] md:items-end">
+          <label className="grid gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">
             Search
             <input
-              id="search-input"
               type="search"
-              placeholder="Search by title or keyword"
-              className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm normal-case tracking-normal text-[#2f2f2f] outline-none focus:border-[#4584ed] dark:border-white/10 dark:bg-white/5 dark:text-white"
+              placeholder="Search by title or keyword..."
+              className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-sm normal-case tracking-normal text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5 dark:text-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </label>
-          <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#5f6368] dark:text-white/55">
+          <label className="grid gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">
             Department
             <select
-              id="department-filter"
-              className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm normal-case tracking-normal text-[#2f2f2f] outline-none focus:border-[#4584ed] dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-sm normal-case tracking-normal text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5 dark:text-white"
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
             >
               <option value="">All Departments</option>
-              {departments.map((dept, i) => <option key={i} value={dept}>{dept}</option>)}
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
             </select>
           </label>
-          <label className="grid gap-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#5f6368] dark:text-white/55">
+          <label className="grid gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">
             Location
             <select
-              id="location-filter"
-              className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm normal-case tracking-normal text-[#2f2f2f] outline-none focus:border-[#4584ed] dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-sm normal-case tracking-normal text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5 dark:text-white"
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
             >
               <option value="">All Locations</option>
-              {locations.map((loc, i) => <option key={i} value={loc}>{loc}</option>)}
+              {locations.map((loc) => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
             </select>
           </label>
-          <button id="reset-btn" type="button" className="rounded-lg border border-gray-200 px-4 py-3 text-sm font-semibold text-[#5f6368] hover:border-[#4584ed] hover:text-[#4584ed] dark:border-white/10 dark:text-white/65" onClick={resetFilters}>Clear</button>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="rounded-md border border-[var(--border)] px-4 py-[11px] text-sm font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10 dark:text-white/65"
+          >
+            Clear
+          </button>
+          {/* View toggle */}
+          <div className="hidden items-center gap-1 rounded-md border border-[var(--border)] p-1 md:flex">
+            <button
+              onClick={() => setViewMode('grid')}
+              className="rounded p-1.5 transition-colors"
+              style={{ background: viewMode === 'grid' ? 'var(--blue)' : 'transparent', color: viewMode === 'grid' ? '#fff' : 'var(--body)' }}
+              aria-label="Grid view"
+            >
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className="rounded p-1.5 transition-colors"
+              style={{ background: viewMode === 'list' ? 'var(--blue)' : 'transparent', color: viewMode === 'list' ? '#fff' : 'var(--body)' }}
+              aria-label="List view"
+            >
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* JOB LISTINGS */}
-      <main className="px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-6 flex items-end justify-between gap-4">
-            <h2 className="text-2xl font-bold text-[#2f2f2f] dark:text-white">Open Positions</h2>
-            <p className="text-sm text-[#5f6368] dark:text-white/60"><span id="job-count">{filteredJobs.length}</span> positions</p>
+      {/* Job Listings */}
+      <main className="px-6 py-12 lg:px-8 lg:py-16">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <h2 className="text-2xl font-bold text-[var(--heading)]">
+              Open Positions
+            </h2>
+            <p className="text-sm text-[var(--body)]">
+              {filteredJobs.length} position{filteredJobs.length !== 1 ? 's' : ''}
+            </p>
           </div>
-          <div id="job-listings" className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#101827]">
-            {isLoading ? (
-              <div className="p-8 text-center text-gray-500">Loading...</div>
-            ) : filteredJobs.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">No positions match your filters.</div>
-            ) : (
-              filteredJobs.map((job, index) => (
-                <Link key={job.id} href={`/careers/${job.id}`} className={`block border-b border-gray-200 p-6 transition hover:bg-[#f7f9fc] dark:border-white/10 dark:hover:bg-white/[0.03] ${index === filteredJobs.length - 1 ? 'border-b-0' : ''}`}>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-[#2f2f2f] dark:text-white">{job.title}</h3>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-[#f7f9fc] px-3 py-1 text-xs font-semibold text-[#5f6368] dark:bg-gray-700 dark:text-gray-300">{job.department}</span>
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${job.type?.toLowerCase() === 'full-time' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'}`}>{job.type || 'Full-time'}</span>
-                        <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-[#5f6368] dark:bg-gray-700 dark:text-gray-300">{job.location}</span>
-                      </div>
-                      {job.description && <p className="mt-3 text-sm leading-7 text-[#5f6368] dark:text-gray-300">{job.description}</p>}
+
+          {isLoading ? (
+            <BrandedLoader text="Loading positions..." />
+          ) : filteredJobs.length === 0 ? (
+            <EmptyState
+              icon={
+                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+              }
+              title="No positions found"
+              description="No positions match your current filters. Try adjusting your search criteria or check back soon for new openings."
+              action={{ label: 'Clear Filters', onClick: resetFilters }}
+            />
+          ) : viewMode === 'grid' ? (
+            /* ── Grid View ── */
+            <div className="grid gap-5 md:grid-cols-2">
+              {filteredJobs.map((job, i) => (
+                <Link
+                  key={job.id}
+                  href={`/careers/${job.id}`}
+                  className="group relative block overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(69,132,237,0.22)] hover:shadow-lg dark:border-white/10 dark:bg-[#101827]"
+                  style={{ animation: `cardSlideIn 0.4s ease ${i * 0.08}s both` }}
+                >
+                  {/* Gradient accent line */}
+                  <div className="absolute left-0 right-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--blue),var(--orange))] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="p-6">
+                    {job.department && (
+                      <span className="mb-3 inline-block rounded-full bg-[rgba(69,132,237,0.08)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--blue)]">
+                        {job.department}
+                      </span>
+                    )}
+                    <h3 className="mb-2 font-syne text-[17px] font-extrabold leading-tight tracking-[-0.01em] text-[var(--heading)]">
+                      {job.title}
+                    </h3>
+                    {job.description && (
+                      <p className="mb-4 line-clamp-2 text-[13px] leading-relaxed text-[var(--body)]">
+                        {job.description}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {job.type && (
+                        <span className="rounded-full bg-[var(--bg-soft)] px-2.5 py-0.5 text-[10px] font-semibold text-[var(--body)] dark:bg-white/5">
+                          {job.type}
+                        </span>
+                      )}
+                      {job.location && (
+                        <span className="rounded-full bg-[var(--bg-soft)] px-2.5 py-0.5 text-[10px] font-semibold text-[var(--body)] dark:bg-white/5">
+                          {job.location}
+                        </span>
+                      )}
                     </div>
-                    <div className="shrink-0 text-[#4584ed]">→</div>
+                    <div className="mt-5 flex items-center gap-2 text-[13px] font-semibold text-[var(--blue)] transition-colors">
+                      View Role
+                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="transition-transform duration-200 group-hover:translate-x-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </div>
                   </div>
                 </Link>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            /* ── List View ── */
+            <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg)] dark:border-white/10 dark:bg-[#101827]">
+              {filteredJobs.map((job, index) => (
+                <Link
+                  key={job.id}
+                  href={`/careers/${job.id}`}
+                  className={`group relative block border-b border-[var(--border)] p-6 transition-all hover:bg-[var(--bg-soft)] dark:border-white/10 dark:hover:bg-white/[0.03] ${index === filteredJobs.length - 1 ? 'border-b-0' : ''}`}
+                >
+                  {/* Left accent on hover */}
+                  <div className="absolute bottom-0 left-0 top-0 w-[3px] rounded-r bg-[linear-gradient(to_bottom,var(--blue),var(--orange))] opacity-0 transition-opacity group-hover:opacity-100" />
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-[15px] font-bold text-[var(--heading)]">{job.title}</h3>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {job.department && (
+                          <span className="rounded-full bg-[var(--bg-soft)] px-3 py-1 text-[10px] font-semibold text-[var(--body)] dark:bg-white/5">{job.department}</span>
+                        )}
+                        {job.type && (
+                          <span className={`rounded-full px-3 py-1 text-[10px] font-semibold ${job.type?.toLowerCase() === 'full-time' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
+                            {job.type}
+                          </span>
+                        )}
+                        {job.location && (
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-[10px] font-semibold text-[var(--body)] dark:bg-white/5">{job.location}</span>
+                        )}
+                      </div>
+                      {job.description && (
+                        <p className="mt-3 line-clamp-1 text-[13px] leading-relaxed text-[var(--body)]">{job.description}</p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 text-[13px] font-semibold text-[var(--blue)]">
+                      View
+                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="transition-transform group-hover:translate-x-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

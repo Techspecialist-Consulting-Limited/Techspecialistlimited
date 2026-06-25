@@ -5,6 +5,7 @@ import ChatBot from '../components/ChatBot';
 import BackToTop from '../components/BackToTop';
 import Script from 'next/script';
 import ClientOnly from '../components/ClientOnly';
+import { headers } from 'next/headers';
 import './globals.css';
 
 export const metadata = {
@@ -22,7 +23,11 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = await headers();
+  const pathname = headersList.get('x-pathname') || '';
+  const isStandalone = pathname.startsWith('/hr') || pathname.startsWith('/assessment');
+
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <head>
@@ -34,15 +39,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased" suppressHydrationWarning={true}>
         <ClientOnly>
           <ThemeProvider>
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-grow">
-                {children}
-              </main>
-              <Footer />
-              <ChatBot />
-              <BackToTop />
-            </div>
+            {isStandalone ? (
+              <>{children}</>
+            ) : (
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-grow">
+                  {children}
+                </main>
+                <Footer />
+                <ChatBot />
+                <BackToTop />
+              </div>
+            )}
             <Script
               src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"
               strategy="lazyOnload"

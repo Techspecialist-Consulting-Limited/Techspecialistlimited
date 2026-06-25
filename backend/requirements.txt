@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+asyncpg
+aiosqlite
+celery[redis]
+redis
+openai
+azure-storage-blob
+azure-communication-email
+pydantic
+pydantic-settings
+python-multipart
+python-jose[cryptography]
+httpx
+PyMuPDF
+python-docx

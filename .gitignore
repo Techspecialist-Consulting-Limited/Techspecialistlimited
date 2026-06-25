@@ -42,3 +42,11 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# backend local data
+backend/recruitment.db
+backend/storage/
+backend/__pycache__/
+backend/app/__pycache__/
+backend/app/**/__pycache__/
+*.pyc
