@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchJobs, updateJob, softDeleteJob, type Job } from '@/lib/recruitment-api';
-import { StatusBadge, BrandedLoader, EmptyState } from '@/components/recruitment';
+import { StatusBadge, BrandedLoader, EmptyState, ConfirmDialog } from '@/components/recruitment';
 
 export default function HRJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -11,6 +11,7 @@ export default function HRJobsPage() {
   const [search, setSearch] = useState('');
   const [toggling, setToggling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -36,13 +37,13 @@ export default function HRJobsPage() {
   };
 
   const handleDelete = async (jobId: string) => {
-    if (!confirm('Are you sure you want to soft-delete this job? Applications will still be accessible from the history page.')) return;
     setDeleting(jobId);
     try {
       await softDeleteJob(jobId);
       setJobs((prev) => prev.filter((j) => j.id !== jobId));
     } catch { /* ignore */ }
     setDeleting(null);
+    setDeleteConfirmId(null);
   };
 
   const filtered = search
@@ -151,7 +152,7 @@ export default function HRJobsPage() {
                         {job.is_closed ? 'Open' : 'Close'}
                       </button>
                       <button
-                        onClick={(e) => { e.preventDefault(); handleDelete(job.id); }}
+                        onClick={(e) => { e.preventDefault(); setDeleteConfirmId(job.id); }}
                         disabled={deleting === job.id}
                         className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-[10px] font-semibold text-[var(--status-rejected)] transition-colors hover:border-red-300 hover:bg-red-50 disabled:opacity-50 dark:border-white/10 dark:hover:bg-red-900/20"
                         title="Soft-delete this job"
@@ -172,6 +173,15 @@ export default function HRJobsPage() {
           )}
         </>
       )}
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        title="Delete Job Posting"
+        description="Are you sure you want to delete this job? Applications will still be accessible from the history page."
+        confirmLabel={deleting ? 'Deleting...' : 'Delete'}
+        variant="danger"
+        onConfirm={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
     </div>
   );
 }

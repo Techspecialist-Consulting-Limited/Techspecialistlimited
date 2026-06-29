@@ -25,6 +25,10 @@ from app.services.tts import synthesize_speech
 router = APIRouter(prefix="/api/assessment", tags=["assessment"])
 
 
+def _sanitize_header(text: str) -> str:
+    return text.encode("latin-1", errors="replace").decode("latin-1")
+
+
 def _parse_questions(raw: str | None) -> list[str]:
     if not raw:
         return []
@@ -95,8 +99,7 @@ async def start_assessment(
             ConversationSession.status == "in_progress",
         )
     )
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Assessment already started")
+    existing_session = existing.scalar_one_or_none()
 
     questions = _parse_questions(app.job.stage2_questions)
     labels = _parse_questions(app.job.stage2_topic_labels)
@@ -105,6 +108,27 @@ async def start_assessment(
     for i, q in enumerate(questions):
         label = labels[i] if i < len(labels) else f"Topic {i+1}"
         topics.append({"label": label, "seed_question": q})
+
+    if existing_session:
+        history = json.loads(existing_session.conversation_history)
+        ai_message_text = history[-1]["content"] if history and history[-1]["role"] == "ai" else "Welcome back. Let's continue."
+        topic_idx = existing_session.current_topic_index
+        topic_label = topics[min(topic_idx, len(topics) - 1)]["label"] if topics else "Topic 1"
+        try:
+            audio_bytes = await synthesize_speech(ai_message_text)
+        except Exception:
+            audio_bytes = b""
+
+        return StreamingResponse(
+            io.BytesIO(audio_bytes) if audio_bytes else io.BytesIO(b""),
+            media_type="audio/mpeg",
+            headers={
+                "X-Topic-Label": topic_label,
+                "X-Conversation-Id": str(existing_session.id),
+                "X-Interview-Done": "false",
+                "X-AI-Text": _sanitize_header(ai_message_text),
+            },
+        )
 
     ai_message_text, history = await start_conversation(
         job_title=app.job.title,
@@ -134,7 +158,7 @@ async def start_assessment(
             "X-Topic-Label": topics[0]["label"],
             "X-Conversation-Id": str(session.id),
             "X-Interview-Done": "false",
-            "X-AI-Text": ai_message_text,
+            "X-AI-Text": _sanitize_header(ai_message_text),
         },
     )
 
@@ -227,7 +251,7 @@ async def respond_assessment(
             if new_topic_index < len(topics)
             else "Complete",
             "X-Interview-Done": "true" if is_done else "false",
-            "X-AI-Text": ai_message_text,
+            "X-AI-Text": _sanitize_header(ai_message_text),
         },
     )
 
