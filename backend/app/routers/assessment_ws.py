@@ -17,7 +17,7 @@ from app.models.stage import StageResult
 from app.services.audio_evaluation import transcribe_audio
 from app.services.conversation import (
     evaluate_full_conversation,
-    process_candidate_response,
+    process_candidate_response_streaming,
 )
 from app.services.storage import upload_bytes
 from app.services.tts import synthesize_speech
@@ -29,6 +29,13 @@ logger = logging.getLogger(__name__)
 def split_into_sentences(text: str) -> list[str]:
     parts = re.split(r"(?<=[.!?])\s+", text.strip())
     return [p.strip() for p in parts if p.strip()] or [text]
+
+
+async def _upload_audio_background(audio_bytes: bytes) -> None:
+    try:
+        await upload_bytes(audio_bytes, settings.assessments_container_name)
+    except Exception as e:
+        logger.warning(f"Audio upload failed (non-fatal): {e}")
 
 
 @router.websocket("/{token}/ws")
@@ -112,6 +119,41 @@ async def handle_audio_message(
 
     await websocket.send_json({"type": "transcript", "role": "candidate", "text": transcript})
 
+    asyncio.create_task(_upload_audio_background(audio_bytes))
+
+    dev_mode_tts = False
+
+    async def on_message_ready(message_text: str) -> None:
+        nonlocal dev_mode_tts
+        await websocket.send_json({"type": "transcript", "role": "ai", "text": message_text})
+
+        sentences = split_into_sentences(message_text)
+
+        async def _synthesize(i: int, sentence: str) -> bytes:
+            try:
+                return await synthesize_speech(sentence)
+            except Exception as e:
+                logger.warning(f"TTS failed for sentence {i}: {e}")
+                return b""
+
+        # Kick off synthesis for every sentence concurrently so later sentences are
+        # already warming up in the background, but await/send them in order so
+        # the first chunk reaches the client as soon as IT is ready (not the slowest one).
+        tts_tasks = [asyncio.create_task(_synthesize(i, s)) for i, s in enumerate(sentences)]
+
+        for i, task in enumerate(tts_tasks):
+            audio_bytes_tts = await task
+            if not audio_bytes_tts:
+                dev_mode_tts = True
+                continue
+
+            b64 = base64.b64encode(audio_bytes_tts).decode("ascii")
+            await websocket.send_json({
+                "type": "audio_chunk",
+                "data": b64,
+                "sentence_index": i,
+            })
+
     try:
         async with async_session() as db:
             session_result = await db.execute(
@@ -134,7 +176,7 @@ async def handle_audio_message(
                 new_turns_count,
                 is_done,
                 updated_history,
-            ) = await process_candidate_response(
+            ) = await process_candidate_response_streaming(
                 conversation_history=conversation_history,
                 candidate_transcript=transcript,
                 job_title=app.job.title,
@@ -143,6 +185,7 @@ async def handle_audio_message(
                 current_topic_index=session.current_topic_index,
                 turns_on_current_topic=session.turns_on_current_topic,
                 max_turns_per_topic=settings.max_turns_per_topic,
+                on_message_ready=on_message_ready,
             )
 
             session.conversation_history = json.dumps(updated_history)
@@ -156,34 +199,6 @@ async def handle_audio_message(
     except Exception as e:
         await websocket.send_json({"type": "error", "message": f"AI processing failed: {e}"})
         return
-
-    try:
-        await upload_bytes(audio_bytes, settings.assessments_container_name)
-    except Exception as e:
-        logger.warning(f"Audio upload failed (non-fatal): {e}")
-
-    await websocket.send_json({"type": "transcript", "role": "ai", "text": ai_message_text})
-
-    sentences = split_into_sentences(ai_message_text)
-    dev_mode_tts = False
-
-    for i, sentence in enumerate(sentences):
-        try:
-            audio_bytes_tts = await synthesize_speech(sentence)
-        except Exception as e:
-            logger.warning(f"TTS failed for sentence {i}: {e}")
-            audio_bytes_tts = b""
-
-        if not audio_bytes_tts:
-            dev_mode_tts = True
-            continue
-
-        b64 = base64.b64encode(audio_bytes_tts).decode("ascii")
-        await websocket.send_json({
-            "type": "audio_chunk",
-            "data": b64,
-            "sentence_index": i,
-        })
 
     topic_label = (
         topics[min(new_topic_index, len(topics) - 1)]["label"]

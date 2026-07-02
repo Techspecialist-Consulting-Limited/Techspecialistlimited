@@ -9,8 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
+from app.models.ai_result import AIScreeningResult
 from app.models.application import Application
 from app.models.job_posting import JobPosting
+from app.services.email_service import send_new_application_notification
 from app.services.storage import upload_file
 from app.workers.tasks import run_screening
 
@@ -106,6 +108,22 @@ async def submit_application(
         logger.info(f"Screening completed for application {app.id}")
     except Exception as e:
         logger.error(f"Screening failed for application {app.id}: {e}")
+
+    screening_result = await db.execute(
+        select(AIScreeningResult).where(AIScreeningResult.application_id == app.id)
+    )
+    screening = screening_result.scalar_one_or_none()
+
+    try:
+        await send_new_application_notification(
+            candidate_name=candidate_name,
+            candidate_email=candidate_email,
+            job_title=job.title,
+            application_id=str(app.id),
+            screening_score=screening.overall_score if screening else None,
+        )
+    except Exception as e:
+        logger.error(f"HR notification failed for application {app.id}: {e}")
 
     return app
 

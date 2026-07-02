@@ -42,9 +42,16 @@ class Settings(BaseSettings):
     cvs_container_name: str = "cvs"
     assessments_container_name: str = "assessments"
 
+    # Branding
+    company_name: str = "TechSpecialist Limited"
+    brand_color: str = "#4584ed"
+    logo_url: str = "https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png"
+
     # Email (prints to console in dev)
     acs_connection_string: str = ""
-    sender_email: str = "noreply@recruitment.local"
+    sender_email: str = "noreply@techspecialistlimited.com"
+    sender_display_name: str = "TechSpecialist Limited Recruitment Team"
+    hr_notification_email: str = ""  # comma-separated list; new-applicant alerts go here
 
     # Auth
     api_key: str = "dev-api-key-123"

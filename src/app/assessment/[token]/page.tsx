@@ -9,7 +9,7 @@ import { BrandedLoader } from '@/components/recruitment';
 
 const LOGO_URL = 'https://res.cloudinary.com/daqmbfctv/image/upload/v1772108889/WhatsApp_Image_2026-02-26_at_12.00.40-removebg-preview_qp8kjd.png';
 
-type AssessmentState = 'loading' | 'ready' | 'instructions' | 'setup' | 'starting' | 'conversing' | 'completed' | 'error';
+type AssessmentState = 'loading' | 'ready' | 'instructions' | 'setup' | 'starting' | 'conversing' | 'completed' | 'error' | 'expired';
 type ConversationPhase = 'ai_speaking' | 'listening' | 'recording' | 'processing';
 type SetupStep = 'mic_request' | 'mic_testing' | 'speaker_test' | 'speaker_confirm' | 'connecting' | 'ready_to_start';
 
@@ -141,8 +141,13 @@ export default function AssessmentPortal() {
 
   useEffect(() => {
     fetch(`${API_BASE}/assessment/${token}`)
-      .then((r) => { if (!r.ok) throw new Error('Invalid link'); return r.json(); })
+      .then(async (r) => {
+        if (r.status === 410) { setState('expired'); return null; }
+        if (!r.ok) throw new Error('Invalid link');
+        return r.json();
+      })
       .then((data) => {
+        if (!data) return;
         setMeta(data);
         if (data.topic_labels?.[0]) setCurrentTopicLabel(data.topic_labels[0]);
         if (data.has_existing_session && data.existing_conversation_id)
@@ -524,6 +529,23 @@ export default function AssessmentPortal() {
       <div className="flex min-h-screen flex-col items-center justify-center">
         <Image src={LOGO_URL} alt="TechSpecialist" width={48} height={48} className="mb-6 h-12 w-auto" />
         <p className="text-[14px] text-white/50">Preparing your interview...</p>
+      </div>
+    );
+  }
+
+  if (state === 'expired') {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6" style={{ background: 'var(--navy)' }}>
+        <div className="w-full max-w-[420px] rounded-2xl bg-white p-8 text-center" style={{ boxShadow: 'var(--shadow-lg)' }}>
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full" style={{ background: 'rgba(245, 158, 11, 0.1)' }}>
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#d97706" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <h2 className="mb-2 text-lg font-bold text-[var(--heading)]">Assessment Link Expired</h2>
+          <p className="mb-4 text-[13px] leading-relaxed text-[var(--body)]">
+            This assessment link is no longer valid. If you believe this is an error or would like a new invitation, please contact our HR team.
+          </p>
+          <button onClick={() => window.location.href = '/careers'} className="btn-primary">Browse Careers</button>
+        </div>
       </div>
     );
   }

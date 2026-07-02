@@ -1,4 +1,4 @@
-export type PillarId = 'strategy' | 'data' | 'technology' | 'workforce' | 'governance' | 'change';
+export type PillarId = 'strategy' | 'data' | 'technology' | 'workforce' | 'governance' | 'change' | 'security';
 
 export interface Option {
   id: string;
@@ -353,6 +353,74 @@ export const pillars: Pillar[] = [
       },
     ],
   },
+  {
+    id: 'security',
+    name: 'AI Security',
+    description: 'AI usage policies, staff awareness, vendor data handling, and incident readiness specific to AI tools.',
+    color: '#6366f1',
+    questions: [
+      {
+        id: 'sec1',
+        text: 'Do you have a written AI acceptable use policy?',
+        options: [
+          { id: 'sec1a', text: 'A documented policy exists, is enforced, and is communicated organisation-wide.', score: 3 },
+          { id: 'sec1b', text: 'A policy has been drafted but enforcement is inconsistent.', score: 2 },
+          { id: 'sec1c', text: 'Only informal guidance exists.', score: 1 },
+          { id: 'sec1d', text: 'No AI acceptable use policy exists.', score: 0 },
+        ],
+      },
+      {
+        id: 'sec2',
+        text: 'Is there a named owner responsible for AI governance and security?',
+        options: [
+          { id: 'sec2a', text: 'A named person holds clear accountability for AI governance and security.', score: 3 },
+          { id: 'sec2b', text: 'Responsibility is shared across teams without a single owner.', score: 2 },
+          { id: 'sec2c', text: 'IT handles this informally alongside other duties.', score: 1 },
+          { id: 'sec2d', text: 'Nobody is responsible for AI governance or security.', score: 0 },
+        ],
+      },
+      {
+        id: 'sec3',
+        text: 'Do staff know which categories of data cannot be entered into AI tools?',
+        options: [
+          { id: 'sec3a', text: 'Clear rules exist and are well understood across the organisation.', score: 3 },
+          { id: 'sec3b', text: 'General guidance exists but is not consistently followed.', score: 2 },
+          { id: 'sec3c', text: 'Staff are expected to use judgement, with no formal communication.', score: 1 },
+          { id: 'sec3d', text: 'No restrictions have been communicated to staff.', score: 0 },
+        ],
+      },
+      {
+        id: 'sec4',
+        text: 'Have staff been trained on AI-related security threats, such as AI-generated phishing or impersonation?',
+        options: [
+          { id: 'sec4a', text: 'Training is delivered regularly and updated as threats evolve.', score: 3 },
+          { id: 'sec4b', text: 'A one-time training session has been delivered.', score: 2 },
+          { id: 'sec4c', text: 'Only general security awareness training has been given, without AI-specific content.', score: 1 },
+          { id: 'sec4d', text: 'No relevant training has been provided.', score: 0 },
+        ],
+      },
+      {
+        id: 'sec5',
+        text: 'Do your vendor agreements address how vendors use AI and handle data?',
+        options: [
+          { id: 'sec5a', text: 'Data processing agreements cover all vendors handling sensitive data through AI tools.', score: 3 },
+          { id: 'sec5b', text: 'Agreements exist for some, but not all, relevant vendors.', score: 2 },
+          { id: 'sec5c', text: 'Standard contracts are used, with no AI-specific clauses.', score: 1 },
+          { id: 'sec5d', text: 'No formal agreements address vendor AI or data handling.', score: 0 },
+        ],
+      },
+      {
+        id: 'sec6',
+        text: 'Do you have an incident response plan that has been tested and covers AI-related scenarios?',
+        options: [
+          { id: 'sec6a', text: 'The plan has been tested in the past 12 months and explicitly covers AI-related breaches or fraud.', score: 3 },
+          { id: 'sec6b', text: 'A plan exists but has not been tested or does not address AI scenarios.', score: 2 },
+          { id: 'sec6c', text: 'Incident response is handled informally, without a documented plan.', score: 1 },
+          { id: 'sec6d', text: 'No incident response plan exists.', score: 0 },
+        ],
+      },
+    ],
+  },
 ];
 
 export const levels: Level[] = [
@@ -556,6 +624,23 @@ export const recommendationsMap: Record<PillarId, { low: Recommendation; medium:
       ctaLink: '/services#automation',
     },
   },
+  security: {
+    low: {
+      text: 'Your organization has no formal AI security policy, named governance owner, or tested incident response plan. This creates real exposure to data leakage, AI-generated fraud, and compliance failures. We recommend an AI Security Audit to establish baseline protections immediately.',
+      cta: 'Secure Your AI Usage',
+      ctaLink: '/services#security',
+    },
+    medium: {
+      text: 'Some AI security foundations exist, but gaps remain in staff training, vendor oversight, or incident readiness. We can help close these gaps with a structured security hardening plan tailored to how your teams actually use AI.',
+      cta: 'Strengthen Your Security Posture',
+      ctaLink: '/services#security',
+    },
+    high: {
+      text: 'Strong AI security governance, staff training, and incident readiness are already in place. You are well-positioned to scale AI adoption without compounding your risk exposure.',
+      cta: 'Maintain Your Edge',
+      ctaLink: '/services',
+    },
+  },
 };
 
 export function getQuestionsForPillars(pillarIds: PillarId[]): Question[] {
@@ -643,8 +728,9 @@ export const pillarColors: Record<PillarId, string> = {
   workforce: '#ef6526',
   governance: '#ef4444',
   change: '#10b981',
+  security: '#6366f1',
 };
 
-export const pillarOrder: PillarId[] = ['strategy', 'data', 'technology', 'workforce', 'governance', 'change'];
+export const pillarOrder: PillarId[] = ['strategy', 'data', 'technology', 'workforce', 'governance', 'change', 'security'];
 
 export const EASE_OUT: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];

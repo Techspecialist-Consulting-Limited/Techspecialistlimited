@@ -6,12 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base
 from app.routers import (
+    analytics_router,
     applications_router,
     jobs_router,
     hr_review_router,
     assessment_router,
     assessment_ws_router,
     auth_router,
+    interviews_router,
 )
 
 
@@ -36,12 +38,14 @@ app.add_middleware(
     expose_headers=["X-Topic-Label", "X-Conversation-Id", "X-Interview-Done", "X-AI-Text"],
 )
 
+app.include_router(analytics_router)
 app.include_router(applications_router)
 app.include_router(jobs_router)
 app.include_router(hr_review_router)
 app.include_router(assessment_router)
 app.include_router(assessment_ws_router)
 app.include_router(auth_router)
+app.include_router(interviews_router)
 
 
 @app.get("/health")

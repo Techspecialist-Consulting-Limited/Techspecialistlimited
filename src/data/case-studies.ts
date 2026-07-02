@@ -18,6 +18,47 @@ export interface CaseStudy {
 
 export const caseStudies: CaseStudy[] = [
   {
+    id: 'fga-m365-adoption',
+    title: 'Driving Digital Adoption and Workforce Transformation in a Public Sector Institution',
+    subtitle: 'From Technology Deployment to Workforce Readiness: Driving Microsoft 365 Adoption Across a Federal Government Agency',
+    category: 'Government & Public Sector',
+    client: 'Federal Government Agency',
+    industry: 'Government & Public Sector',
+    duration: '5 Days',
+    service: 'Digital Transformation & User Adoption',
+    summary:
+      'A major government institution had recently deployed Microsoft 365 as part of its digital transformation agenda. While the technology infrastructure was in place, adoption remained limited, with many employees still relying on traditional communication methods, local file storage, email attachments, and manual document-sharing processes. The organization recognized that without structured user adoption, capacity building, and change management, the expected benefits of the investment would not be realized.',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1772714010/download_1_vpqob8.jpg',
+    stats: [
+      { label: 'Workforce Confidence', value: '90%+' },
+      { label: 'Practical Adoption', value: '85%+' },
+      { label: 'Training Days', value: '5' },
+    ],
+    challenge: [
+      'Inconsistent use of digital collaboration tools across departments.',
+      'Limited awareness of cloud-based document management practices.',
+      'Reliance on personal storage devices and email attachments for file sharing.',
+      'Low confidence among staff in navigating the Microsoft 365 environment.',
+      'Need for improved accountability, transparency, and records management.',
+    ],
+    solution: [
+      'Executive and user awareness sessions to communicate the vision and benefits of digital transformation.',
+      'Hands-on practical training focused on real government workplace scenarios and daily workflows.',
+      'Real-life government workflow demonstrations across Microsoft 365 tools including Outlook, Teams, SharePoint Online, OneDrive, and security features.',
+      'Digital collaboration best practices covering communication, meetings, file sharing, and document co-authoring.',
+      'Information security and governance awareness including password security, Multi-Factor Authentication (MFA), and records management.',
+      'Change management and adoption support to sustain behaviour change beyond the training programme.',
+    ],
+    results: [
+      'Over 90% of participants reported increased confidence in using Microsoft 365 tools.',
+      'More than 85% demonstrated successful completion of practical exercises covering communication, collaboration, and document management tasks.',
+      'Staff successfully adopted Microsoft Teams for meetings, collaboration, and file sharing, reducing internal email traffic.',
+      'Employees gained practical understanding of structured document storage using SharePoint Online, version control, and permissions management.',
+      'Reduced dependence on flash drives and locally stored files through adoption of OneDrive for secure file storage and retrieval.',
+      'Improved understanding of password security, Multi-Factor Authentication (MFA), and government information security responsibilities.',
+    ],
+  },
+  {
     id: 'fmog-cims',
     title: 'Federal Ministry of Justice — CIMS',
     subtitle: 'From Paper Trails to Real-Time Justice: Reimagining Criminal Data Management in Nigeria',

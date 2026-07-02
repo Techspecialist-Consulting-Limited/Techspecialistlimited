@@ -70,5 +70,12 @@ export default function PillarIcon({ pillarId, size = 20, color = 'currentColor'
           <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
         </svg>
       );
+    case 'security':
+      return (
+        <svg {...props}>
+          <rect x="4" y="11" width="16" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+      );
   }
 }

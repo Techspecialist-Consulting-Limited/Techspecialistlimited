@@ -85,7 +85,7 @@ export default function AssessmentLanding({ onStart }: Props) {
                 <span>guided diagnostic</span>
               </div>
               <div>
-                <strong>6</strong>
+                <strong>7</strong>
                 <span>readiness pillars</span>
               </div>
               <div>

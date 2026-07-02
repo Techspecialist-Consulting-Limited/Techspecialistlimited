@@ -1,6 +1,7 @@
 import io
 import json
 import uuid as uuid_mod
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
@@ -38,6 +39,16 @@ def _parse_questions(raw: str | None) -> list[str]:
         return [q.strip() for q in raw.split(",") if q.strip()]
 
 
+def _is_expired(expires_at: datetime | None) -> bool:
+    """SQLite drops tzinfo on round-trip, so DateTime(timezone=True) columns
+    come back naive even though they were written as UTC-aware. Strip tzinfo
+    from `now` too so the comparison doesn't raise on naive/aware mismatch."""
+    if not expires_at:
+        return False
+    now = datetime.now(timezone.utc).replace(tzinfo=None) if expires_at.tzinfo is None else datetime.now(timezone.utc)
+    return expires_at < now
+
+
 @router.get("/{token}")
 async def get_assessment(
     token: str, db: AsyncSession = Depends(get_db)
@@ -52,6 +63,12 @@ async def get_assessment(
         raise HTTPException(status_code=404, detail="Invalid or expired token")
     if app.status != "approved" or app.stage != 2:
         raise HTTPException(status_code=400, detail="Assessment not available")
+
+    if _is_expired(app.assessment_expires_at):
+        raise HTTPException(
+            status_code=410,
+            detail="This assessment link has expired. Please contact the HR team for a new invitation.",
+        )
 
     topic_labels = _parse_questions(app.job.stage2_topic_labels)
     questions = _parse_questions(app.job.stage2_questions)
@@ -92,6 +109,12 @@ async def start_assessment(
         raise HTTPException(status_code=404, detail="Invalid token")
     if app.status != "approved" or app.stage != 2:
         raise HTTPException(status_code=400, detail="Assessment not available")
+
+    if _is_expired(app.assessment_expires_at):
+        raise HTTPException(
+            status_code=410,
+            detail="This assessment link has expired. Please contact the HR team for a new invitation.",
+        )
 
     existing = await db.execute(
         select(ConversationSession).where(
@@ -178,6 +201,12 @@ async def respond_assessment(
     app = result.scalar_one_or_none()
     if not app:
         raise HTTPException(status_code=404, detail="Invalid token")
+
+    if _is_expired(app.assessment_expires_at):
+        raise HTTPException(
+            status_code=410,
+            detail="This assessment link has expired.",
+        )
 
     session_result = await db.execute(
         select(ConversationSession).where(
@@ -270,6 +299,12 @@ async def end_assessment(
     app = result.scalar_one_or_none()
     if not app:
         raise HTTPException(status_code=404, detail="Invalid token")
+
+    if _is_expired(app.assessment_expires_at):
+        raise HTTPException(
+            status_code=410,
+            detail="This assessment link has expired.",
+        )
 
     session_result = await db.execute(
         select(ConversationSession).where(

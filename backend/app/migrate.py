@@ -31,11 +31,19 @@ async def run_migrations():
             if row2 and row2[0] and "is_archived" not in row2[0]:
                 logger.info("Adding is_archived column to applications")
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN is_archived BOOLEAN DEFAULT 0"))
+            if row2 and row2[0] and "assessment_sent_at" not in row2[0]:
+                logger.info("Adding assessment_sent_at column to applications")
+                await conn.execute(text("ALTER TABLE applications ADD COLUMN assessment_sent_at TIMESTAMP"))
+            if row2 and row2[0] and "assessment_expires_at" not in row2[0]:
+                logger.info("Adding assessment_expires_at column to applications")
+                await conn.execute(text("ALTER TABLE applications ADD COLUMN assessment_expires_at TIMESTAMP"))
         else:
             try:
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS is_closed BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT FALSE"))
+                await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_sent_at TIMESTAMP"))
+                await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_expires_at TIMESTAMP"))
             except Exception as e:
                 logger.warning(f"Migration error (may be harmless): {e}")
 
