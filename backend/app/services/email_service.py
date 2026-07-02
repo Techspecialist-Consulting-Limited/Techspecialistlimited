@@ -74,7 +74,9 @@ async def send_email(to: str, subject: str, html_content: str):
 
         async with client:
             poller = await client.begin_send(message)
-            return await poller.result()
+            result = await poller.result()
+            logger.info(f"Email sent to {to}: id={result.get('id')} status={result.get('status')}")
+            return result
     except Exception as e:
         logger.error(f"Failed to send email to {to}: {e}")
 
