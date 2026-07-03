@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { renderToBuffer } from '@react-pdf/renderer';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { type PillarId } from '@/data/assessment';
 import { generateAIReport, type AIReportContent } from '@/lib/ai-report';
 import { ReportDocument } from '@/lib/pdf-report';
@@ -17,7 +17,7 @@ interface SendReportRequest {
   pillarScores: Record<string, { score: number; maxScore: number; percentage: number }>;
 }
 
-const EMAIL = 'info@techspecialistlimited.com';
+const FROM_ADDRESS = 'AI Readiness Report <reports@techspecialistlimited.com>';
 
 async function generatePDF(body: SendReportRequest, ai: AIReportContent): Promise<Buffer> {
   // Call as function — returns <Document> element directly
@@ -38,18 +38,10 @@ async function generatePDF(body: SendReportRequest, ai: AIReportContent): Promis
   return Buffer.from(pdfBuffer);
 }
 
-export async function POST(request: NextRequest) {
+async function generateAndSendReport(body: SendReportRequest) {
+  const { email, company_name, percentage, level, totalScore, maxScore, answers, selectedPillars, pillarScores } = body;
+
   try {
-    const body: SendReportRequest = await request.json();
-    const { email, company_name, percentage, level, totalScore, maxScore, answers, selectedPillars, pillarScores } = body;
-
-    if (!email || !company_name) {
-      return NextResponse.json(
-        { error: 'Missing required fields: email, company_name' },
-        { status: 400 }
-      );
-    }
-
     const aiReport = await generateAIReport({
       companyName: company_name,
       totalScore,
@@ -62,24 +54,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!aiReport) {
-      return NextResponse.json(
-        { error: 'AI report generation failed. Please try again later.' },
-        { status: 503 }
-      );
+      console.error(`[send-report] AI report generation failed for ${email} (${company_name})`);
+      return;
     }
 
     const pdfBuffer = await generatePDF(body, aiReport);
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { error: sendError } = await resend.emails.send({
+      from: FROM_ADDRESS,
       to: email,
       subject: `Your AI Readiness Assessment Report — ${company_name}`,
       html: `
@@ -108,15 +91,44 @@ export async function POST(request: NextRequest) {
           contentType: 'application/pdf',
         },
       ],
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
+    if (sendError) {
+      console.error(`[send-report] Failed to send report to ${email} (${company_name}):`, sendError);
+      return;
+    }
 
-    return NextResponse.json({ success: true, message: 'Report sent successfully' });
+    console.log(`[send-report] Report email sent to ${email} (${company_name})`);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to send report';
     const stack = error instanceof Error ? error.stack : '';
-    console.error('Send report error:', message, stack);
+    console.error(`[send-report] Failed to send report to ${email} (${company_name}):`, message, stack);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body: SendReportRequest = await request.json();
+    const { email, company_name } = body;
+
+    if (!email || !company_name) {
+      return NextResponse.json(
+        { error: 'Missing required fields: email, company_name' },
+        { status: 400 }
+      );
+    }
+
+    // Generation (LLM call + PDF render) and the SMTP send routinely take
+    // 10-20s+ in production, which exceeds the serverless function's
+    // request/response window. Ack the client immediately and do the
+    // slow work after the response is sent so the request can't be
+    // killed mid-flight before the email goes out.
+    after(() => generateAndSendReport(body));
+
+    return NextResponse.json({ success: true, message: 'Report is being generated and will be emailed shortly' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to send report';
+    console.error('Send report error:', message);
     return NextResponse.json(
       { error: message },
       { status: 500 }

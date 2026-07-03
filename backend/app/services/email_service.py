@@ -1,17 +1,11 @@
 import logging
 from datetime import datetime, timedelta
 
-from azure.communication.email.aio import EmailClient
-from azure.core.credentials import AzureKeyCredential
+import httpx
 
 from app.config import settings
 
 logger = logging.getLogger(__name__)
-
-
-def _parse_acs_connection(conn_str: str) -> tuple[str, str]:
-    parts = dict(p.split("=", 1) for p in conn_str.split(";") if "=" in p)
-    return parts["endpoint"], parts["accesskey"]
 
 
 def _branded_template(body_html: str) -> str:
@@ -56,26 +50,28 @@ def _branded_template(body_html: str) -> str:
 
 
 async def send_email(to: str, subject: str, html_content: str):
-    if settings.dev_mode or not settings.acs_connection_string:
+    if settings.dev_mode or not settings.resend_api_key:
         logger.info(f"[DEV EMAIL] To: {to}")
         logger.info(f"[DEV EMAIL] Subject: {subject}")
         logger.info(f"[DEV EMAIL] Body: {html_content}")
         return
 
     try:
-        endpoint, access_key = _parse_acs_connection(settings.acs_connection_string)
-        client = EmailClient(endpoint=endpoint, credential=AzureKeyCredential(access_key))
-
-        message = {
-            "senderAddress": settings.sender_email,
-            "recipients": {"to": [{"address": to}]},
-            "content": {"subject": subject, "html": html_content},
-        }
-
-        async with client:
-            poller = await client.begin_send(message)
-            result = await poller.result()
-            logger.info(f"Email sent to {to}: id={result.get('id')} status={result.get('status')}")
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {settings.resend_api_key}"},
+                json={
+                    "from": f"{settings.sender_display_name} <{settings.sender_email}>",
+                    "to": [to],
+                    "subject": subject,
+                    "html": html_content,
+                },
+                timeout=30.0,
+            )
+            response.raise_for_status()
+            result = response.json()
+            logger.info(f"Email sent to {to}: id={result.get('id')}")
             return result
     except Exception as e:
         logger.error(f"Failed to send email to {to}: {e}")

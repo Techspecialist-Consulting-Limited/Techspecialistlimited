@@ -93,6 +93,7 @@ export default function AssessmentPortal() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const silenceStartRef = useRef<number | null>(null);
+  const hasSpokenRef = useRef(false);
   const recordingStartRef = useRef<number | null>(null);
   const vadFrameRef = useRef<number>(0);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval>>(undefined);
@@ -190,12 +191,15 @@ export default function AssessmentPortal() {
       for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
       const avg = sum / dataArray.length;
       if (avg < SILENCE_THRESHOLD) {
-        if (silenceStartRef.current === null) silenceStartRef.current = Date.now();
-        else if (Date.now() - silenceStartRef.current >= SILENCE_DURATION_MS) {
-          const dur = recordingStartRef.current ? Date.now() - recordingStartRef.current : 0;
-          if (dur >= MIN_RECORDING_MS) { handleDoneSpeaking(); return; }
+        if (hasSpokenRef.current) {
+          if (silenceStartRef.current === null) silenceStartRef.current = Date.now();
+          else if (Date.now() - silenceStartRef.current >= SILENCE_DURATION_MS) {
+            const dur = recordingStartRef.current ? Date.now() - recordingStartRef.current : 0;
+            if (dur >= MIN_RECORDING_MS) { handleDoneSpeaking(); return; }
+          }
         }
       } else {
+        hasSpokenRef.current = true;
         silenceStartRef.current = null;
       }
       vadFrameRef.current = requestAnimationFrame(check);
@@ -215,6 +219,7 @@ export default function AssessmentPortal() {
     stopAllPlayback();
 
     silenceStartRef.current = null;
+    hasSpokenRef.current = false;
     const recorder = new MediaRecorder(mediaStreamRef.current);
     chunksRef.current = [];
     recorder.ondataavailable = (e) => chunksRef.current.push(e.data);

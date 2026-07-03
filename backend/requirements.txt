@@ -7,7 +7,6 @@ celery[redis]
 redis
 openai
 azure-storage-blob
-azure-communication-email
 pydantic
 pydantic-settings
 python-multipart
