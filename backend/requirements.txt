@@ -5,7 +5,7 @@ asyncpg
 aiosqlite
 celery[redis]
 redis
-openai
+openai[realtime]==2.37.0
 azure-storage-blob
 pydantic
 pydantic-settings

@@ -37,6 +37,14 @@ async def run_migrations():
             if row2 and row2[0] and "assessment_expires_at" not in row2[0]:
                 logger.info("Adding assessment_expires_at column to applications")
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN assessment_expires_at TIMESTAMP"))
+
+            result3 = await conn.execute(
+                text("SELECT sql FROM sqlite_master WHERE type='table' AND name='conversation_sessions'")
+            )
+            row3 = result3.fetchone()
+            if row3 and row3[0] and "engine" not in row3[0]:
+                logger.info("Adding engine column to conversation_sessions")
+                await conn.execute(text("ALTER TABLE conversation_sessions ADD COLUMN engine TEXT DEFAULT 'legacy'"))
         else:
             try:
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE"))
@@ -44,6 +52,7 @@ async def run_migrations():
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_sent_at TIMESTAMP"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_expires_at TIMESTAMP"))
+                await conn.execute(text("ALTER TABLE conversation_sessions ADD COLUMN IF NOT EXISTS engine TEXT DEFAULT 'legacy'"))
             except Exception as e:
                 logger.warning(f"Migration error (may be harmless): {e}")
 

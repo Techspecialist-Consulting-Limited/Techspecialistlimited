@@ -92,6 +92,7 @@ async def get_assessment(
         "instructions": app.job.stage2_instructions,
         "has_existing_session": session is not None,
         "existing_conversation_id": str(session.id) if session else None,
+        "engine": "realtime" if settings.realtime_interview_enabled else "legacy",
     }
 
 
@@ -167,6 +168,7 @@ async def start_assessment(
         turns_on_current_topic=1,
         topics=json.dumps(topics),
         conversation_history=json.dumps(history),
+        engine="realtime" if settings.realtime_interview_enabled else "legacy",
     )
     db.add(session)
     await db.commit()

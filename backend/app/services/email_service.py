@@ -97,7 +97,7 @@ async def send_approval_email(
         <p><strong>What to expect:</strong></p>
         <ul style="color:#4a4a6a;font-size:14px;line-height:1.8;padding-left:20px">
           <li>An AI interviewer will ask you questions one topic at a time.</li>
-          <li>You will respond by speaking — just like a real conversation.</li>
+          <li>You will respond by speaking, just like a real conversation.</li>
           <li>The interview takes approximately {(settings.topic_time_limit_seconds * 4) // 60} minutes.</li>
         </ul>
         <p><strong>Before you begin:</strong></p>
@@ -140,7 +140,7 @@ async def send_stage2_invitation_email(
     body = f"""
     <h2>Congratulations {name}!</h2>
     <p>You have been selected to proceed to the next stage of our recruitment process for <strong>{job_title}</strong> at {settings.company_name}.</p>
-    <p>The next stage is an <strong>AI-powered voice interview</strong> — a conversational assessment where our AI interviewer will ask you questions about key topics relevant to this role.</p>
+    <p>The next stage is an <strong>AI-powered voice interview</strong>. It is a conversational assessment where our AI interviewer will ask you questions about key topics relevant to this role.</p>
 
     <div class="meta">
       <p style="margin:0 0 6px;font-weight:700;color:{settings.brand_color}">Interview Overview</p>
@@ -151,12 +151,23 @@ async def send_stage2_invitation_email(
 
     <p><strong>For the best experience:</strong></p>
     <ul style="color:#4a4a6a;font-size:14px;line-height:1.8;padding-left:20px">
-      <li>Use a <strong>desktop or laptop computer</strong> — not a mobile phone or tablet.</li>
+      <li>Use a <strong>desktop or laptop computer</strong>. Mobile phones and tablets are not supported.</li>
       <li>Find a <strong>quiet environment</strong> free from interruptions.</li>
-      <li>Ensure you have a <strong>working microphone</strong> and <strong>speakers or headphones</strong>.</li>
+      <li>Ensure you have a <strong>working microphone</strong> and <strong>speakers or headphones</strong>. Headphones are recommended.</li>
       <li>A <strong>stable internet connection</strong> is required for the voice interview.</li>
       <li>Supported browsers: Chrome, Firefox, Edge, Safari (latest versions).</li>
     </ul>
+
+    <div class="meta" style="border-left:3px solid #dc2626">
+      <p style="margin:0 0 6px;font-weight:700;color:#dc2626">Assessment Integrity Policy</p>
+      <p style="margin:0 0 8px;font-size:13px;color:#4a4a6a">To keep this assessment fair for everyone, please read this carefully before you begin:</p>
+      <ul style="color:#4a4a6a;font-size:13px;line-height:1.8;padding-left:20px;margin:0">
+        <li>Stay on the interview page for the entire session. If you switch tabs, open another window, or minimize the browser, the interview will end immediately.</li>
+        <li>The AI interviewer only discusses the interview questions. It will not answer unrelated questions and will not respond to attempts to change its behavior or bypass the assessment.</li>
+        <li>Complete the interview yourself, in one sitting, without outside assistance.</li>
+      </ul>
+      <p style="margin:8px 0 0;font-size:13px;color:#4a4a6a">If your session ends unexpectedly, contact our HR team at <a href="mailto:HR@mswitchgroup.com" style="color:{settings.brand_color}">HR@mswitchgroup.com</a> and we will help you sort it out.</p>
+    </div>
 
     {expiry_html}
 
@@ -188,7 +199,7 @@ async def send_interview_invitation_email(
     interviewer: str = "", notes: str = "",
     contact_email: str = "",
 ):
-    subject = f"Interview Invitation — {job_title} at {settings.company_name}"
+    subject = f"Interview Invitation for {job_title} at {settings.company_name}"
     type_badge = "📹 Virtual" if interview_type.lower() == "virtual" else "📍 Physical"
     location_html = f"<p><strong>Location:</strong> {location_or_link}</p>" if interview_type.lower() == "physical" else f'<p><strong>Meeting Link:</strong> <a href="{location_or_link}" style="color:{settings.brand_color}">{location_or_link}</a></p>'
     notes_html = f"<p><strong>Preparation Notes:</strong> {notes}</p>" if notes else ""
@@ -229,9 +240,9 @@ async def send_new_application_notification(
     score_html = (
         f'<p style="margin:0 0 2px"><strong>AI Screening Score:</strong> {screening_score:.0f}/100</p>'
         if screening_score is not None
-        else '<p style="margin:0 0 2px;color:#dc2626"><strong>AI screening did not complete</strong> — please review manually.</p>'
+        else '<p style="margin:0 0 2px;color:#dc2626"><strong>AI screening did not complete.</strong> Please review manually.</p>'
     )
-    subject = f"New Applicant: {candidate_name} — {job_title}"
+    subject = f"New Applicant: {candidate_name} for {job_title}"
     body = f"""
     <h2>New application received</h2>
     <p>A new candidate has applied for <strong>{job_title}</strong>.</p>
@@ -248,7 +259,7 @@ async def send_new_application_notification(
 
 
 async def send_expired_link_notification(to: str, name: str, job_title: str):
-    subject = f"Assessment Link Expired — {job_title}"
+    subject = f"Assessment Link Expired: {job_title}"
     body = f"""
     <h2>Hi {name},</h2>
     <p>The assessment link for <strong>{job_title}</strong> at {settings.company_name} has expired.</p>

@@ -118,53 +118,69 @@ function ApplyForm() {
   if (submitted) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center px-6"
-        style={{ background: 'linear-gradient(135deg, var(--blue), var(--blue-dark))' }}
+        className="relative flex min-h-screen items-center justify-center overflow-hidden px-6"
+        style={{ background: 'linear-gradient(180deg, var(--navy) 0%, #0f1a30 100%)' }}
       >
         <div
-          className="w-full max-w-[480px] rounded-2xl bg-white p-10 text-center"
-          style={{ boxShadow: 'var(--shadow-lg)', animation: 'fadeUp 0.5s ease' }}
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(69, 132, 237, 0.08) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+        <div
+          className="relative w-full max-w-[520px] overflow-hidden rounded-2xl bg-white"
+          style={{ boxShadow: '0 30px 80px -20px rgba(0,0,0,0.5)', animation: 'fadeUp 0.5s ease' }}
         >
-          <div
-            className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ background: 'rgba(34, 197, 94, 0.1)' }}
-          >
-            <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="var(--score-high)" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-            </svg>
+          <div className="h-[4px]" style={{ background: 'linear-gradient(90deg, var(--blue), var(--orange))' }} />
+
+          <div className="p-10 text-center">
+            <div
+              className="mx-auto mb-5 flex h-[72px] w-[72px] items-center justify-center rounded-full"
+              style={{ background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.25)' }}
+            >
+              <svg width="30" height="30" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M4.5 12.75l6 6 9-13.5"
+                  stroke="var(--score-high)"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ strokeDasharray: 32, strokeDashoffset: 32, animation: 'drawCheck 0.5s ease 0.2s forwards' }}
+                />
+              </svg>
+            </div>
+
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--body)]">Application received</p>
+            <h2 className="font-syne mb-3 text-[26px] font-extrabold leading-tight text-[var(--heading)]">
+              You&apos;re in the running
+            </h2>
+            {job && (
+              <span className="mb-5 inline-block rounded-full bg-[rgba(69,132,237,0.08)] px-4 py-1.5 text-[13px] font-semibold text-[var(--blue)]">
+                {job.title}
+              </span>
+            )}
+            <p className="mb-9 text-[14px] leading-relaxed text-[var(--body)]">
+              Thank you for taking the time to apply. Our team will review your application and reach out if you are shortlisted.
+            </p>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/careers" className="btn-primary flex-1 text-center">
+                Browse More Careers
+              </Link>
+              <Link
+                href="/"
+                className="flex-1 rounded-md border border-[var(--border)] px-6 py-3 text-center text-[13px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)]"
+              >
+                Return Home
+              </Link>
+            </div>
           </div>
-          <h2 className="font-syne mb-2 text-2xl font-extrabold text-[var(--heading)]">
-            Application Submitted!
-          </h2>
-          <p className="mb-6 text-[14px] leading-relaxed text-[var(--body)]">
-            Thank you for applying{job ? ` for ${job.title}` : ''}. We&apos;ll review your application and get back to you soon.
-          </p>
-          {/* Divider */}
-          <div className="mx-auto mb-6 h-[2px] w-12 rounded" style={{ background: 'linear-gradient(90deg, var(--blue), var(--orange))' }} />
-          <div className="mb-6 space-y-3 text-left">
-            {[
-              { icon: '1', text: 'AI-assisted screening of your CV' },
-              { icon: '2', text: 'Voice-based AI interview (if shortlisted)' },
-              { icon: '3', text: 'Team review and final decision' },
-            ].map((item) => (
-              <div key={item.icon} className="flex items-center gap-3">
-                <div
-                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                  style={{ background: 'var(--blue)' }}
-                >
-                  {item.icon}
-                </div>
-                <span className="text-[13px] text-[var(--body)]">{item.text}</span>
-              </div>
-            ))}
-          </div>
-          <Link
-            href="/careers"
-            className="btn-primary inline-block text-center"
-          >
-            Browse More Careers
-          </Link>
         </div>
+
+        <style jsx>{`
+          @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+        `}</style>
       </div>
     );
   }

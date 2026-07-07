@@ -12,6 +12,7 @@ from app.routers import (
     hr_review_router,
     assessment_router,
     assessment_ws_router,
+    assessment_realtime_ws_router,
     auth_router,
     interviews_router,
 )
@@ -44,6 +45,7 @@ app.include_router(jobs_router)
 app.include_router(hr_review_router)
 app.include_router(assessment_router)
 app.include_router(assessment_ws_router)
+app.include_router(assessment_realtime_ws_router)
 app.include_router(auth_router)
 app.include_router(interviews_router)
 

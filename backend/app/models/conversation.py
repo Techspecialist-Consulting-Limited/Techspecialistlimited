@@ -30,6 +30,7 @@ class ConversationSession(Base):
         Integer, nullable=False, default=0
     )
     topics: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    engine: Mapped[str] = mapped_column(Text, nullable=False, default="legacy")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

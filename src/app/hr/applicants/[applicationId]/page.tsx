@@ -445,7 +445,7 @@ export default function ApplicantDetailPage() {
                     </div>
                     <TranscriptViewer
                       messages={applicant.conversation_session.conversation_history.map(m => ({
-                        role: m.role === 'assistant' ? 'ai' as const : 'candidate' as const,
+                        role: m.role === 'ai' ? 'ai' as const : 'candidate' as const,
                         content: m.content,
                         topic_label: m.topic_label,
                       }))}
@@ -575,7 +575,7 @@ export default function ApplicantDetailPage() {
                   <div className="rounded-xl bg-[rgba(16,185,129,0.06)] px-4 py-3">
                     <div className="mb-2 flex items-center gap-2">
                       <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#10b981" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-                      <span className="text-[12px] font-semibold text-green-600 capitalize">{latestInterview.status} — {latestInterview.interview_type}</span>
+                      <span className="text-[12px] font-semibold text-green-600 capitalize">{latestInterview.status} · {latestInterview.interview_type}</span>
                     </div>
                     <div className="space-y-0.5 text-[11px] text-[var(--body)]">
                       <div>{latestInterview.scheduled_date} at {latestInterview.scheduled_time} ({latestInterview.duration_minutes}min)</div>
@@ -612,7 +612,7 @@ export default function ApplicantDetailPage() {
                     ) : (
                       <>
                         <span className="inline-block h-2 w-2 rounded-full bg-amber-500" />
-                        <span className="text-[13px] font-medium text-amber-500">Sent — Awaiting Response</span>
+                        <span className="text-[13px] font-medium text-amber-500">Sent · Awaiting Response</span>
                       </>
                     )}
                   </div>
@@ -712,7 +712,7 @@ export default function ApplicantDetailPage() {
             className="rounded-2xl bg-[var(--bg)] p-7 shadow-2xl"
             style={{ width: '480px', maxHeight: '90vh', overflowY: 'auto' }}
           >
-            <h3 className="mb-5 text-[16px] font-bold text-[var(--heading)]">Schedule Interview — {applicant.candidate_name}</h3>
+            <h3 className="mb-5 text-[16px] font-bold text-[var(--heading)]">Schedule Interview · {applicant.candidate_name}</h3>
 
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3">

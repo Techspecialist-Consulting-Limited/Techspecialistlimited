@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     topic_time_limit_seconds: int = 180
     max_turns_per_topic: int = 4
 
+    # Azure OpenAI Realtime (gpt-realtime, GA protocol)
+    azure_realtime_endpoint: str = ""
+    azure_realtime_key: str = ""
+    realtime_deployment_name: str = "gpt-realtime"
+    realtime_voice: str = "alloy"
+    realtime_vad_threshold: float = 0.5
+    realtime_vad_prefix_padding_ms: int = 300
+    realtime_vad_silence_duration_ms: int = 500
+    realtime_max_session_seconds: int = 1800
+    realtime_interview_enabled: bool = False
+
     # Redis (not needed in dev mode)
     redis_url: str = "redis://localhost:6379"
 
