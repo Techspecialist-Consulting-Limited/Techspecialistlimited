@@ -12,27 +12,8 @@ function getSupabase() {
   return createClient(supabaseUrl, supabaseKey);
 }
 
-function verifyAdminToken(request: NextRequest): boolean {
-  const token = request.headers.get('x-admin-token');
-  const adminToken = process.env.ADMIN_SECRET_TOKEN;
-
-  if (!adminToken) {
-    console.warn('ADMIN_SECRET_TOKEN not set');
-    return false;
-  }
-
-  return token === adminToken;
-}
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    if (!verifyAdminToken(request)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('assessment_results')
@@ -53,13 +34,6 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    if (!verifyAdminToken(request)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const body = await request.json();
     const { id, followed_up } = body;
 

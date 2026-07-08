@@ -24,6 +24,10 @@ jobs:
           node-version: '24.x'
 
       - name: npm install, build, and test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_ASSESSMENT_WS_URL: ${{ secrets.NEXT_PUBLIC_ASSESSMENT_WS_URL }}
         run: |
           npm install
           npm run build --if-present

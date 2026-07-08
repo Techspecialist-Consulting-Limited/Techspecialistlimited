@@ -27,28 +27,20 @@ export default function AdminAssessments() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [adminToken, setAdminToken] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-  const [showTokenForm, setShowTokenForm] = useState(true);
 
-  const fetchAssessments = useCallback(async (token: string) => {
+  const fetchAssessments = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch('/api/admin/assessments', {
-        headers: {
-          'x-admin-token': token,
-        },
-      });
+      const response = await fetch('/api/admin/assessments');
 
       if (!response.ok) {
-        throw new Error('Unauthorized or failed to fetch');
+        throw new Error('Failed to fetch assessments');
       }
 
       const result = await response.json();
       setAssessments(result.data || []);
-      setShowTokenForm(false);
-      localStorage.setItem('admin_token', token);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -57,31 +49,9 @@ export default function AdminAssessments() {
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      const savedToken = localStorage.getItem('admin_token');
-      if (savedToken) {
-        setAdminToken(savedToken);
-        fetchAssessments(savedToken);
-      } else {
-        setLoading(false);
-      }
-    }, 0);
+    const t = setTimeout(() => { fetchAssessments(); }, 0);
     return () => clearTimeout(t);
   }, [fetchAssessments]);
-
-  const handleTokenSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (adminToken) {
-      fetchAssessments(adminToken);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    setAdminToken('');
-    setShowTokenForm(true);
-    setAssessments([]);
-  };
 
   const toggleFollowUp = async (id: string, currentStatus: boolean) => {
     try {
@@ -89,7 +59,6 @@ export default function AdminAssessments() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-token': adminToken,
         },
         body: JSON.stringify({
           id,
@@ -138,42 +107,21 @@ export default function AdminAssessments() {
   const percentageScore = (a: Assessment) =>
     Math.round((a.total_score / a.max_score) * 100);
 
-  if (showTokenForm) {
-    return (
-      <div className="mx-auto max-w-[400px] p-5 sm:p-8">
-        <h1 className="mb-5 text-xl font-bold sm:text-2xl">Admin Access</h1>
-        <form onSubmit={handleTokenSubmit} className="flex flex-col gap-3">
-          <input
-            type="password"
-            placeholder="Enter admin token"
-            value={adminToken}
-            onChange={(e) => setAdminToken(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full rounded bg-blue-500 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"
-          >
-            Login
-          </button>
-        </form>
-        {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold sm:text-2xl">Assessment Dashboard</h1>
         <button
-          onClick={handleLogout}
-          className="self-start rounded bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 sm:self-auto"
+          onClick={() => fetchAssessments()}
+          className="self-start rounded bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 sm:self-auto"
         >
-          Logout
+          Refresh
         </button>
       </div>
+
+      {error && (
+        <p className="mb-4 text-sm text-red-500">{error}</p>
+      )}
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
         <select
