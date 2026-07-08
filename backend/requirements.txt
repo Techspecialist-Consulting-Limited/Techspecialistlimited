@@ -11,6 +11,7 @@ pydantic
 pydantic-settings
 python-multipart
 python-jose[cryptography]
+bcrypt
 httpx
 PyMuPDF
 python-docx

@@ -13,17 +13,17 @@ export default function HRLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const mounted = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const isLoginPage = pathname === '/hr/login';
+  const isPublicPage = pathname === '/hr/login' || pathname === '/hr/reset-password';
 
   useEffect(() => {
-    if (!isLoginPage && !isHRAuthenticated()) {
+    if (!isPublicPage && !isHRAuthenticated()) {
       router.replace('/hr/login');
     }
-  }, [pathname, isLoginPage, router]);
+  }, [pathname, isPublicPage, router]);
 
   if (!mounted) return null;
 
-  if (isLoginPage) {
+  if (isPublicPage) {
     return <>{children}</>;
   }
 

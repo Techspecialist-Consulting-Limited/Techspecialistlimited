@@ -258,6 +258,35 @@ async def send_new_application_notification(
         await send_email(to, subject, _branded_template(body))
 
 
+async def send_hr_invite_email(to: str, name: str, set_password_link: str):
+    subject = f"You've been added to {settings.company_name}'s HR Portal"
+    body = f"""
+    <h2>Welcome, {name}!</h2>
+    <p>You've been added as an HR team member on the {settings.company_name} recruitment platform.</p>
+    <p>Click the button below to set your password and sign in:</p>
+    <p style="text-align:center"><a href="{set_password_link}" class="button">Set Your Password</a></p>
+    <hr class="hr">
+    <p style="font-size:13px;color:#8888a0">If the button does not work, copy and paste this link into your browser:<br><a href="{set_password_link}" style="color:{settings.brand_color};word-break:break-all">{set_password_link}</a></p>
+    <p style="font-size:12px;color:#aaa;margin-top:12px">This link expires in 1 hour. If you did not expect this invitation, you can ignore this email.</p>
+    """
+
+    await send_email(to, subject, _branded_template(body))
+
+
+async def send_password_reset_email(to: str, name: str, reset_link: str):
+    subject = f"Reset your {settings.company_name} HR Portal password"
+    body = f"""
+    <h2>Hi {name},</h2>
+    <p>We received a request to reset your password for the {settings.company_name} HR Portal.</p>
+    <p style="text-align:center"><a href="{reset_link}" class="button">Reset Password</a></p>
+    <hr class="hr">
+    <p style="font-size:13px;color:#8888a0">If the button does not work, copy and paste this link into your browser:<br><a href="{reset_link}" style="color:{settings.brand_color};word-break:break-all">{reset_link}</a></p>
+    <p style="font-size:12px;color:#aaa;margin-top:12px">This link expires in 1 hour. If you did not request this, you can safely ignore this email. Your password will not be changed.</p>
+    """
+
+    await send_email(to, subject, _branded_template(body))
+
+
 async def send_expired_link_notification(to: str, name: str, job_title: str):
     subject = f"Assessment Link Expired: {job_title}"
     body = f"""

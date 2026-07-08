@@ -1,8 +1,10 @@
 import logging
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 
-from app.database import engine
+from app.config import settings
+from app.database import async_session, engine
+from app.services.hr_auth_service import hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -59,3 +61,40 @@ async def run_migrations():
         await conn.commit()
 
     logger.info("Migrations complete")
+
+
+async def seed_defaults():
+    """Idempotent seed: the original hardcoded HR account (so login keeps working
+    after the multi-user migration) and app_settings defaults from env config."""
+    from app.models.hr_user import HrUser
+    from app.models.app_setting import AppSetting
+
+    async with async_session() as session:
+        result = await session.execute(select(HrUser))
+        if result.first() is None:
+            logger.info("Seeding initial HR account from HR_PASSWORD env var")
+            session.add(HrUser(
+                email="hr@company.com",
+                name="HR Admin",
+                password_hash=hash_password(settings.hr_password),
+            ))
+
+        defaults = {
+            "company_name": settings.company_name,
+            "brand_color": settings.brand_color,
+            "logo_url": settings.logo_url,
+            "sender_display_name": settings.sender_display_name,
+            "hr_notification_email": settings.hr_notification_email,
+        }
+        for key, value in defaults.items():
+            existing = await session.get(AppSetting, key)
+            if existing is None:
+                session.add(AppSetting(key=key, value=value or ""))
+
+        await session.commit()
+
+    # Overlay any already-saved DB settings onto the runtime singleton immediately,
+    # so a fresh restart reflects prior HR edits without needing the first API call.
+    from app.services.settings_service import load_dynamic_settings
+    async with async_session() as session:
+        await load_dynamic_settings(session)

@@ -15,6 +15,7 @@ from app.routers import (
     assessment_realtime_ws_router,
     auth_router,
     interviews_router,
+    hr_settings_router,
 )
 
 
@@ -22,8 +23,9 @@ from app.routers import (
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    from app.migrate import run_migrations
+    from app.migrate import run_migrations, seed_defaults
     await run_migrations()
+    await seed_defaults()
     yield
     await engine.dispose()
 
@@ -48,6 +50,7 @@ app.include_router(assessment_ws_router)
 app.include_router(assessment_realtime_ws_router)
 app.include_router(auth_router)
 app.include_router(interviews_router)
+app.include_router(hr_settings_router)
 
 
 @app.get("/health")

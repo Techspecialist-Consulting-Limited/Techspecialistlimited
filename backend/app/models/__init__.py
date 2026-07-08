@@ -5,6 +5,8 @@ from app.models.ai_result import AIScreeningResult
 from app.models.conversation import ConversationSession
 from app.models.interview import Interview
 from app.models.audit_log import AuditLog
+from app.models.hr_user import HrUser
+from app.models.app_setting import AppSetting
 
 __all__ = [
     "JobPosting",
@@ -15,4 +17,6 @@ __all__ = [
     "ConversationSession",
     "Interview",
     "AuditLog",
+    "HrUser",
+    "AppSetting",
 ]

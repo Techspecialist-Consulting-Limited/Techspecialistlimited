@@ -259,6 +259,84 @@ export async function loginHR(email: string, password: string): Promise<{ token:
   });
 }
 
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  return request('/hr/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, new_password: string): Promise<{ message: string }> {
+  return request('/hr/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password }),
+  });
+}
+
+export async function changePassword(current_password: string, new_password: string): Promise<{ message: string }> {
+  return request('/hr/auth/change-password', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ current_password, new_password }),
+  });
+}
+
+// ── HR settings & team ──
+
+export interface AppSettings {
+  company_name: string;
+  brand_color: string;
+  logo_url: string;
+  sender_display_name: string;
+  notification_emails: string[];
+}
+
+export function fetchSettings(): Promise<AppSettings> {
+  return request('/hr/settings', { headers: authHeaders() });
+}
+
+export function updateSettings(data: AppSettings): Promise<AppSettings> {
+  return request('/hr/settings', {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+}
+
+export interface HrTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  is_active: boolean;
+}
+
+export function fetchHrUsers(): Promise<HrTeamMember[]> {
+  return request('/hr/users', { headers: authHeaders() });
+}
+
+export function inviteHrUser(name: string, email: string): Promise<HrTeamMember> {
+  return request('/hr/users', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ name, email }),
+  });
+}
+
+export function setHrUserActive(userId: string, is_active: boolean): Promise<HrTeamMember> {
+  return request(`/hr/users/${userId}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ is_active }),
+  });
+}
+
+export function deleteHrUser(userId: string): Promise<{ message: string }> {
+  return request(`/hr/users/${userId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+}
+
 // ── Assessment ──
 
 export interface AssessmentMeta {
