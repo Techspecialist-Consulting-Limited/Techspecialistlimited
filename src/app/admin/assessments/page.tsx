@@ -76,6 +76,26 @@ export default function AdminAssessments() {
     }
   };
 
+  const deleteAssessment = async (id: string, email: string) => {
+    if (!confirm(`Delete the assessment from ${email}? This cannot be undone.`)) return;
+
+    try {
+      const response = await fetch('/api/admin/assessments', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) throw new Error('Failed to delete');
+
+      setAssessments(assessments.filter(a => a.id !== id));
+    } catch (err) {
+      alert('Failed to delete assessment');
+    }
+  };
+
   const exportToCSV = () => {
     const headers = ['Company', 'Email', 'Score', 'Level', 'Date', 'Followed Up'];
     const rows = filteredAssessments.map(a => [
@@ -108,6 +128,7 @@ export default function AdminAssessments() {
     Math.round((a.total_score / a.max_score) * 100);
 
   return (
+    <div style={{ marginTop: '68px' }}>
     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold sm:text-2xl">Assessment Dashboard</h1>
@@ -165,6 +186,7 @@ export default function AdminAssessments() {
                   <th className="px-4 py-3 text-center font-semibold">Level</th>
                   <th className="px-4 py-3 text-center font-semibold">Date</th>
                   <th className="px-4 py-3 text-center font-semibold">Followed Up</th>
+                  <th className="px-4 py-3 text-center font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,6 +227,14 @@ export default function AdminAssessments() {
                         }`}
                       >
                         {assessment.followed_up ? '✓ Done' : 'Pending'}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => deleteAssessment(assessment.id, assessment.email)}
+                        className="rounded border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                      >
+                        Delete
                       </button>
                     </td>
                   </tr>
@@ -255,11 +285,20 @@ export default function AdminAssessments() {
                   </span>
                   <span>{new Date(assessment.created_at).toLocaleDateString()}</span>
                 </div>
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={() => deleteAssessment(assessment.id, assessment.email)}
+                    className="rounded border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </>
       )}
+    </div>
     </div>
   );
 }

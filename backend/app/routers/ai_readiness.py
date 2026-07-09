@@ -91,3 +91,14 @@ async def update_assessment(
     await db.commit()
     await db.refresh(row)
     return _to_response(row)
+
+
+@router.delete("/results/{assessment_id}")
+async def delete_assessment(assessment_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    row = await db.get(AiReadinessAssessment, assessment_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+
+    await db.delete(row)
+    await db.commit()
+    return {"message": "Assessment deleted"}

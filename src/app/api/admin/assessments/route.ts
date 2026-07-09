@@ -47,3 +47,31 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Missing assessment id' },
+        { status: 400 }
+      );
+    }
+
+    const res = await fetch(`${BACKEND_URL}/api/ai-readiness/results/${id}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.detail || 'Failed to delete assessment');
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Delete assessment error:', error);
+    return NextResponse.json(
+      { error: error?.message || 'Failed to delete assessment' },
+      { status: 500 }
+    );
+  }
+}
