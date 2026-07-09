@@ -7,6 +7,7 @@ from app.models.interview import Interview
 from app.models.audit_log import AuditLog
 from app.models.hr_user import HrUser
 from app.models.app_setting import AppSetting
+from app.models.ai_readiness_assessment import AiReadinessAssessment
 
 __all__ = [
     "JobPosting",
@@ -19,4 +20,5 @@ __all__ = [
     "AuditLog",
     "HrUser",
     "AppSetting",
+    "AiReadinessAssessment",
 ]

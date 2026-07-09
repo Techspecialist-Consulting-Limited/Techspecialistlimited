@@ -1,16 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-function getSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables')
-  }
-
-  return createClient(supabaseUrl, supabaseKey)
-}
+const BACKEND_URL = process.env.RECRUITMENT_API_URL || 'http://localhost:8000';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,25 +14,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = getSupabase()
-
-    const { data, error } = await supabase
-      .from('assessment_results')
-      .insert([
-        {
-          email,
-          company_name: company_name || 'Not provided',
-          scores,
-          total_score,
-          max_score: max_score || 75,
-          level,
-          followed_up: false,
-        },
-      ])
-      .select()
-      .single()
-
-    if (error) throw error
+    const res = await fetch(`${BACKEND_URL}/api/ai-readiness/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, company_name, scores, total_score, max_score, level }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.detail || 'Failed to save assessment results');
 
     return NextResponse.json({ success: true, result: data })
   } catch (error: any) {

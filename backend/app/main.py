@@ -16,6 +16,7 @@ from app.routers import (
     auth_router,
     interviews_router,
     hr_settings_router,
+    ai_readiness_router,
 )
 
 
@@ -51,6 +52,7 @@ app.include_router(assessment_realtime_ws_router)
 app.include_router(auth_router)
 app.include_router(interviews_router)
 app.include_router(hr_settings_router)
+app.include_router(ai_readiness_router)
 
 
 @app.get("/health")

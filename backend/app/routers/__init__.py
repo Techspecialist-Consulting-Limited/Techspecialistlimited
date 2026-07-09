@@ -8,6 +8,7 @@ from app.routers.assessment_realtime_ws import router as assessment_realtime_ws_
 from app.routers.auth import router as auth_router
 from app.routers.interviews import router as interviews_router
 from app.routers.hr_settings import router as hr_settings_router
+from app.routers.ai_readiness import router as ai_readiness_router
 
 __all__ = [
     "analytics_router",
@@ -20,4 +21,5 @@ __all__ = [
     "auth_router",
     "interviews_router",
     "hr_settings_router",
+    "ai_readiness_router",
 ]

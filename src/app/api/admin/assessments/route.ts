@@ -1,26 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 
-function getSupabase() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-
-  return createClient(supabaseUrl, supabaseKey);
-}
+const BACKEND_URL = process.env.RECRUITMENT_API_URL || 'http://localhost:8000';
 
 export async function GET() {
   try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('assessment_results')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
+    const res = await fetch(`${BACKEND_URL}/api/ai-readiness/results`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.detail || 'Failed to fetch assessments');
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
@@ -44,15 +30,13 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('assessment_results')
-      .update({ followed_up })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
+    const res = await fetch(`${BACKEND_URL}/api/ai-readiness/results/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ followed_up }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.detail || 'Failed to update assessment');
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
