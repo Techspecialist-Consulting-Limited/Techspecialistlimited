@@ -6,7 +6,7 @@ import {
   fetchHrUsers, inviteHrUser, setHrUserActive, deleteHrUser, type HrTeamMember,
   changePassword,
 } from '@/lib/recruitment-api';
-import { BrandedLoader } from '@/components/recruitment';
+import { BrandedLoader, ConfirmDialog } from '@/components/recruitment';
 
 const inputClass = 'w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-[14px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5 dark:text-white';
 const labelClass = 'grid gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--body)]';
@@ -147,6 +147,7 @@ function NotificationsAndBrandingCard() {
 
 function HrTeamCard() {
   const [users, setUsers] = useState<HrTeamMember[] | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<HrTeamMember | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [inviting, setInviting] = useState(false);
@@ -182,8 +183,10 @@ function HrTeamCard() {
     }
   };
 
-  const handleDelete = async (user: HrTeamMember) => {
-    if (!confirm(`Remove ${user.name} (${user.email}) from the HR team?`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const user = deleteTarget;
+    setDeleteTarget(null);
     setStatus(null);
     try {
       await deleteHrUser(user.id);
@@ -236,7 +239,7 @@ function HrTeamCard() {
                   {user.is_active ? 'Deactivate' : 'Reactivate'}
                 </button>
                 <button
-                  onClick={() => handleDelete(user)}
+                  onClick={() => setDeleteTarget(user)}
                   className="rounded-md border border-[var(--border)] px-3 py-1.5 text-[12px] font-semibold text-red-500 transition-colors hover:border-red-400 dark:border-white/10"
                 >
                   Remove
@@ -262,6 +265,16 @@ function HrTeamCard() {
           {inviting ? 'Sending...' : 'Invite Teammate'}
         </button>
       </form>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Remove HR Account"
+        description={deleteTarget ? `Remove ${deleteTarget.name} (${deleteTarget.email}) from the HR team?` : ''}
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

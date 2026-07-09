@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { ConfirmDialog } from '@/components/recruitment';
 
 interface Assessment {
   id: string;
@@ -28,6 +29,7 @@ export default function AdminAssessments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
 
   const fetchAssessments = useCallback(async () => {
     try {
@@ -72,12 +74,14 @@ export default function AdminAssessments() {
         a.id === id ? { ...a, followed_up: !currentStatus } : a
       ));
     } catch (err) {
-      alert('Failed to update assessment');
+      setError('Failed to update assessment');
     }
   };
 
-  const deleteAssessment = async (id: string, email: string) => {
-    if (!confirm(`Delete the assessment from ${email}? This cannot be undone.`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id } = deleteTarget;
+    setDeleteTarget(null);
 
     try {
       const response = await fetch('/api/admin/assessments', {
@@ -92,7 +96,7 @@ export default function AdminAssessments() {
 
       setAssessments(assessments.filter(a => a.id !== id));
     } catch (err) {
-      alert('Failed to delete assessment');
+      setError('Failed to delete assessment');
     }
   };
 
@@ -231,7 +235,7 @@ export default function AdminAssessments() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <button
-                        onClick={() => deleteAssessment(assessment.id, assessment.email)}
+                        onClick={() => setDeleteTarget({ id: assessment.id, email: assessment.email })}
                         className="rounded border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
                       >
                         Delete
@@ -287,7 +291,7 @@ export default function AdminAssessments() {
                 </div>
                 <div className="mt-3 flex justify-end">
                   <button
-                    onClick={() => deleteAssessment(assessment.id, assessment.email)}
+                    onClick={() => setDeleteTarget({ id: assessment.id, email: assessment.email })}
                     className="rounded border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600"
                   >
                     Delete
@@ -299,6 +303,16 @@ export default function AdminAssessments() {
         </>
       )}
     </div>
+
+    <ConfirmDialog
+      open={!!deleteTarget}
+      title="Delete Assessment"
+      description={deleteTarget ? `Delete the assessment from ${deleteTarget.email}? This cannot be undone.` : ''}
+      confirmLabel="Delete"
+      variant="danger"
+      onConfirm={confirmDelete}
+      onCancel={() => setDeleteTarget(null)}
+    />
     </div>
   );
 }
