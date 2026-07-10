@@ -17,6 +17,9 @@ class JobPosting(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     requirements: Mapped[str] = mapped_column(Text, nullable=False)
+    department: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    location: Mapped[str] = mapped_column(String(120), nullable=False, default="")
+    type: Mapped[str] = mapped_column(String(50), nullable=False, default="Full-time")
     screening_instructions: Mapped[str] = mapped_column(
         Text, nullable=False, default=""
     )

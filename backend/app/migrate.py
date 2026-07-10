@@ -25,6 +25,15 @@ async def run_migrations():
             if row and row[0] and "is_closed" not in row[0]:
                 logger.info("Adding is_closed column to job_postings")
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN is_closed BOOLEAN DEFAULT 0"))
+            if row and row[0] and "department" not in row[0]:
+                logger.info("Adding department column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN department TEXT DEFAULT ''"))
+            if row and row[0] and "location" not in row[0]:
+                logger.info("Adding location column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN location TEXT DEFAULT ''"))
+            if row and row[0] and "type" not in row[0]:
+                logger.info("Adding type column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN type TEXT DEFAULT 'Full-time'"))
 
             result2 = await conn.execute(
                 text("SELECT sql FROM sqlite_master WHERE type='table' AND name='applications'")
@@ -51,6 +60,9 @@ async def run_migrations():
             try:
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS is_closed BOOLEAN DEFAULT FALSE"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS department TEXT DEFAULT ''"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS location TEXT DEFAULT ''"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'Full-time'"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_sent_at TIMESTAMP"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_expires_at TIMESTAMP"))

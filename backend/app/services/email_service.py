@@ -258,6 +258,17 @@ async def send_new_application_notification(
         await send_email(to, subject, _branded_template(body))
 
 
+async def send_application_received_email(to: str, name: str, job_title: str):
+    subject = f"We've received your application for {job_title}"
+    body = f"""
+    <h2>Thank you, {name}!</h2>
+    <p>We've successfully received your application for <strong>{job_title}</strong> at {settings.company_name}.</p>
+    <p>Our team will review your application and reach out if you are shortlisted for the next stage.</p>
+    """
+
+    await send_email(to, subject, _branded_template(body))
+
+
 async def send_hr_invite_email(to: str, name: str, set_password_link: str):
     subject = f"You've been added to {settings.company_name}'s HR Portal"
     body = f"""

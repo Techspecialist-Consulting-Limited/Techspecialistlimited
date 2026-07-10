@@ -12,7 +12,10 @@ from app.database import get_db
 from app.models.ai_result import AIScreeningResult
 from app.models.application import Application
 from app.models.job_posting import JobPosting
-from app.services.email_service import send_new_application_notification
+from app.services.email_service import (
+    send_application_received_email,
+    send_new_application_notification,
+)
 from app.services.storage import upload_file
 from app.workers.tasks import run_screening
 
@@ -124,6 +127,13 @@ async def submit_application(
         )
     except Exception as e:
         logger.error(f"HR notification failed for application {app.id}: {e}")
+
+    try:
+        await send_application_received_email(
+            to=candidate_email, name=candidate_name, job_title=job.title,
+        )
+    except Exception as e:
+        logger.error(f"Candidate confirmation email failed for application {app.id}: {e}")
 
     return app
 

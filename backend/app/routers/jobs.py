@@ -19,6 +19,9 @@ class JobCreate(BaseModel):
     title: str
     description: str
     requirements: str
+    department: str = ""
+    location: str = ""
+    type: str = "Full-time"
     screening_instructions: str = ""
     stage2_instructions: str = ""
     stage2_questions: list[str] = []
@@ -30,6 +33,9 @@ class JobResponse(BaseModel):
     title: str
     description: str
     requirements: str
+    department: str = ""
+    location: str = ""
+    type: str = ""
     status: str
     is_deleted: bool = False
     is_closed: bool = False
@@ -46,6 +52,9 @@ class JobResponse(BaseModel):
 class JobUpdate(BaseModel):
     is_closed: bool | None = None
     status: str | None = None
+    department: str | None = None
+    location: str | None = None
+    type: str | None = None
 
 
 def parse_json_list(value: str | list | None) -> list:
@@ -74,6 +83,9 @@ async def _build_job_response(job: JobPosting, db: AsyncSession) -> JobResponse:
         title=job.title,
         description=job.description,
         requirements=job.requirements,
+        department=job.department or "",
+        location=job.location or "",
+        type=job.type or "",
         status=job.status,
         is_deleted=job.is_deleted,
         is_closed=job.is_closed,
@@ -92,6 +104,9 @@ async def create_job(job: JobCreate, db: AsyncSession = Depends(get_db), _: dict
         title=job.title,
         description=job.description,
         requirements=job.requirements,
+        department=job.department,
+        location=job.location,
+        type=job.type,
         screening_instructions=job.screening_instructions,
         stage2_instructions=job.stage2_instructions,
         stage2_questions=json.dumps(job.stage2_questions),
@@ -167,6 +182,12 @@ async def update_job(
         job.is_closed = update.is_closed
     if update.status is not None:
         job.status = update.status
+    if update.department is not None:
+        job.department = update.department
+    if update.location is not None:
+        job.location = update.location
+    if update.type is not None:
+        job.type = update.type
 
     await db.commit()
     await db.refresh(job)
