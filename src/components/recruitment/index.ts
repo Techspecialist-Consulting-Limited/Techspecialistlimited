@@ -7,3 +7,5 @@ export { default as BrandedLoader } from './BrandedLoader';
 export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as FileUploadZone } from './FileUploadZone';
 export { default as TranscriptViewer } from './TranscriptViewer';
+export { default as ScheduleInterviewModal } from './ScheduleInterviewModal';
+export { default as PipelineBoard } from './PipelineBoard';

@@ -298,6 +298,17 @@ async def send_password_reset_email(to: str, name: str, reset_link: str):
     await send_email(to, subject, _branded_template(body))
 
 
+async def send_hired_email(to: str, name: str, job_title: str):
+    subject = f"Welcome to the team, {name}!"
+    body = f"""
+    <h2>Congratulations, {name}!</h2>
+    <p>We're delighted to let you know that you've been selected for the <strong>{job_title}</strong> role at {settings.company_name}.</p>
+    <p>A member of our team will be in touch shortly with next steps and onboarding details.</p>
+    """
+
+    await send_email(to, subject, _branded_template(body))
+
+
 async def send_expired_link_notification(to: str, name: str, job_title: str):
     subject = f"Assessment Link Expired: {job_title}"
     body = f"""

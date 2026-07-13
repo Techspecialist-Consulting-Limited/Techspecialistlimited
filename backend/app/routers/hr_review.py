@@ -25,6 +25,7 @@ from app.models.audit_log import AuditLog
 from app.services.audit_service import log_action, get_audit_logs
 from app.services.email_service import (
     send_approval_email,
+    send_hired_email,
     send_rejection_email,
     send_stage2_invitation_email,
 )
@@ -452,6 +453,16 @@ async def review_application(
             name=app.candidate_name,
             job_title=job.title,
             stage=app.stage,
+        )
+
+    elif review.action == "hire":
+        app.status = "hired"
+        await db.commit()
+        await log_action(db, application_id, "hired", f"Marked as hired at stage {app.stage}")
+        await send_hired_email(
+            to=app.candidate_email,
+            name=app.candidate_name,
+            job_title=job.title,
         )
     else:
         raise HTTPException(status_code=400, detail="Invalid action")

@@ -211,7 +211,7 @@ export interface ResendResponse {
 
 export function reviewApplication(
   applicationId: string,
-  action: 'approve' | 'reject',
+  action: 'approve' | 'reject' | 'hire',
   expirationDays?: number,
 ): Promise<ReviewResponse> {
   return request(`/hr/review/${applicationId}`, {

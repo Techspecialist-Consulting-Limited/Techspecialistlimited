@@ -4,13 +4,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchApplicants, fetchJob, type Application, type Job } from '@/lib/recruitment-api';
-import { StatusBadge, ScoreCircle, BrandedLoader, EmptyState } from '@/components/recruitment';
+import { StatusBadge, ScoreCircle, BrandedLoader, EmptyState, PipelineBoard } from '@/components/recruitment';
 
 export default function ApplicantPipelinePage() {
   const { jobId } = useParams();
   const [job, setJob] = useState<Job | null>(null);
   const [applicants, setApplicants] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'board' | 'cards'>('board');
   const pollingRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   const loadData = useCallback(async () => {
@@ -49,17 +50,35 @@ export default function ApplicantPipelinePage() {
         Back to Jobs
       </Link>
 
-      <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-syne text-[28px] font-extrabold text-[var(--heading)]">{job?.title || 'Applicants'}</h1>
           <p className="mt-1 text-[14px] text-[var(--body)]">{applicants.length} applicant{applicants.length !== 1 ? 's' : ''}</p>
         </div>
-        {hasScreeningInProgress && (
-          <div className="flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold" style={{ background: 'rgba(59, 130, 246, 0.08)', color: 'var(--status-screening)' }}>
-            <div className="h-2 w-2 rounded-full" style={{ background: 'var(--status-screening)', animation: 'breathe 2s ease-in-out infinite' }} />
-            AI screening in progress
+        <div className="flex items-center gap-3">
+          {hasScreeningInProgress && (
+            <div className="flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold" style={{ background: 'rgba(59, 130, 246, 0.08)', color: 'var(--status-screening)' }}>
+              <div className="h-2 w-2 rounded-full" style={{ background: 'var(--status-screening)', animation: 'breathe 2s ease-in-out infinite' }} />
+              AI screening in progress
+            </div>
+          )}
+          <div className="flex items-center gap-1 rounded-md border border-[var(--border)] p-1 dark:border-white/10">
+            <button
+              onClick={() => setViewMode('board')}
+              className="rounded px-3 py-1.5 text-[12px] font-semibold transition-colors"
+              style={{ background: viewMode === 'board' ? 'var(--blue)' : 'transparent', color: viewMode === 'board' ? '#fff' : 'var(--body)' }}
+            >
+              Board
+            </button>
+            <button
+              onClick={() => setViewMode('cards')}
+              className="rounded px-3 py-1.5 text-[12px] font-semibold transition-colors"
+              style={{ background: viewMode === 'cards' ? 'var(--blue)' : 'transparent', color: viewMode === 'cards' ? '#fff' : 'var(--body)' }}
+            >
+              Cards
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
       {applicants.length === 0 ? (
@@ -68,6 +87,8 @@ export default function ApplicantPipelinePage() {
           title="No Applicants Yet"
           description="Applicants will appear here once candidates start applying."
         />
+      ) : viewMode === 'board' ? (
+        <PipelineBoard applicants={applicants} onRefresh={loadData} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {applicants.map((app, i) => {

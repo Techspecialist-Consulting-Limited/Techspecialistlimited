@@ -3,8 +3,8 @@
 import { startTransition, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { fetchApplicantDetail, reviewApplication, resendAssessment, createInterview, fetchAuditLogs, fetchInterviewsByApplication, type ApplicantDetail, type ResendResponse, type AuditLogEntry, type Interview } from '@/lib/recruitment-api';
-import { ScoreCircle, StatusBadge, ScoreBar, TranscriptViewer, BrandedLoader, ConfirmDialog } from '@/components/recruitment';
+import { fetchApplicantDetail, reviewApplication, resendAssessment, fetchAuditLogs, fetchInterviewsByApplication, type ApplicantDetail, type ResendResponse, type AuditLogEntry, type Interview } from '@/lib/recruitment-api';
+import { ScoreCircle, StatusBadge, ScoreBar, TranscriptViewer, BrandedLoader, ConfirmDialog, ScheduleInterviewModal } from '@/components/recruitment';
 
 const EXPIRATION_OPTIONS = [
   { label: '3 days', value: 3 },
@@ -18,24 +18,13 @@ export default function ApplicantDetailPage() {
   const { applicationId } = useParams();
   const [applicant, setApplicant] = useState<ApplicantDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | 'resend' | null>(null);
+  const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | 'hire' | 'resend' | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [expirationDays, setExpirationDays] = useState(7);
   const [resendResult, setResendResult] = useState<ResendResponse | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [scheduleForm, setScheduleForm] = useState({
-    interview_type: 'physical',
-    scheduled_date: '',
-    scheduled_time: '',
-    duration_minutes: 60,
-    location: '',
-    meeting_link: '',
-    interviewer_name: '',
-    notes: '',
-  });
-  const [scheduleSubmitting, setScheduleSubmitting] = useState(false);
 
   useEffect(() => {
     if (!applicationId || Array.isArray(applicationId)) return;
@@ -94,32 +83,12 @@ export default function ApplicantDetailPage() {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleScheduleInterview = async () => {
-    if (!scheduleForm.scheduled_date || !scheduleForm.scheduled_time || !applicant) return;
-    setScheduleSubmitting(true);
-    try {
-      await createInterview({
-        application_id: applicant.id,
-        ...scheduleForm,
-      });
-      const data = await fetchApplicantDetail(applicant.id);
-      setApplicant(data);
-      fetchInterviewsByApplication(applicant.id).then(setInterviews).catch(() => {});
-      setShowScheduleModal(false);
-      setScheduleForm({
-        interview_type: 'physical',
-        scheduled_date: '',
-        scheduled_time: '',
-        duration_minutes: 60,
-        location: '',
-        meeting_link: '',
-        interviewer_name: '',
-        notes: '',
-      });
-    } catch {
-      alert('Failed to schedule interview');
-    }
-    setScheduleSubmitting(false);
+  const handleInterviewScheduled = async () => {
+    if (!applicant) return;
+    const data = await fetchApplicantDetail(applicant.id);
+    setApplicant(data);
+    fetchInterviewsByApplication(applicant.id).then(setInterviews).catch(() => {});
+    setShowScheduleModal(false);
   };
 
   const isAssessmentExpired = applicant.assessment_expires_at
@@ -252,7 +221,7 @@ export default function ApplicantDetailPage() {
               { label: 'Assessment Sent', date: applicant.assessment_sent_at, done: !!applicant.assessment_sent_at, icon: '📧' },
               { label: 'Assessment Completed', date: stageTwoResult?.created_at, done: !!stageTwoResult, icon: '🎙️' },
               { label: 'Interview Scheduled', date: latestInterview?.created_at, done: !!latestInterview, icon: '📅' },
-              { label: 'Final Decision', date: applicant.status === 'rejected' ? applicant.created_at : null, done: applicant.status === 'rejected', icon: '✅' },
+              { label: 'Final Decision', date: (applicant.status === 'rejected' || applicant.status === 'hired') ? applicant.created_at : null, done: applicant.status === 'rejected' || applicant.status === 'hired', icon: '✅' },
             ].map((event, i) => (
               <div key={i} className="flex flex-col items-center flex-shrink-0" style={{ minWidth: '120px' }}>
                 <div className="flex items-center">
@@ -587,6 +556,15 @@ export default function ApplicantDetailPage() {
                     </div>
                   </div>
                 )}
+                {applicant.status !== 'hired' && applicant.status !== 'rejected' && (
+                  <button
+                    onClick={() => setConfirmAction('hire')}
+                    className="w-full rounded-xl px-5 py-3 text-[13px] font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                    style={{ background: 'var(--status-approved)' }}
+                  >
+                    Mark as Hired
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -701,145 +679,13 @@ export default function ApplicantDetailPage() {
       </div>
 
       {/* Schedule Interview Modal */}
-      {showScheduleModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 99999,
-          background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }} onClick={() => setShowScheduleModal(false)}>
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="rounded-2xl bg-[var(--bg)] p-7 shadow-2xl"
-            style={{ width: '480px', maxHeight: '90vh', overflowY: 'auto' }}
-          >
-            <h3 className="mb-5 text-[16px] font-bold text-[var(--heading)]">Schedule Interview · {applicant.candidate_name}</h3>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Date</label>
-                  <input
-                    type="date"
-                    value={scheduleForm.scheduled_date}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setScheduleForm({ ...scheduleForm, scheduled_date: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Time</label>
-                  <input
-                    type="time"
-                    value={scheduleForm.scheduled_time}
-                    onChange={(e) => setScheduleForm({ ...scheduleForm, scheduled_time: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Duration (min)</label>
-                  <input
-                    type="number"
-                    value={scheduleForm.duration_minutes}
-                    min={15}
-                    step={15}
-                    onChange={(e) => setScheduleForm({ ...scheduleForm, duration_minutes: parseInt(e.target.value) || 60 })}
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Type</label>
-                <div className="mt-1 flex gap-2">
-                  {['physical', 'virtual', 'phone'].map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => setScheduleForm({ ...scheduleForm, interview_type: type })}
-                      className={`flex-1 rounded-xl px-4 py-[10px] text-[12px] font-medium capitalize transition-all ${
-                        scheduleForm.interview_type === type
-                          ? 'border-[1.5px] border-[var(--blue)] bg-[rgba(69,132,237,0.06)] text-[var(--blue)]'
-                          : 'border border-[var(--border)] bg-transparent text-[var(--body)] hover:border-[var(--blue)]'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {scheduleForm.interview_type === 'virtual' && (
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Meeting Link</label>
-                  <input
-                    type="url"
-                    value={scheduleForm.meeting_link}
-                    onChange={(e) => setScheduleForm({ ...scheduleForm, meeting_link: e.target.value })}
-                    placeholder="https://meet.google.com/..."
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
-              )}
-
-              {scheduleForm.interview_type === 'physical' && (
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Location</label>
-                  <input
-                    type="text"
-                    value={scheduleForm.location}
-                    onChange={(e) => setScheduleForm({ ...scheduleForm, location: e.target.value })}
-                    placeholder="Office address, room number..."
-                    className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Interviewer</label>
-                <input
-                  type="text"
-                  value={scheduleForm.interviewer_name}
-                  onChange={(e) => setScheduleForm({ ...scheduleForm, interviewer_name: e.target.value })}
-                  placeholder="e.g. John Smith"
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--body)]">Notes (sent to candidate)</label>
-                <textarea
-                  value={scheduleForm.notes}
-                  onChange={(e) => setScheduleForm({ ...scheduleForm, notes: e.target.value })}
-                  rows={3}
-                  placeholder="Preparation instructions, documents to bring, etc."
-                  className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
-                  style={{ resize: 'vertical', fontFamily: 'inherit' }}
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowScheduleModal(false)}
-                className="rounded-xl border border-[var(--border)] px-5 py-2.5 text-[13px] font-medium text-[var(--body)] transition-all hover:border-[var(--blue)] hover:text-[var(--blue)]"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleScheduleInterview}
-                disabled={scheduleSubmitting || !scheduleForm.scheduled_date || !scheduleForm.scheduled_time}
-                className="rounded-xl px-5 py-2.5 text-[13px] font-bold text-white transition-all disabled:opacity-40"
-                style={{
-                  background: 'var(--blue)',
-                  opacity: scheduleSubmitting || !scheduleForm.scheduled_date || !scheduleForm.scheduled_time ? 0.5 : 1,
-                  cursor: scheduleSubmitting ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {scheduleSubmitting ? 'Scheduling...' : 'Schedule Interview'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ScheduleInterviewModal
+        open={showScheduleModal}
+        applicationId={applicant.id}
+        candidateName={applicant.candidate_name}
+        onClose={() => setShowScheduleModal(false)}
+        onScheduled={handleInterviewScheduled}
+      />
 
       {/* Confirm dialog */}
       <ConfirmDialog
@@ -847,6 +693,7 @@ export default function ApplicantDetailPage() {
         title={
           confirmAction === 'approve' ? 'Approve & Send Assessment' :
           confirmAction === 'resend' ? 'Resend Assessment Invitation' :
+          confirmAction === 'hire' ? 'Mark as Hired' :
           'Reject Candidate'
         }
         description={
@@ -854,10 +701,12 @@ export default function ApplicantDetailPage() {
             ? `This will move the candidate to Stage 2 and send them an AI interview invitation with a ${expirationDays}-day expiry.`
             : confirmAction === 'resend'
             ? `This will generate a new assessment link and send a fresh invitation email with a ${expirationDays}-day expiry. The old link will be invalidated.`
+            : confirmAction === 'hire'
+            ? 'This will mark the candidate as hired and send them a welcome email.'
             : 'This will reject the candidate and send them a notification email.'
         }
-        confirmLabel={actionLoading ? 'Processing...' : confirmAction === 'approve' ? 'Approve & Send' : confirmAction === 'resend' ? 'Resend' : 'Reject'}
-        variant={confirmAction === 'approve' ? 'success' : confirmAction === 'resend' ? 'success' : 'danger'}
+        confirmLabel={actionLoading ? 'Processing...' : confirmAction === 'approve' ? 'Approve & Send' : confirmAction === 'resend' ? 'Resend' : confirmAction === 'hire' ? 'Mark as Hired' : 'Reject'}
+        variant={confirmAction === 'approve' || confirmAction === 'resend' || confirmAction === 'hire' ? 'success' : 'danger'}
         onConfirm={handleReview}
         onCancel={() => { setConfirmAction(null); setResendResult(null); }}
       />
