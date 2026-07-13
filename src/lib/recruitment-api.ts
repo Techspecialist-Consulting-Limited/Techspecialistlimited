@@ -102,6 +102,8 @@ export interface Application {
   cover_letter_text?: string;
   status: string;
   stage: number;
+  is_archived?: boolean;
+  application_count_for_email?: number;
   assessment_token?: string;
   assessment_sent_at?: string | null;
   assessment_expires_at?: string | null;
@@ -109,6 +111,7 @@ export interface Application {
   stage_results?: StageResult[];
   conversation_session?: ConversationSession;
   created_at: string;
+  updated_at?: string | null;
 }
 
 export interface ApplicantDetail {
@@ -122,6 +125,8 @@ export interface ApplicantDetail {
   cover_letter_text: string | null;
   status: string;
   stage: number;
+  is_archived?: boolean;
+  application_count_for_email?: number;
   assessment_token: string | null;
   assessment_sent_at: string | null;
   assessment_expires_at: string | null;
@@ -130,6 +135,7 @@ export interface ApplicantDetail {
   stage_results: StageResult[];
   conversation_session: ConversationSession | null;
   created_at: string | null;
+  updated_at?: string | null;
 }
 
 export interface ScreeningResult {
@@ -173,6 +179,17 @@ export interface ConversationSession {
   current_topic_index: number;
 }
 
+export interface ApplicationStatus {
+  candidate_name: string;
+  job_title: string;
+  status_label: string;
+  applied_at: string | null;
+}
+
+export async function fetchApplicationStatus(applicationId: string, email: string): Promise<ApplicationStatus> {
+  return request(`/applications/${applicationId}/status?email=${encodeURIComponent(email)}`);
+}
+
 export async function submitApplication(
   jobId: string,
   data: FormData,
@@ -190,8 +207,8 @@ export async function submitApplication(
 
 // ── HR ──
 
-export function fetchApplicants(jobId: string): Promise<Application[]> {
-  return request(`/hr/applications/${jobId}`, { headers: authHeaders() });
+export function fetchApplicants(jobId: string, includeArchived = false): Promise<Application[]> {
+  return request(`/hr/applications/${jobId}${includeArchived ? '?include_archived=true' : ''}`, { headers: authHeaders() });
 }
 
 export interface ReviewResponse {
@@ -246,6 +263,24 @@ export function resendAssessment(
 export function clearApplications(jobId: string): Promise<{ message: string }> {
   return request(`/hr/clear/${jobId}`, {
     method: 'POST',
+    headers: authHeaders(),
+  });
+}
+
+export function bulkAction(
+  applicationIds: string[],
+  action: 'archive' | 'unarchive' | 'reject',
+): Promise<{ updated: number }> {
+  return request('/hr/bulk-action', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ application_ids: applicationIds, action }),
+  });
+}
+
+export function deleteApplication(applicationId: string): Promise<{ message: string }> {
+  return request(`/hr/applications/${applicationId}`, {
+    method: 'DELETE',
     headers: authHeaders(),
   });
 }
@@ -498,6 +533,44 @@ export function createInterview(data: CreateInterviewData): Promise<Interview> {
     headers: authHeaders(),
     body: JSON.stringify(data),
   });
+}
+
+// ── Interview Scorecards ──
+
+export interface Scorecard {
+  id: string;
+  application_id: string;
+  interviewer_name: string;
+  communication_score: number;
+  technical_score: number;
+  culture_fit_score: number;
+  problem_solving_score: number;
+  recommendation: 'strong_yes' | 'yes' | 'no' | 'strong_no';
+  notes: string | null;
+  created_at: string | null;
+}
+
+export interface CreateScorecardData {
+  application_id: string;
+  interviewer_name: string;
+  communication_score: number;
+  technical_score: number;
+  culture_fit_score: number;
+  problem_solving_score: number;
+  recommendation: 'strong_yes' | 'yes' | 'no' | 'strong_no';
+  notes?: string;
+}
+
+export function createScorecard(data: CreateScorecardData): Promise<Scorecard> {
+  return request('/hr/scorecards', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(data),
+  });
+}
+
+export function fetchScorecardsByApplication(applicationId: string): Promise<Scorecard[]> {
+  return request(`/hr/scorecards/by-application/${applicationId}`, { headers: authHeaders() });
 }
 
 export function fetchInterviewsByApplication(applicationId: string): Promise<Interview[]> {

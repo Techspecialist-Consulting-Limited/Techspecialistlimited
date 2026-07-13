@@ -9,3 +9,4 @@ export { default as FileUploadZone } from './FileUploadZone';
 export { default as TranscriptViewer } from './TranscriptViewer';
 export { default as ScheduleInterviewModal } from './ScheduleInterviewModal';
 export { default as PipelineBoard } from './PipelineBoard';
+export { default as ScorecardPanel } from './ScorecardPanel';

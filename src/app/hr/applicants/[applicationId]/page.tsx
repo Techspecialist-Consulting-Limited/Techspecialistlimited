@@ -1,10 +1,10 @@
 'use client';
 
 import { startTransition, useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fetchApplicantDetail, reviewApplication, resendAssessment, fetchAuditLogs, fetchInterviewsByApplication, type ApplicantDetail, type ResendResponse, type AuditLogEntry, type Interview } from '@/lib/recruitment-api';
-import { ScoreCircle, StatusBadge, ScoreBar, TranscriptViewer, BrandedLoader, ConfirmDialog, ScheduleInterviewModal } from '@/components/recruitment';
+import { fetchApplicantDetail, reviewApplication, resendAssessment, deleteApplication, fetchAuditLogs, fetchInterviewsByApplication, type ApplicantDetail, type ResendResponse, type AuditLogEntry, type Interview } from '@/lib/recruitment-api';
+import { ScoreCircle, StatusBadge, ScoreBar, TranscriptViewer, BrandedLoader, ConfirmDialog, ScheduleInterviewModal, ScorecardPanel } from '@/components/recruitment';
 
 const EXPIRATION_OPTIONS = [
   { label: '3 days', value: 3 },
@@ -16,6 +16,7 @@ const EXPIRATION_OPTIONS = [
 
 export default function ApplicantDetailPage() {
   const { applicationId } = useParams();
+  const router = useRouter();
   const [applicant, setApplicant] = useState<ApplicantDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | 'hire' | 'resend' | null>(null);
@@ -25,6 +26,9 @@ export default function ApplicantDetailPage() {
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     if (!applicationId || Array.isArray(applicationId)) return;
@@ -56,6 +60,19 @@ export default function ApplicantDetailPage() {
     } catch { /* empty */ }
     setActionLoading(false);
     setConfirmAction(null);
+  };
+
+  const handleDelete = async () => {
+    if (!applicant) return;
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await deleteApplication(applicant.id);
+      router.push(`/hr/jobs/${applicant.job_id}/applicants`);
+    } catch {
+      setDeleteError('Failed to delete application. Please try again.');
+      setDeleteLoading(false);
+    }
   };
 
   if (loading) return <BrandedLoader text="Loading applicant details..." />;
@@ -426,6 +443,9 @@ export default function ApplicantDetailPage() {
             </div>
           )}
 
+          {/* Team Decision Scorecards */}
+          {applicant.stage >= 2 && <ScorecardPanel applicationId={applicant.id} />}
+
           {/* Audit Timeline */}
           {auditLogs.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] dark:border-white/10 dark:bg-[#101827]">
@@ -675,6 +695,19 @@ export default function ApplicantDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Danger zone */}
+          <div className="rounded-2xl border border-red-200 bg-[var(--bg)] p-6 dark:border-red-800/30 dark:bg-[#101827]">
+            <h3 className="mb-2 text-[13px] font-bold text-red-600">Danger Zone</h3>
+            <p className="mb-4 text-[11px] text-[var(--body)]">Permanently delete this application and all associated data (CV, screening results, interview transcript). This cannot be undone — use this for candidate data-deletion requests.</p>
+            {deleteError && <p className="mb-3 text-[11px] font-medium text-red-600">{deleteError}</p>}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full rounded-xl border border-red-200 px-5 py-2.5 text-[13px] font-bold text-red-600 transition-all hover:bg-red-50"
+            >
+              Delete Application
+            </button>
+          </div>
         </div>
       </div>
 
@@ -709,6 +742,16 @@ export default function ApplicantDetailPage() {
         variant={confirmAction === 'approve' || confirmAction === 'resend' || confirmAction === 'hire' ? 'success' : 'danger'}
         onConfirm={handleReview}
         onCancel={() => { setConfirmAction(null); setResendResult(null); }}
+      />
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Application"
+        description={`This will permanently delete ${applicant.candidate_name}'s application, CV, screening results, interview transcript, and scheduled interviews. This cannot be undone.`}
+        confirmLabel={deleteLoading ? 'Deleting...' : 'Delete Permanently'}
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import base64
 import logging
 from datetime import datetime, timedelta
 
@@ -49,24 +50,33 @@ def _branded_template(body_html: str) -> str:
 </html>"""
 
 
-async def send_email(to: str, subject: str, html_content: str):
+async def send_email(
+    to: str, subject: str, html_content: str,
+    attachments: list[dict] | None = None,
+):
     if settings.dev_mode or not settings.resend_api_key:
         logger.info(f"[DEV EMAIL] To: {to}")
         logger.info(f"[DEV EMAIL] Subject: {subject}")
         logger.info(f"[DEV EMAIL] Body: {html_content}")
+        if attachments:
+            logger.info(f"[DEV EMAIL] Attachments: {[a['filename'] for a in attachments]}")
         return
 
     try:
+        payload = {
+            "from": f"{settings.sender_display_name} <{settings.sender_email}>",
+            "to": [to],
+            "subject": subject,
+            "html": html_content,
+        }
+        if attachments:
+            payload["attachments"] = attachments
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 "https://api.resend.com/emails",
                 headers={"Authorization": f"Bearer {settings.resend_api_key}"},
-                json={
-                    "from": f"{settings.sender_display_name} <{settings.sender_email}>",
-                    "to": [to],
-                    "subject": subject,
-                    "html": html_content,
-                },
+                json=payload,
                 timeout=30.0,
             )
             response.raise_for_status()
@@ -197,7 +207,7 @@ async def send_interview_invitation_email(
     interview_date: str, interview_time: str,
     interview_type: str, location_or_link: str,
     interviewer: str = "", notes: str = "",
-    contact_email: str = "",
+    contact_email: str = "", duration_minutes: int = 60,
 ):
     subject = f"Interview Invitation for {job_title} at {settings.company_name}"
     type_badge = "📹 Virtual" if interview_type.lower() == "virtual" else "📍 Physical"
@@ -224,7 +234,23 @@ async def send_interview_invitation_email(
     <p>We look forward to speaking with you!</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    attachments = None
+    from app.services.ics_service import build_interview_ics
+    ics_content = build_interview_ics(
+        summary=f"Interview: {job_title} at {settings.company_name}",
+        description=f"Interview for {job_title}.{f' Interviewer: {interviewer}.' if interviewer else ''}{f' Notes: {notes}' if notes else ''}",
+        location=location_or_link,
+        interview_date=interview_date,
+        interview_time=interview_time,
+        duration_minutes=duration_minutes,
+    )
+    if ics_content:
+        attachments = [{
+            "filename": "interview.ics",
+            "content": base64.b64encode(ics_content.encode("utf-8")).decode("ascii"),
+        }]
+
+    await send_email(to, subject, _branded_template(body), attachments=attachments)
 
 
 async def send_new_application_notification(
@@ -258,12 +284,17 @@ async def send_new_application_notification(
         await send_email(to, subject, _branded_template(body))
 
 
-async def send_application_received_email(to: str, name: str, job_title: str):
+async def send_application_received_email(to: str, name: str, job_title: str, application_id: str = ""):
     subject = f"We've received your application for {job_title}"
+    status_link_html = ""
+    if application_id:
+        status_link = f"{settings.frontend_url}/application-status/{application_id}?email={to}"
+        status_link_html = f'<p style="text-align:center"><a href="{status_link}" class="button">Check Application Status</a></p>'
     body = f"""
     <h2>Thank you, {name}!</h2>
     <p>We've successfully received your application for <strong>{job_title}</strong> at {settings.company_name}.</p>
     <p>Our team will review your application and reach out if you are shortlisted for the next stage.</p>
+    {status_link_html}
     """
 
     await send_email(to, subject, _branded_template(body))

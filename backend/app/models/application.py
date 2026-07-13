@@ -27,6 +27,7 @@ class Application(Base):
         String(20), nullable=False, default="pending"
     )
     stage: Mapped[int] = mapped_column(nullable=False, default=1)
+    is_archived: Mapped[bool] = mapped_column(nullable=False, default=False)
     assessment_token: Mapped[str | None] = mapped_column(
         String(255), nullable=True, unique=True
     )

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { reviewApplication, type Application } from '@/lib/recruitment-api';
+import { isStalled, isDuplicate } from '@/lib/applicant-flags';
 import StatusBadge from './StatusBadge';
 import ScoreCircle from './ScoreCircle';
 import ConfirmDialog from './ConfirmDialog';
@@ -132,6 +133,8 @@ export default function PipelineBoard({ applicants, onRefresh }: PipelineBoardPr
               <div className="flex min-h-[120px] flex-col gap-2 p-2.5">
                 {cardsInColumn.map((app) => {
                   const sr = app.screening_result;
+                  const stalled = isStalled(app);
+                  const duplicate = isDuplicate(app);
                   return (
                     <div
                       key={app.id}
@@ -147,6 +150,16 @@ export default function PipelineBoard({ applicants, onRefresh }: PipelineBoardPr
                         </div>
                         {sr && <ScoreCircle score={sr.overall_score} size={30} strokeWidth={3} showLabel={false} />}
                       </div>
+                      {(stalled || duplicate) && (
+                        <div className="mb-2 flex flex-wrap gap-1">
+                          {stalled && (
+                            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">Stalled</span>
+                          )}
+                          {duplicate && (
+                            <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[9px] font-semibold text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">{app.application_count_for_email}x applied</span>
+                          )}
+                        </div>
+                      )}
                       <StatusBadge status={app.status} />
                     </div>
                   );

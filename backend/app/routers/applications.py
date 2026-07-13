@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, UploadFile, statu
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.database import get_db
@@ -131,6 +132,7 @@ async def submit_application(
     try:
         await send_application_received_email(
             to=candidate_email, name=candidate_name, job_title=job.title,
+            application_id=str(app.id),
         )
     except Exception as e:
         logger.error(f"Candidate confirmation email failed for application {app.id}: {e}")
@@ -149,3 +151,44 @@ async def get_application(
     if not app:
         raise HTTPException(status_code=404, detail="Application not found")
     return app
+
+
+STATUS_LABELS = {
+    "pending": "Application received - under review",
+    "approved": "Assessment invitation sent",
+    "assessment_completed": "Assessment completed - awaiting review",
+    "assessment_flagged": "Assessment completed - awaiting review",
+    "interview_scheduled": "Interview scheduled",
+    "hired": "Congratulations - you've been selected!",
+    "rejected": "Not selected for this role",
+}
+
+
+class ApplicationStatusResponse(BaseModel):
+    candidate_name: str
+    job_title: str
+    status_label: str
+    applied_at: str | None = None
+
+
+@router.get("/{application_id}/status", response_model=ApplicationStatusResponse)
+async def get_application_status(
+    application_id: uuid.UUID,
+    email: str,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Application)
+        .where(Application.id == application_id)
+        .options(selectinload(Application.job))
+    )
+    app = result.scalar_one_or_none()
+    if not app or app.candidate_email.strip().lower() != email.strip().lower():
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    return ApplicationStatusResponse(
+        candidate_name=app.candidate_name,
+        job_title=app.job.title if app.job else "",
+        status_label=STATUS_LABELS.get(app.status, "Application received - under review"),
+        applied_at=str(app.created_at) if app.created_at else None,
+    )

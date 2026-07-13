@@ -109,6 +109,7 @@ async def create_interview(
         location_or_link=data.location or data.meeting_link or "",
         interviewer=data.interviewer_name or "",
         notes=data.notes or "",
+        duration_minutes=data.duration_minutes,
     )
 
     return _format_interview(interview, app.candidate_name, job_title)

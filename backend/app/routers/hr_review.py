@@ -126,6 +126,8 @@ class ApplicationWithScreening(BaseModel):
     candidate_email: str
     status: str
     stage: int
+    is_archived: bool = False
+    application_count_for_email: int = 1
     assessment_token: str | None = None
     assessment_sent_at: str | None = None
     assessment_expires_at: str | None = None
@@ -137,6 +139,7 @@ class ApplicationWithScreening(BaseModel):
     stage_results: list[StageResultDetail] = []
     conversation_session: ConversationSessionDetail | None = None
     created_at: str | None = None
+    updated_at: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -152,6 +155,8 @@ class ApplicantDetailResponse(BaseModel):
     cover_letter_text: str | None = None
     status: str
     stage: int
+    is_archived: bool = False
+    application_count_for_email: int = 1
     assessment_token: str | None = None
     assessment_sent_at: str | None = None
     assessment_expires_at: str | None = None
@@ -160,6 +165,7 @@ class ApplicantDetailResponse(BaseModel):
     stage_results: list[StageResultDetail] = []
     conversation_session: ConversationSessionDetail | None = None
     created_at: str | None = None
+    updated_at: str | None = None
 
 
 class ReviewAction(BaseModel):
@@ -168,11 +174,27 @@ class ReviewAction(BaseModel):
 
 
 @router.get("/applications/{job_id}", response_model=list[ApplicationWithScreening])
-async def list_applications(job_id: uuid.UUID, db: AsyncSession = Depends(get_db), _: dict = Depends(verify_hr_token)):
-    result = await db.execute(
-        select(Application).where(Application.job_id == job_id)
-    )
+async def list_applications(
+    job_id: uuid.UUID,
+    include_archived: bool = False,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
+    query = select(Application).where(Application.job_id == job_id)
+    if not include_archived:
+        query = query.where(Application.is_archived == False)
+    result = await db.execute(query)
     apps = result.scalars().all()
+
+    email_counts: dict[str, int] = {}
+    if apps:
+        emails = {a.candidate_email for a in apps}
+        count_result = await db.execute(
+            select(Application.candidate_email, func.count(Application.id))
+            .where(Application.candidate_email.in_(emails))
+            .group_by(Application.candidate_email)
+        )
+        email_counts = dict(count_result.all())
 
     response = []
     for a in apps:
@@ -217,6 +239,8 @@ async def list_applications(job_id: uuid.UUID, db: AsyncSession = Depends(get_db
             candidate_email=a.candidate_email,
             status=a.status,
             stage=a.stage,
+            is_archived=a.is_archived,
+            application_count_for_email=email_counts.get(a.candidate_email, 1),
             assessment_token=a.assessment_token,
             assessment_sent_at=str(a.assessment_sent_at) if a.assessment_sent_at else None,
             assessment_expires_at=str(a.assessment_expires_at) if a.assessment_expires_at else None,
@@ -240,6 +264,7 @@ async def list_applications(job_id: uuid.UUID, db: AsyncSession = Depends(get_db
             ) for s in stage_results],
             conversation_session=conv_detail,
             created_at=str(a.created_at) if a.created_at else None,
+            updated_at=str(a.updated_at) if a.updated_at else None,
         ))
 
     response.sort(
@@ -300,6 +325,11 @@ async def get_application_detail(
             current_topic_index=conv.current_topic_index,
         )
 
+    count_result = await db.execute(
+        select(func.count(Application.id)).where(Application.candidate_email == a.candidate_email)
+    )
+    application_count_for_email = count_result.scalar() or 1
+
     return ApplicantDetailResponse(
         id=a.id,
         job_id=a.job_id,
@@ -311,6 +341,8 @@ async def get_application_detail(
         cover_letter_text=a.cover_letter_text,
         status=a.status,
         stage=a.stage,
+        is_archived=a.is_archived,
+        application_count_for_email=application_count_for_email,
         assessment_token=a.assessment_token,
         assessment_sent_at=str(a.assessment_sent_at) if a.assessment_sent_at else None,
         assessment_expires_at=str(a.assessment_expires_at) if a.assessment_expires_at else None,
@@ -331,6 +363,7 @@ async def get_application_detail(
             ) for s in stage_results],
         conversation_session=conv_detail,
         created_at=str(a.created_at) if a.created_at else None,
+        updated_at=str(a.updated_at) if a.updated_at else None,
     )
 
 
@@ -474,6 +507,100 @@ async def review_application(
         "assessment_sent_at": str(app.assessment_sent_at) if app.assessment_sent_at else None,
         "assessment_expires_at": str(app.assessment_expires_at) if app.assessment_expires_at else None,
     }
+
+
+class BulkActionRequest(BaseModel):
+    application_ids: list[uuid.UUID]
+    action: str
+
+
+@router.post("/bulk-action")
+async def bulk_action(
+    req: BulkActionRequest,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
+    if req.action not in ("archive", "unarchive", "reject"):
+        raise HTTPException(status_code=400, detail="Invalid bulk action")
+    if not req.application_ids:
+        return {"updated": 0}
+
+    result = await db.execute(
+        select(Application).where(Application.id.in_(req.application_ids))
+    )
+    apps = result.scalars().all()
+
+    updated = 0
+    for app in apps:
+        if req.action == "archive":
+            app.is_archived = True
+        elif req.action == "unarchive":
+            app.is_archived = False
+        elif req.action == "reject":
+            app.status = "rejected"
+        updated += 1
+
+    await db.commit()
+
+    for app in apps:
+        if req.action == "archive":
+            await log_action(db, app.id, "archived", "Archived via bulk action")
+        elif req.action == "unarchive":
+            await log_action(db, app.id, "unarchived", "Restored from archive via bulk action")
+        elif req.action == "reject":
+            await log_action(db, app.id, "rejected", "Rejected via bulk action")
+
+    if req.action == "reject":
+        for app in apps:
+            job_result = await db.execute(select(JobPosting).where(JobPosting.id == app.job_id))
+            job = job_result.scalar_one_or_none()
+            if job:
+                await send_rejection_email(
+                    to=app.candidate_email,
+                    name=app.candidate_name,
+                    job_title=job.title,
+                    stage=app.stage,
+                )
+
+    return {"updated": updated}
+
+
+@router.delete("/applications/{application_id}")
+async def delete_application(
+    application_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
+    result = await db.execute(select(Application).where(Application.id == application_id))
+    app = result.scalar_one_or_none()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    sr_result = await db.execute(select(AIScreeningResult).where(AIScreeningResult.application_id == app.id))
+    sr = sr_result.scalar_one_or_none()
+    if sr:
+        await db.delete(sr)
+
+    stage_r = await db.execute(select(StageResult).where(StageResult.application_id == app.id))
+    for st in stage_r.scalars().all():
+        await db.delete(st)
+
+    conv_r = await db.execute(select(ConversationSession).where(ConversationSession.application_id == app.id))
+    for cs in conv_r.scalars().all():
+        await db.delete(cs)
+
+    iv_r = await db.execute(select(Interview).where(Interview.application_id == app.id))
+    for iv in iv_r.scalars().all():
+        await db.delete(iv)
+
+    log_r = await db.execute(select(AuditLog).where(AuditLog.application_id == app.id))
+    for log in log_r.scalars().all():
+        await db.delete(log)
+
+    await db.delete(app)
+    await db.commit()
+
+    return {"message": "Application and all associated data permanently deleted"}
 
 
 class ResendResponse(BaseModel):
