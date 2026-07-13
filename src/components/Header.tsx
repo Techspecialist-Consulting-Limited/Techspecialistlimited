@@ -59,13 +59,16 @@ export default function Header() {
     setMobileDropOpen(false);
   };
 
-  const routeLinks = [
+  const preDropdownLinks = [
     ...(isHome ? [] : [{ label: 'Home', href: '/' }]),
-    { label: 'AI Readiness', href: '/ai-readiness-assessment' },
     { label: 'Services', href: '/services' },
-    { label: 'Careers', href: '/careers' },
+  ];
+
+  const postDropdownLinks = [
     { label: 'Case Studies', href: '/case-studies' },
     { label: 'Insights', href: '/insights' },
+    { label: 'AI Readiness', href: '/ai-readiness-assessment' },
+    { label: 'Careers', href: '/careers' },
   ];
 
   const renderAnchorLink = (link: AnchorItem) => {
@@ -106,7 +109,7 @@ export default function Header() {
           </Link>
 
           <div className="desktop-nav hidden lg:flex items-center gap-6">
-            {routeLinks.map((link) => (
+            {preDropdownLinks.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
@@ -149,6 +152,16 @@ export default function Header() {
                 </div>
               </div>
             </div>
+
+            {postDropdownLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 no-underline whitespace-nowrap transition hover:text-[#4584ed] dark:hover:text-[#4584ed]"
+              >
+                {link.label}
+              </Link>
+            ))}
 
             <div className="ml-2 flex items-center gap-[6px]">
               <button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">
@@ -193,7 +206,7 @@ export default function Header() {
           isMenuOpen ? 'flex' : 'hidden'
         } max-h-[calc(100vh-68px)]`}
       >
-        {routeLinks.map((link) => (
+        {preDropdownLinks.map((link) => (
           <Link
             key={link.label}
             href={link.href}
@@ -252,6 +265,17 @@ export default function Header() {
             </div>
           )}
         </div>
+
+        {postDropdownLinks.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            onClick={() => setIsMenuOpen(false)}
+            className="block px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline"
+          >
+            {link.label}
+          </Link>
+        ))}
 
         <div className="mt-2 flex items-center gap-2 px-6">
           <button type="button" onClick={(e) => { e.stopPropagation(); toggleTheme(); }} className="icon-btn" aria-label="Toggle theme">
