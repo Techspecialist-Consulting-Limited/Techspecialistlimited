@@ -1,0 +1,71 @@
+# Deployment and Operations
+
+## Summary
+
+The frontend has a clear CI/CD path to Azure Web App. The backend does not — it has a `Dockerfile` but no CI workflow in this repository, so how and where it actually runs in production isn't determinable from the code alone. There's also declared-but-unused infrastructure (Celery/Redis) worth knowing about before assuming background job processing exists.
+
+## Running locally
+
+**Frontend:**
+```
+npm install
+npm run dev0      # next dev — note: not the default "dev" script name
+```
+Requires `.env.local` with, at minimum, `RECRUITMENT_API_URL=http://localhost:8000` and the Supabase keys for the fallback paths to work.
+
+**Backend:**
+```
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+Requires `backend/.env` (see `backend/.env.example` for the full list). With no `DATABASE_URL` override, it defaults to a local SQLite file (`backend/recruitment.db`) and `dev_mode`, which also switches file storage to local disk and email sending to console-logging instead of calling Resend.
+
+On every startup (`app/main.py`'s lifespan hook), the backend:
+1. Creates any missing tables (`Base.metadata.create_all`).
+2. Runs `run_migrations()` — hand-rolled `ALTER TABLE` statements for columns added after initial deployment (see below).
+3. Runs `seed_defaults()` — creates a default HR account (`hr@company.com`, password from `HR_PASSWORD`) and default `app_settings` rows if they don't exist.
+
+## Deployment
+
+**Frontend:** `.github/workflows/main_techspecialist-limited.yml` builds and deploys to an **Azure Web App** named `Techspecialist-Limited` on every push to `main` (via `azure/webapps-deploy`). Build-time secrets injected: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_ASSESSMENT_WS_URL`.
+
+A `.vercel/repo.json` project link also exists in the repo, which implies a Vercel project may also be (or have been) connected. **Confirm with whoever manages hosting which one is the live, authoritative deployment** before making assumptions in an incident — don't assume Azure is the only place this is running.
+
+**Backend:** has a `Dockerfile` (`python:3.12-slim`, installs `requirements.txt`, runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`), but no matching GitHub Actions workflow exists in `.github/workflows/`. Where the backend is actually hosted in production is not recorded anywhere in this repository — **this is a gap in the documentation, not just the deployment setup: find out and record it here.**
+
+## Database migrations — read before touching the schema
+
+Despite a `backend/alembic/` directory existing, **it is completely empty** — no `alembic.ini`, no `env.py`, no versioned migration files, and no Alembic import anywhere in the code. This project does **not** use Alembic in practice.
+
+The actual mechanism is `backend/app/migrate.py`, run automatically on every app startup:
+- New tables are created automatically from the SQLAlchemy models.
+- New *columns* on existing tables are added via dialect-aware `ALTER TABLE` statements hardcoded in `run_migrations()` (a separate SQLite branch and Postgres branch). As of this writing, these patch in: `job_postings.is_deleted/is_closed/department/location/type`, `applications.is_archived/assessment_sent_at/assessment_expires_at`, `conversation_sessions.engine`.
+
+**Practical implication:** if you need to add a new column to an existing table, you add it to the model *and* add a matching `ALTER TABLE ... ADD COLUMN` line to `run_migrations()` — there's no `alembic revision --autogenerate` workflow to lean on. If you need to drop a column, rename a column, or do anything more complex than "add a nullable column," this hand-rolled approach won't help you and you'll need to write the migration by hand (and probably introduce real Alembic at that point).
+
+## Background jobs: declared but not implemented
+
+`requirements.txt` lists `celery[redis]` and `redis`, and `config.py` defines `redis_url`. **No Celery app, task decorator, beat schedule, or worker process exists anywhere in the codebase.** The one function that looks like a background task — `backend/app/workers/tasks.py`'s `run_screening()` — is called directly and synchronously (`await run_screening(...)`) inline inside `POST /api/applications`, blocking that HTTP request until the GPT-4o call completes.
+
+**Practical implications:**
+- Don't assume there's a job queue you can push work onto — there isn't one yet, despite the dependency being present.
+- CV screening latency is directly the candidate's page-load latency for the application form. If Azure OpenAI is slow, the application form is slow.
+- If a real queue is ever introduced (there's a clear future use case here — moving AI screening off the request path), it would need actual Celery/RQ/similar wiring added, not just relying on the currently-listed dependencies.
+
+## Testing
+
+There is no `pytest`/CI-wired test suite for the backend. What exists:
+- `backend/test_api.py`, `test_full_flow.py`, `test_submit.py` — standalone scripts that exercise a *running* server (job creation → application submission → screening → approval), useful as manual smoke tests or as a reference for the request/response shapes, but they don't run in CI.
+- `backend/tests/test_realtime_advance_topic.py` — the one genuine unit test (no pytest framework, run via `python tests/test_realtime_advance_topic.py`), covering the interview topic/turn-count state machine (`advance_topic()` in `realtime_interviewer.py`). If you change interview-flow logic, run this and consider extending it.
+
+No frontend test suite was found either (`npm run test` in the CI workflow is a no-op — `--if-present` and no `test` script exists in `package.json`).
+
+## Known operational debt, summarized
+
+| Item | Risk if ignored |
+|---|---|
+| No Alembic, hand-rolled column migrations | Schema changes beyond "add a nullable column" require manual work and are easy to get wrong across SQLite/Postgres |
+| Celery/Redis declared but unused | AI screening runs in-request; a slow AI provider directly slows down the public application form |
+| No backend CI/CD workflow found | Production backend deployment process is undocumented — confirm and record it |
+| No automated test suite (backend or frontend) | Regressions in the interview state machine or screening logic won't be caught before production |
+| Two Supabase/backend data stores for jobs & applications | See [02-data-model-and-storage.md](02-data-model-and-storage.md) — silent data loss during backend outages |
