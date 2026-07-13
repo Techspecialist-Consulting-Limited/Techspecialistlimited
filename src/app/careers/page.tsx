@@ -88,32 +88,13 @@ export default function Careers() {
         <div className="h-full w-0 bg-[linear-gradient(90deg,#4584ed,#ef6526)] transition-[width] duration-150" id="scrollProgress" />
       </div>
 
-      {/* Hero */}
-      <header className="border-b border-gray-200 bg-[var(--bg-soft)] px-6 pb-12 pt-28 dark:border-white/10 dark:bg-white/[0.03] lg:px-8 lg:pb-16 lg:pt-32">
-        <div className="mx-auto max-w-[1280px]">
-          <div className="section-tag mb-4">Join Our Team</div>
-          <h1 className="section-title mb-5" style={{ maxWidth: 600 }}>
-            Build Your Future <em>With Us</em>
-          </h1>
-          <p className="max-w-xl text-[15px] leading-7 text-[var(--body)]">
-            Explore open positions and become part of a team shaping the future of enterprise technology and AI-powered business operations.
+      {/* Slim title bar */}
+      <header className="border-b border-gray-200 bg-[var(--bg-soft)] px-6 pb-6 pt-28 dark:border-white/10 dark:bg-white/[0.03] lg:px-8 lg:pt-32">
+        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-2">
+          <h1 className="font-syne text-xl font-extrabold text-[var(--heading)] sm:text-2xl">Careers</h1>
+          <p className="text-sm text-[var(--body)]">
+            {jobs.length} position{jobs.length !== 1 ? 's' : ''} open
           </p>
-
-          {/* Stats strip */}
-          <div className="problem-stats-strip mt-8" style={{ maxWidth: 520 }}>
-            <div className="pstat">
-              <div className="pstat-num">{jobs.length}</div>
-              <div className="pstat-label">Open Positions</div>
-            </div>
-            <div className="pstat">
-              <div className="pstat-num">{departments.length}</div>
-              <div className="pstat-label">Departments</div>
-            </div>
-            <div className="pstat">
-              <div className="pstat-num">{locations.length}</div>
-              <div className="pstat-label">Locations</div>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -306,6 +287,34 @@ export default function Careers() {
           )}
         </div>
       </main>
+
+      {/* Why Join Us */}
+      <section className="border-t border-gray-200 bg-[var(--bg-soft)] px-6 py-14 dark:border-white/10 dark:bg-white/[0.03] lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="section-tag mb-4">Join Our Team</div>
+          <h2 className="section-title mb-5" style={{ maxWidth: 600 }}>
+            Build Your Future <em>With Us</em>
+          </h2>
+          <p className="max-w-xl text-[15px] leading-7 text-[var(--body)]">
+            Explore open positions and become part of a team shaping the future of enterprise technology and AI-powered business operations.
+          </p>
+
+          <div className="problem-stats-strip mt-8" style={{ maxWidth: 520 }}>
+            <div className="pstat">
+              <div className="pstat-num">{jobs.length}</div>
+              <div className="pstat-label">Open Positions</div>
+            </div>
+            <div className="pstat">
+              <div className="pstat-num">{departments.length}</div>
+              <div className="pstat-label">Departments</div>
+            </div>
+            <div className="pstat">
+              <div className="pstat-num">{locations.length}</div>
+              <div className="pstat-label">Locations</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
