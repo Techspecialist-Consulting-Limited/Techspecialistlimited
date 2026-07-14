@@ -30,9 +30,9 @@ export default function ApplicationStatusPage() {
   };
 
   useEffect(() => {
-    if (searchParams.get('email')) {
-      checkStatus();
-    }
+    if (!searchParams.get('email')) return;
+    const t = setTimeout(() => { checkStatus(); }, 0);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
