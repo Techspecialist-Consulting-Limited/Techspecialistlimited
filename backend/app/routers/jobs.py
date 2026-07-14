@@ -26,6 +26,9 @@ class JobCreate(BaseModel):
     stage2_instructions: str = ""
     stage2_questions: list[str] = []
     stage2_topic_labels: list[str] = []
+    auto_advance_enabled: bool = False
+    auto_advance_pass_mark: float = 70.0
+    auto_advance_delay_minutes: int = 5
 
 
 class JobResponse(BaseModel):
@@ -43,6 +46,9 @@ class JobResponse(BaseModel):
     stage2_instructions: str = ""
     stage2_questions: list[str] = []
     stage2_topic_labels: list[str] = []
+    auto_advance_enabled: bool = False
+    auto_advance_pass_mark: float = 70.0
+    auto_advance_delay_minutes: int = 5
     applicant_count: int = 0
     created_at: str | None = None
 
@@ -55,6 +61,9 @@ class JobUpdate(BaseModel):
     department: str | None = None
     location: str | None = None
     type: str | None = None
+    auto_advance_enabled: bool | None = None
+    auto_advance_pass_mark: float | None = None
+    auto_advance_delay_minutes: int | None = None
 
 
 def parse_json_list(value: str | list | None) -> list:
@@ -93,6 +102,9 @@ async def _build_job_response(job: JobPosting, db: AsyncSession) -> JobResponse:
         stage2_instructions=job.stage2_instructions or "",
         stage2_questions=parse_json_list(job.stage2_questions),
         stage2_topic_labels=parse_json_list(job.stage2_topic_labels),
+        auto_advance_enabled=job.auto_advance_enabled,
+        auto_advance_pass_mark=job.auto_advance_pass_mark,
+        auto_advance_delay_minutes=job.auto_advance_delay_minutes,
         applicant_count=applicant_count,
         created_at=format_dt(job.created_at),
     )
@@ -111,6 +123,9 @@ async def create_job(job: JobCreate, db: AsyncSession = Depends(get_db), _: dict
         stage2_instructions=job.stage2_instructions,
         stage2_questions=json.dumps(job.stage2_questions),
         stage2_topic_labels=json.dumps(job.stage2_topic_labels),
+        auto_advance_enabled=job.auto_advance_enabled,
+        auto_advance_pass_mark=job.auto_advance_pass_mark,
+        auto_advance_delay_minutes=job.auto_advance_delay_minutes,
     )
     db.add(db_job)
     await db.commit()
@@ -188,6 +203,12 @@ async def update_job(
         job.location = update.location
     if update.type is not None:
         job.type = update.type
+    if update.auto_advance_enabled is not None:
+        job.auto_advance_enabled = update.auto_advance_enabled
+    if update.auto_advance_pass_mark is not None:
+        job.auto_advance_pass_mark = update.auto_advance_pass_mark
+    if update.auto_advance_delay_minutes is not None:
+        job.auto_advance_delay_minutes = update.auto_advance_delay_minutes
 
     await db.commit()
     await db.refresh(job)

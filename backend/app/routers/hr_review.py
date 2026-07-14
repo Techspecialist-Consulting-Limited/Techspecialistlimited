@@ -84,6 +84,61 @@ async def get_dashboard_stats(
     )
 
 
+class PendingDecision(BaseModel):
+    application_id: uuid.UUID
+    candidate_name: str
+    candidate_email: str
+    job_id: uuid.UUID
+    job_title: str
+    status: str
+    score: float | None = None
+    overall_recommendation: str | None = None
+    interview_summary: str | None = None
+    key_strengths: list[str] = []
+    areas_for_improvement: list[str] = []
+    completed_at: str | None = None
+
+
+@router.get("/pending-decisions", response_model=list[PendingDecision])
+async def get_pending_decisions(
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
+    result = await db.execute(
+        select(Application, StageResult, JobPosting)
+        .join(StageResult, StageResult.application_id == Application.id)
+        .join(JobPosting, JobPosting.id == Application.job_id)
+        .where(
+            StageResult.stage_number == 2,
+            Application.status.notin_(["hired", "rejected"]),
+            Application.is_archived == False,
+            JobPosting.is_deleted == False,
+        )
+        .order_by(StageResult.created_at.desc())
+    )
+    rows = result.all()
+
+    decisions = []
+    for app, stage_result, job in rows:
+        feedback = _parse_ai_feedback(stage_result.ai_feedback) or {}
+        decisions.append(PendingDecision(
+            application_id=app.id,
+            candidate_name=app.candidate_name,
+            candidate_email=app.candidate_email,
+            job_id=job.id,
+            job_title=job.title,
+            status=app.status,
+            score=stage_result.score,
+            overall_recommendation=feedback.get("overall_recommendation"),
+            interview_summary=feedback.get("interview_summary") or feedback.get("feedback"),
+            key_strengths=feedback.get("key_strengths") or [],
+            areas_for_improvement=feedback.get("areas_for_improvement") or [],
+            completed_at=str(stage_result.created_at) if stage_result.created_at else None,
+        ))
+
+    return decisions
+
+
 class ScreeningDetail(BaseModel):
     overall_score: float
     strengths: str | None = None
@@ -98,10 +153,20 @@ class StageResultDetail(BaseModel):
     stage_number: int
     transcript: str | None = None
     score: float | None = None
-    ai_feedback: str | None = None
+    ai_feedback: dict | None = None
     created_at: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+def _parse_ai_feedback(raw: str | None) -> dict | None:
+    if not raw:
+        return None
+    try:
+        parsed = json.loads(raw)
+        return parsed if isinstance(parsed, dict) else None
+    except (json.JSONDecodeError, TypeError):
+        return None
 
 
 class ConversationHistoryItem(BaseModel):
@@ -259,7 +324,7 @@ async def list_applications(
                 stage_number=s.stage_number,
                 transcript=s.transcript,
                 score=s.score,
-                ai_feedback=s.ai_feedback,
+                ai_feedback=_parse_ai_feedback(s.ai_feedback),
                 created_at=str(s.created_at) if s.created_at else None,
             ) for s in stage_results],
             conversation_session=conv_detail,
@@ -358,7 +423,7 @@ async def get_application_detail(
                 stage_number=s.stage_number,
                 transcript=s.transcript,
                 score=s.score,
-                ai_feedback=s.ai_feedback,
+                ai_feedback=_parse_ai_feedback(s.ai_feedback),
                 created_at=str(s.created_at) if s.created_at else None,
             ) for s in stage_results],
         conversation_session=conv_detail,

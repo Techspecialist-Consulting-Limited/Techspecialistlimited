@@ -1,21 +1,26 @@
+import asyncio
 import io
 import logging
+import secrets
 import uuid
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, Header, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, UploadFile, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.config import settings
-from app.database import get_db
+from app.database import async_session, get_db
 from app.models.ai_result import AIScreeningResult
 from app.models.application import Application
 from app.models.job_posting import JobPosting
+from app.services.audit_service import log_action
 from app.services.email_service import (
     send_application_received_email,
     send_new_application_notification,
+    send_stage2_invitation_email,
 )
 from app.services.storage import upload_file
 from app.workers.tasks import run_screening
@@ -23,6 +28,44 @@ from app.workers.tasks import run_screening
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/applications", tags=["applications"])
+
+
+async def _auto_advance_after_delay(application_id: uuid.UUID, delay_minutes: int):
+    await asyncio.sleep(max(delay_minutes, 0) * 60)
+    try:
+        async with async_session() as db:
+            result = await db.execute(select(Application).where(Application.id == application_id))
+            app = result.scalar_one_or_none()
+            if not app or app.status != "pending":
+                return  # HR already acted manually, or application no longer exists
+
+            job_result = await db.execute(select(JobPosting).where(JobPosting.id == app.job_id))
+            job = job_result.scalar_one_or_none()
+            if not job:
+                return
+
+            app.stage += 1
+            app.status = "approved"
+            app.assessment_token = secrets.token_urlsafe(32)
+            app.assessment_sent_at = datetime.now(timezone.utc)
+            app.assessment_expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+            magic_link = f"{settings.frontend_url}/assessment/{app.assessment_token}"
+            await db.commit()
+
+            await log_action(
+                db, application_id, "auto_advanced",
+                f"Auto-advanced to stage {app.stage} - CV screening score met the configured pass mark",
+            )
+
+            await send_stage2_invitation_email(
+                to=app.candidate_email,
+                name=app.candidate_name,
+                job_title=job.title,
+                magic_link=magic_link,
+                expires_at=app.assessment_expires_at,
+            )
+    except Exception as e:
+        logger.error(f"Auto-advance failed for application {application_id}: {e}")
 
 
 def extract_text(content: bytes, filename: str) -> str:
@@ -68,6 +111,7 @@ async def submit_application(
     candidate_name: str,
     candidate_email: str,
     cv: UploadFile,
+    background_tasks: BackgroundTasks,
     cover_letter: UploadFile | None = None,
     db: AsyncSession = Depends(get_db),
     _: bool = Depends(verify_api_key),
@@ -117,6 +161,9 @@ async def submit_application(
         select(AIScreeningResult).where(AIScreeningResult.application_id == app.id)
     )
     screening = screening_result.scalar_one_or_none()
+
+    if job.auto_advance_enabled and screening and screening.overall_score >= job.auto_advance_pass_mark:
+        background_tasks.add_task(_auto_advance_after_delay, app.id, job.auto_advance_delay_minutes)
 
     try:
         await send_new_application_notification(

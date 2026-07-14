@@ -34,6 +34,15 @@ async def run_migrations():
             if row and row[0] and "type" not in row[0]:
                 logger.info("Adding type column to job_postings")
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN type TEXT DEFAULT 'Full-time'"))
+            if row and row[0] and "auto_advance_enabled" not in row[0]:
+                logger.info("Adding auto_advance_enabled column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN auto_advance_enabled BOOLEAN DEFAULT 0"))
+            if row and row[0] and "auto_advance_pass_mark" not in row[0]:
+                logger.info("Adding auto_advance_pass_mark column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN auto_advance_pass_mark REAL DEFAULT 70.0"))
+            if row and row[0] and "auto_advance_delay_minutes" not in row[0]:
+                logger.info("Adding auto_advance_delay_minutes column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN auto_advance_delay_minutes INTEGER DEFAULT 5"))
 
             result2 = await conn.execute(
                 text("SELECT sql FROM sqlite_master WHERE type='table' AND name='applications'")
@@ -63,6 +72,9 @@ async def run_migrations():
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS department TEXT DEFAULT ''"))
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS location TEXT DEFAULT ''"))
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'Full-time'"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS auto_advance_enabled BOOLEAN DEFAULT FALSE"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS auto_advance_pass_mark DOUBLE PRECISION DEFAULT 70.0"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS auto_advance_delay_minutes INTEGER DEFAULT 5"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_sent_at TIMESTAMP"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_expires_at TIMESTAMP"))

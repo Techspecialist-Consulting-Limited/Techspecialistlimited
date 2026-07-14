@@ -21,6 +21,9 @@ export default function CreateJobPage() {
     stage2_instructions: '',
     stage2_questions: '',
     stage2_topic_labels: '',
+    auto_advance_enabled: false,
+    auto_advance_pass_mark: 70,
+    auto_advance_delay_minutes: 5,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,6 +129,66 @@ export default function CreateJobPage() {
               </label>
             </div>
           </div>
+        </div>
+
+        {/* Stage 2 Invitation Flow */}
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-6">
+          <h2 className="mb-2 font-syne text-[16px] font-bold text-[var(--heading)]">Stage 2 Invitation Flow</h2>
+          <p className="mb-5 text-[13px] text-[var(--body)]">Choose how candidates move from CV screening to the AI interview stage.</p>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setForm((p) => ({ ...p, auto_advance_enabled: false }))}
+              className="rounded-xl p-4 text-left transition-all"
+              style={{
+                border: !form.auto_advance_enabled ? '1.5px solid var(--blue)' : '1px solid var(--border)',
+                background: !form.auto_advance_enabled ? 'rgba(69,132,237,0.04)' : 'transparent',
+              }}
+            >
+              <div className="text-[13px] font-bold text-[var(--heading)]">Manual Review</div>
+              <div className="mt-1 text-[12px] text-[var(--body)]">HR reviews each CV screening result and manually approves candidates to send the AI interview invite. Current default flow.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm((p) => ({ ...p, auto_advance_enabled: true }))}
+              className="rounded-xl p-4 text-left transition-all"
+              style={{
+                border: form.auto_advance_enabled ? '1.5px solid var(--blue)' : '1px solid var(--border)',
+                background: form.auto_advance_enabled ? 'rgba(69,132,237,0.04)' : 'transparent',
+              }}
+            >
+              <div className="text-[13px] font-bold text-[var(--heading)]">Auto-Advance</div>
+              <div className="mt-1 text-[12px] text-[var(--body)]">Candidates who meet a configured CV screening pass mark are automatically sent the AI interview invite after a short delay, no manual approval needed.</div>
+            </button>
+          </div>
+
+          {form.auto_advance_enabled && (
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <label className={labelClass}>
+                Pass Mark (CV Screening Score, 0-100)
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={form.auto_advance_pass_mark}
+                  onChange={(e) => setForm((p) => ({ ...p, auto_advance_pass_mark: Number(e.target.value) }))}
+                  className={inputClass}
+                />
+              </label>
+              <label className={labelClass}>
+                Delay Before Sending Invite (minutes)
+                <input
+                  type="number"
+                  min={1}
+                  max={60}
+                  value={form.auto_advance_delay_minutes}
+                  onChange={(e) => setForm((p) => ({ ...p, auto_advance_delay_minutes: Number(e.target.value) }))}
+                  className={inputClass}
+                />
+              </label>
+            </div>
+          )}
         </div>
 
         {error && (

@@ -42,6 +42,9 @@ export interface Job {
   stage2_instructions?: string;
   stage2_questions?: string[];
   stage2_topic_labels?: string[];
+  auto_advance_enabled?: boolean;
+  auto_advance_pass_mark?: number;
+  auto_advance_delay_minutes?: number;
   applicant_count?: number;
   created_at: string;
   updated_at?: string;
@@ -258,6 +261,25 @@ export function resendAssessment(
     headers: authHeaders(),
     body: JSON.stringify({ expiration_days: expirationDays }),
   });
+}
+
+export interface PendingDecision {
+  application_id: string;
+  candidate_name: string;
+  candidate_email: string;
+  job_id: string;
+  job_title: string;
+  status: string;
+  score: number | null;
+  overall_recommendation: string | null;
+  interview_summary: string | null;
+  key_strengths: string[];
+  areas_for_improvement: string[];
+  completed_at: string | null;
+}
+
+export function fetchPendingDecisions(): Promise<PendingDecision[]> {
+  return request('/hr/pending-decisions', { headers: authHeaders() });
 }
 
 export function clearApplications(jobId: string): Promise<{ message: string }> {

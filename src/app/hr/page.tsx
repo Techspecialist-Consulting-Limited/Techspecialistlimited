@@ -2,12 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { fetchJobs, fetchDashboardStats, type Job, type DashboardStats } from '@/lib/recruitment-api';
+import { fetchJobs, fetchDashboardStats, fetchPendingDecisions, type Job, type DashboardStats, type PendingDecision } from '@/lib/recruitment-api';
 import { BrandedLoader } from '@/components/recruitment';
+
+const RECOMMENDATION_STYLE: Record<string, { label: string; color: string }> = {
+  highly_recommended: { label: 'Highly Recommended', color: 'var(--score-high)' },
+  strong_yes: { label: 'Highly Recommended', color: 'var(--score-high)' },
+  recommended: { label: 'Recommended', color: 'var(--blue)' },
+  yes: { label: 'Recommended', color: 'var(--blue)' },
+  consider: { label: 'Consider', color: 'var(--score-mid)' },
+  no: { label: 'Not Recommended', color: 'var(--status-rejected)' },
+  not_recommended: { label: 'Not Recommended', color: 'var(--status-rejected)' },
+  strong_no: { label: 'Not Recommended', color: 'var(--status-rejected)' },
+};
 
 export default function HRDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [pendingDecisions, setPendingDecisions] = useState<PendingDecision[]>([]);
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState(false);
 
@@ -15,10 +27,12 @@ export default function HRDashboard() {
     Promise.all([
       fetchJobs().catch(() => { setBackendError(true); return []; }),
       fetchDashboardStats().catch(() => null),
+      fetchPendingDecisions().catch(() => []),
     ])
-      .then(([jobsData, statsData]) => {
+      .then(([jobsData, statsData, decisionsData]) => {
         setJobs(jobsData);
         setStats(statsData);
+        setPendingDecisions(decisionsData);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -119,6 +133,57 @@ export default function HRDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Pending Team Decisions */}
+      {pendingDecisions.length > 0 && (
+        <div className="mb-8">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-[16px] font-bold text-[var(--heading)]">Pending Team Decisions</h2>
+            <span className="rounded-full bg-[rgba(69,132,237,0.08)] px-3 py-1 text-[11px] font-semibold text-[var(--blue)]">
+              {pendingDecisions.length} awaiting review
+            </span>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {pendingDecisions.slice(0, 6).map((d) => {
+              const rec = d.overall_recommendation ? RECOMMENDATION_STYLE[d.overall_recommendation.toLowerCase()] : null;
+              return (
+                <Link
+                  key={d.application_id}
+                  href={`/hr/applicants/${d.application_id}`}
+                  className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 transition-all hover:-translate-y-0.5 hover:border-[rgba(69,132,237,0.22)] hover:shadow-md dark:border-white/10 dark:bg-[#101827]"
+                >
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-[14px] font-semibold text-[var(--heading)]">{d.candidate_name}</div>
+                      <div className="truncate text-[11px] text-[var(--body)]">{d.job_title}</div>
+                    </div>
+                    {d.score !== null && (
+                      <span className="flex-shrink-0 rounded-full bg-[var(--bg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--heading)] dark:bg-white/5">
+                        {Math.round(d.score)}/100
+                      </span>
+                    )}
+                  </div>
+                  {rec && (
+                    <span
+                      className="mb-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em]"
+                      style={{ background: `${rec.color}14`, color: rec.color }}
+                    >
+                      {rec.label}
+                    </span>
+                  )}
+                  {d.interview_summary && (
+                    <p className="line-clamp-2 text-[12px] leading-relaxed text-[var(--body)]">{d.interview_summary}</p>
+                  )}
+                  <div className="mt-3 flex items-center gap-1 text-[12px] font-semibold text-[var(--blue)] opacity-0 transition-opacity group-hover:opacity-100">
+                    Review & Decide
+                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="mb-8">

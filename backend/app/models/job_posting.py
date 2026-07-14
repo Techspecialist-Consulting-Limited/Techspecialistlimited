@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, String, Text, func
+from sqlalchemy import DateTime, Float, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,6 +37,9 @@ class JobPosting(Base):
     )
     is_deleted: Mapped[bool] = mapped_column(nullable=False, default=False)
     is_closed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    auto_advance_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
+    auto_advance_pass_mark: Mapped[float] = mapped_column(Float, nullable=False, default=70.0)
+    auto_advance_delay_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
