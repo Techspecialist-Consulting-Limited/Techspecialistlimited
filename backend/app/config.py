@@ -62,9 +62,10 @@ class Settings(BaseSettings):
 
     # Email (prints to console in dev)
     resend_api_key: str = ""
-    sender_email: str = "noreply@techspecialistlimited.com"
+    sender_email: str = "recruitment@techspecialistlimited.com"
     sender_display_name: str = "TechSpecialist Limited Recruitment Team"
     hr_notification_email: str = ""  # comma-separated list; new-applicant alerts go here
+    applicant_reply_to_email: str = ""  # comma-separated list; replies to applicant-facing emails land here
 
     # Auth
     api_key: str = "dev-api-key-123"

@@ -9,10 +9,19 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _branded_template(body_html: str) -> str:
+def _applicant_reply_to() -> list[str]:
+    return [e.strip() for e in settings.applicant_reply_to_email.split(",") if e.strip()]
+
+
+def _branded_template(body_html: str, repliable: bool = True) -> str:
     logo = settings.logo_url
     color = settings.brand_color
     company = settings.company_name
+    footer_note = (
+        "Replies to this email are monitored by our recruitment team."
+        if repliable
+        else "This is an automated message from our recruitment system. Please do not reply directly."
+    )
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -42,7 +51,7 @@ def _branded_template(body_html: str) -> str:
 </div>
 <div class="footer">
   <p style="margin:0 0 4px"><strong>{company}</strong></p>
-  <p style="margin:0">This is an automated message from our recruitment system. Please do not reply directly.</p>
+  <p style="margin:0">{footer_note}</p>
 </div>
 </div>
 </div>
@@ -53,6 +62,7 @@ def _branded_template(body_html: str) -> str:
 async def send_email(
     to: str, subject: str, html_content: str,
     attachments: list[dict] | None = None,
+    reply_to: list[str] | None = None,
 ):
     if settings.dev_mode or not settings.resend_api_key:
         logger.info(f"[DEV EMAIL] To: {to}")
@@ -60,6 +70,8 @@ async def send_email(
         logger.info(f"[DEV EMAIL] Body: {html_content}")
         if attachments:
             logger.info(f"[DEV EMAIL] Attachments: {[a['filename'] for a in attachments]}")
+        if reply_to:
+            logger.info(f"[DEV EMAIL] Reply-To: {reply_to}")
         return
 
     try:
@@ -71,6 +83,8 @@ async def send_email(
         }
         if attachments:
             payload["attachments"] = attachments
+        if reply_to:
+            payload["reply_to"] = reply_to
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -133,7 +147,7 @@ async def send_approval_email(
     else:
         return
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body), reply_to=_applicant_reply_to())
 
 
 async def send_stage2_invitation_email(
@@ -188,7 +202,7 @@ async def send_stage2_invitation_email(
     <p style="font-size:12px;color:#aaa;margin-top:12px">This link will expire and can only be used once. Please complete the assessment in one sitting.</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body), reply_to=_applicant_reply_to())
 
 
 async def send_rejection_email(to: str, name: str, job_title: str, stage: int):
@@ -199,7 +213,7 @@ async def send_rejection_email(to: str, name: str, job_title: str, stage: int):
     <p>We appreciate the time and effort you put into your application and wish you the best in your future endeavors.</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body), reply_to=_applicant_reply_to())
 
 
 async def send_interview_invitation_email(
@@ -214,7 +228,8 @@ async def send_interview_invitation_email(
     location_html = f"<p><strong>Location:</strong> {location_or_link}</p>" if interview_type.lower() == "physical" else f'<p><strong>Meeting Link:</strong> <a href="{location_or_link}" style="color:{settings.brand_color}">{location_or_link}</a></p>'
     notes_html = f"<p><strong>Preparation Notes:</strong> {notes}</p>" if notes else ""
     interviewer_html = f"<p><strong>Interviewer:</strong> {interviewer}</p>" if interviewer else ""
-    contact = contact_email or settings.sender_email
+    reply_to = _applicant_reply_to()
+    contact = contact_email or (reply_to[0] if reply_to else settings.sender_email)
 
     body = f"""
     <h2>Congratulations {name}!</h2>
@@ -250,7 +265,7 @@ async def send_interview_invitation_email(
             "content": base64.b64encode(ics_content.encode("utf-8")).decode("ascii"),
         }]
 
-    await send_email(to, subject, _branded_template(body), attachments=attachments)
+    await send_email(to, subject, _branded_template(body), attachments=attachments, reply_to=reply_to)
 
 
 async def send_new_application_notification(
@@ -281,7 +296,7 @@ async def send_new_application_notification(
     """
 
     for to in recipients:
-        await send_email(to, subject, _branded_template(body))
+        await send_email(to, subject, _branded_template(body, repliable=False))
 
 
 async def send_application_received_email(to: str, name: str, job_title: str, application_id: str = ""):
@@ -297,7 +312,7 @@ async def send_application_received_email(to: str, name: str, job_title: str, ap
     {status_link_html}
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body), reply_to=_applicant_reply_to())
 
 
 async def send_hr_invite_email(to: str, name: str, set_password_link: str):
@@ -312,7 +327,7 @@ async def send_hr_invite_email(to: str, name: str, set_password_link: str):
     <p style="font-size:12px;color:#aaa;margin-top:12px">This link expires in 1 hour. If you did not expect this invitation, you can ignore this email.</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body, repliable=False))
 
 
 async def send_password_reset_email(to: str, name: str, reset_link: str):
@@ -326,7 +341,7 @@ async def send_password_reset_email(to: str, name: str, reset_link: str):
     <p style="font-size:12px;color:#aaa;margin-top:12px">This link expires in 1 hour. If you did not request this, you can safely ignore this email. Your password will not be changed.</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body, repliable=False))
 
 
 async def send_hired_email(to: str, name: str, job_title: str):
@@ -337,7 +352,7 @@ async def send_hired_email(to: str, name: str, job_title: str):
     <p>A member of our team will be in touch shortly with next steps and onboarding details.</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body), reply_to=_applicant_reply_to())
 
 
 async def send_expired_link_notification(to: str, name: str, job_title: str):
@@ -349,4 +364,4 @@ async def send_expired_link_notification(to: str, name: str, job_title: str):
     <p>We apologise for any inconvenience.</p>
     """
 
-    await send_email(to, subject, _branded_template(body))
+    await send_email(to, subject, _branded_template(body), reply_to=_applicant_reply_to())
