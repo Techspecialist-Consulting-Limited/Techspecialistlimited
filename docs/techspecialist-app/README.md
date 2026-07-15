@@ -4,7 +4,7 @@ This is the reference documentation for the TechSpecialist Limited web applicati
 
 **Audience:** Written in two layers. Each document opens with a plain-language summary for executives/non-technical readers, then goes into full technical depth for engineers. Read the summaries for the big picture; read the full documents when you need to build, debug, or hand this system off.
 
-**Last verified against codebase:** 2026-07-13. This documentation describes what the code actually does, not what it was intended to do — including gaps and inconsistencies found along the way. If the code changes, this documentation will drift; treat it as a snapshot, and re-verify anything security- or data-critical before relying on it.
+**Last verified against codebase:** 2026-07-15. This documentation describes what the code actually does, not what it was intended to do — including gaps and inconsistencies found along the way. If the code changes, this documentation will drift; treat it as a snapshot, and re-verify anything security- or data-critical before relying on it.
 
 ## Contents
 

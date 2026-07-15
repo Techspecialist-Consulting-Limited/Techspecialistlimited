@@ -16,6 +16,7 @@ Auth column values: **none** (public), **api-key** (`x-api-key` shared secret), 
 | `POST /api/assessment/send-report` | — (calls Anthropic/Groq + Resend directly) | none | none |
 | `GET/POST /api/recruitment/jobs`, `GET /api/recruitment/jobs/[jobId]` | `/api/jobs[/{id}]` | Supabase `jobs` (GET only) | none |
 | `POST /api/recruitment/applications` | `/api/applications` | Supabase `applications` insert + storage upload | api-key (backend only; **fallback has none**) |
+| `GET /api/recruitment/applications/[applicationId]/status` | `/api/applications/{id}/status` | none | none (email query param must match) |
 | `GET/POST /api/recruitment/assessment/[token]` | `/api/assessment/{token}[/{action}]` | none | token |
 | `POST /api/recruitment/hr/auth` | `/api/auth/login` | hardcoded `HR_EMAIL`/`HR_PASSWORD` check | none (this route *issues* the JWT) |
 | `POST /api/recruitment/hr/auth/change-password` | `/api/auth/change-password` | none | HR JWT |
@@ -25,12 +26,17 @@ Auth column values: **none** (public), **api-key** (`x-api-key` shared secret), 
 | `PUT /api/recruitment/hr/jobs/[jobId]/soft-delete`, `/restore` | `/api/jobs/{id}/soft-delete`, `/restore` | none | HR JWT |
 | `GET /api/recruitment/hr/jobs/history` | `/api/jobs/history` | none | HR JWT |
 | `GET /api/recruitment/hr/applications/[jobId]` | `/api/hr/applications/{job_id}` | none | HR JWT |
+| `DELETE /api/recruitment/hr/applications/[jobId]` (route param reused as an application id, not a job id — same file handles both) | `/api/hr/applications/{application_id}` | none | HR JWT |
 | `GET /api/recruitment/hr/applicants/[applicationId]` | `/api/hr/applications/detail/{id}` | none | HR JWT |
 | `GET /api/recruitment/hr/applicants/[applicationId]/document` | `/api/hr/applications/{id}/document` | none | HR JWT |
-| `POST /api/recruitment/hr/review/[applicationId]` | `/api/hr/review/{id}` | none | HR JWT |
+| `POST /api/recruitment/hr/review/[applicationId]` | `/api/hr/review/{id}` (action: `approve`\|`reject`\|`hire`) | none | HR JWT |
 | `POST /api/recruitment/hr/approve/[applicationId]` | `/api/hr/approve/{id}` | none | HR JWT |
 | `POST /api/recruitment/hr/resend/[applicationId]` | `/api/hr/resend/{id}` | none | HR JWT |
+| `POST /api/recruitment/hr/bulk-action` | `/api/hr/bulk-action` (action: `archive`\|`unarchive`\|`reject`) | none | HR JWT |
 | `POST /api/recruitment/hr/clear/[jobId]` | `/api/hr/clear/{job_id}` | none | HR JWT |
+| `GET /api/recruitment/hr/pending-decisions` | `/api/hr/pending-decisions` | none | HR JWT |
+| `POST /api/recruitment/hr/scorecards` | `/api/hr/scorecards` | none | HR JWT |
+| `GET /api/recruitment/hr/scorecards/by-application/[applicationId]` | `/api/hr/scorecards/by-application/{id}` | none | HR JWT |
 | `GET /api/recruitment/hr/audit-logs/[applicationId]` | `/api/hr/audit-logs/{id}` | none | HR JWT |
 | `GET /api/recruitment/hr/stats` | `/api/hr/stats` | none | HR JWT |
 | `GET /api/recruitment/hr/analytics/{overview,interviews,pipeline,time-to-hire,trends}` | `/api/hr/analytics/*` | none | HR JWT |
@@ -43,27 +49,35 @@ Auth column values: **none** (public), **api-key** (`x-api-key` shared secret), 
 ## Backend routes (`backend/app/routers/**`)
 
 ### `jobs.py` — prefix `/api/jobs`
-- `POST /api/jobs` — create a job posting (HR JWT)
+- `POST /api/jobs` — create a job posting, including AI screening config, interview topics, auto-advance settings, and `interview_max_minutes` (HR JWT)
 - `GET /api/jobs` — list jobs (public; `show_all`/`deleted` query flags)
 - `GET /api/jobs/history` — soft-deleted jobs (public)
 - `GET /api/jobs/{job_id}` — one job + applicant count (public)
-- `PUT /api/jobs/{job_id}` — update status/department/location/type/is_closed (HR JWT)
+- `PUT /api/jobs/{job_id}` — update status/department/location/type/is_closed/auto_advance_*/interview_max_minutes (HR JWT)
 - `PUT /api/jobs/{job_id}/soft-delete` / `/restore` (HR JWT)
 
 ### `applications.py` — prefix `/api/applications`
-- `POST /api/applications` — candidate submits (multipart: job_id, name, email, cv, optional cover letter; requires `x-api-key`)
+- `POST /api/applications` — candidate submits (multipart: job_id, name, email, cv, optional cover letter; requires `x-api-key`). If the job has auto-advance enabled and the CV screening score clears the pass mark, schedules a delayed stage-2 invite via `BackgroundTasks`.
 - `GET /api/applications/{application_id}` — fetch one (public)
+- `GET /api/applications/{application_id}/status?email=...` — candidate self-service status check (public; email must match case-insensitively or 404s)
 
 ### `hr_review.py` — prefix `/api/hr`
 - `GET /api/hr/stats` — dashboard counts (HR JWT)
-- `GET /api/hr/applications/{job_id}` — applicants for a job, sorted by score (HR JWT)
+- `GET /api/hr/pending-decisions` — stage-2-complete applications awaiting a hire/reject/interview decision, with parsed AI recommendation/summary (HR JWT)
+- `GET /api/hr/applications/{job_id}` — applicants for a job, sorted by score; `include_archived` query flag; includes per-email duplicate-application counts (HR JWT)
 - `GET /api/hr/applications/detail/{application_id}` — full applicant detail (HR JWT)
 - `POST /api/hr/approve/{application_id}` — advance stage, send assessment invite (HR JWT)
-- `POST /api/hr/review/{application_id}` — approve or reject (HR JWT)
+- `POST /api/hr/review/{application_id}` — `approve`, `reject`, or `hire` (HR JWT)
+- `POST /api/hr/bulk-action` — `archive`/`unarchive`/`reject` across multiple `application_ids` in one call, each individually audit-logged (HR JWT)
+- `DELETE /api/hr/applications/{application_id}` — hard, cascading delete (screening result, stage results, conversation session, interviews, audit log, then the application itself) — irreversible (HR JWT)
 - `POST /api/hr/resend/{application_id}` — regenerate/resend assessment link (HR JWT)
 - `POST /api/hr/clear/{job_id}` — bulk-delete a job's applications and related rows (HR JWT)
 - `GET /api/hr/applications/{application_id}/document` — stream CV/cover letter (HR JWT)
 - `GET /api/hr/audit-logs/{application_id}` — audit trail (HR JWT)
+
+### `scorecards.py` — prefix `/api/hr`
+- `POST /api/hr/scorecards` — submit a structured interviewer scorecard (validates `recommendation` against a fixed enum: `strong_yes`/`yes`/`no`/`strong_no`; audit-logs the submission) (HR JWT)
+- `GET /api/hr/scorecards/by-application/{application_id}` — list scorecards for an application, newest first (HR JWT)
 
 ### `analytics.py` — prefix `/api/hr/analytics` (all HR JWT)
 - `GET /overview`, `/interviews`, `/pipeline`, `/time-to-hire`, `/trends`
@@ -73,17 +87,17 @@ Auth column values: **none** (public), **api-key** (`x-api-key` shared secret), 
 - `GET /by-application/{application_id}`, `/upcoming`, `/all`
 - `PUT /{interview_id}` — update, logs audit
 
-### `assessment.py` — prefix `/api/assessment` (legacy HTTP engine, token auth)
-- `GET /{token}` — session metadata (410 if expired)
-- `POST /{token}/start` — begin/resume, returns streamed TTS audio
-- `POST /{token}/respond` — candidate audio in, transcribe → next AI turn → streamed TTS reply
-- `POST /{token}/end` — force-end and score
+### `assessment.py` — prefix `/api/assessment` (session metadata + legacy HTTP engine, token auth)
+- `GET /{token}` — session metadata: candidate/job info, topics, `engine` (`"realtime"`/`"legacy"`, drives which frontend portal loads), `interview_max_minutes` (410 if link expired)
+- `POST /{token}/start` — begin/resume, returns streamed TTS audio (legacy engine)
+- `POST /{token}/respond` — candidate audio in, transcribe → next AI turn → streamed TTS reply (legacy engine)
+- `POST /{token}/end` — force-end and score (legacy engine)
 
 ### `assessment_ws.py` — prefix `/api/assessment` (legacy engine, WebSocket)
 - `WS /{token}/ws` — bidirectional streaming audio, per-sentence TTS
 
-### `assessment_realtime_ws.py` — prefix `/api/assessment` (Realtime engine)
-- `WS /{token}/realtime-ws` — live voice-to-voice proxy to Azure OpenAI Realtime API, gated by `realtime_interview_enabled`
+### `assessment_realtime_ws.py` — prefix `/api/assessment` (Realtime engine — the primary interview experience, see [04-features/03-ai-voice-interview.md](04-features/03-ai-voice-interview.md))
+- `WS /{token}/realtime-ws` — one persistent voice-to-voice session against Azure OpenAI's Realtime API (`gpt-realtime`) for the whole interview, gated by `realtime_interview_enabled` (currently `True` in production). Enforces per-job `interview_max_minutes` (soft, graceful wrap-up) and `realtime_max_session_seconds` (hard backstop).
 
 ### `auth.py` — prefix `/api/auth` (HR login)
 - `POST /login` — returns JWT (HS256, 8h)

@@ -2,7 +2,7 @@
 
 ## Summary
 
-The frontend has a clear CI/CD path to Azure Web App. The backend does not — it has a `Dockerfile` but no CI workflow in this repository, so how and where it actually runs in production isn't determinable from the code alone. There's also declared-but-unused infrastructure (Celery/Redis) worth knowing about before assuming background job processing exists.
+The frontend has a clear CI/CD path to Azure Web App. The backend does not — it has a `Dockerfile` but no CI workflow in this repository; it's deployed **manually**, by a human running two Azure CLI commands (documented below). There's also declared-but-unused infrastructure (Celery/Redis) worth knowing about before assuming background job processing exists.
 
 ## Running locally
 
@@ -31,7 +31,20 @@ On every startup (`app/main.py`'s lifespan hook), the backend:
 
 A `.vercel/repo.json` project link also exists in the repo, which implies a Vercel project may also be (or have been) connected. **Confirm with whoever manages hosting which one is the live, authoritative deployment** before making assumptions in an incident — don't assume Azure is the only place this is running.
 
-**Backend:** has a `Dockerfile` (`python:3.12-slim`, installs `requirements.txt`, runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`), but no matching GitHub Actions workflow exists in `.github/workflows/`. Where the backend is actually hosted in production is not recorded anywhere in this repository — **this is a gap in the documentation, not just the deployment setup: find out and record it here.**
+**Backend:** has a `Dockerfile` (`python:3.12-slim`, installs `requirements.txt`, runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`), and no matching GitHub Actions workflow exists in `.github/workflows/` — deployment is entirely manual. Confirmed live setup:
+
+- **Where it runs:** Azure Web App for Containers, name `techspecialist-api`, resource group `techspecialist`, region `canadacentral`. URL: `https://techspecialist-api-aub0eafrb0d4hcbq.canadacentral-01.azurewebsites.net`.
+- **Image registry:** Azure Container Registry `techspecialistacr`, image `recruitment-api:latest`.
+- **Deploy sequence** (run from the repo root, needs the Azure CLI logged in with access to the `techspecialist` resource group):
+  ```bash
+  az acr build --registry techspecialistacr --image recruitment-api:latest ./backend
+  az webapp restart --name techspecialist-api --resource-group techspecialist
+  ```
+  `az acr build` uploads and builds from the **local `backend/` directory on disk** — not from git — so uncommitted local changes get deployed too if the working tree isn't clean when you run it. Check `git status backend/` first if that matters to you.
+- **Two operational quirks worth knowing before you trust a "successful" deploy:**
+  1. On Windows, `az acr build`'s local log streaming can crash mid-build with `UnicodeEncodeError: 'charmap' codec can't encode characters` (a `colorama`/`cp1252` console issue) — this is cosmetic, the remote build usually keeps running fine. Don't treat a crashed local stream as a failed build; check the real status with `az acr task list-runs --registry techspecialistacr --top 1 --query "[0].status" -o tsv` instead.
+  2. **A single `az webapp restart` doesn't reliably pull the new image.** `/health` can return `200 OK` while the container is still silently serving the *previous* cached image (the App Service host doesn't always force a fresh `docker pull` on a plain restart when the tag name — `latest` — hasn't changed). After restarting, verify a field or behavior that only exists in the new code (e.g. `curl .../api/jobs` and check for a newly-added response field) before declaring the deploy done — don't just trust the health check. If the new code isn't there yet, restart again.
+- **Database migrations** run automatically on backend startup (see below), so a fresh Postgres column added in this deploy takes effect on the same restart — no separate migration step needed.
 
 ## Database migrations — read before touching the schema
 
@@ -39,7 +52,7 @@ Despite a `backend/alembic/` directory existing, **it is completely empty** — 
 
 The actual mechanism is `backend/app/migrate.py`, run automatically on every app startup:
 - New tables are created automatically from the SQLAlchemy models.
-- New *columns* on existing tables are added via dialect-aware `ALTER TABLE` statements hardcoded in `run_migrations()` (a separate SQLite branch and Postgres branch). As of this writing, these patch in: `job_postings.is_deleted/is_closed/department/location/type`, `applications.is_archived/assessment_sent_at/assessment_expires_at`, `conversation_sessions.engine`.
+- New *columns* on existing tables are added via dialect-aware `ALTER TABLE` statements hardcoded in `run_migrations()` (a separate SQLite branch and Postgres branch). As of this writing, these patch in: `job_postings.is_deleted/is_closed/department/location/type/auto_advance_enabled/auto_advance_pass_mark/auto_advance_delay_minutes/interview_max_minutes`, `applications.is_archived/assessment_sent_at/assessment_expires_at`, `conversation_sessions.engine`. The `interview_scorecards` table itself is new but created wholesale from the ORM model (`Base.metadata.create_all`), not via a hand-rolled `ALTER TABLE` — only *added columns on existing tables* need the manual migration step.
 
 **Practical implication:** if you need to add a new column to an existing table, you add it to the model *and* add a matching `ALTER TABLE ... ADD COLUMN` line to `run_migrations()` — there's no `alembic revision --autogenerate` workflow to lean on. If you need to drop a column, rename a column, or do anything more complex than "add a nullable column," this hand-rolled approach won't help you and you'll need to write the migration by hand (and probably introduce real Alembic at that point).
 

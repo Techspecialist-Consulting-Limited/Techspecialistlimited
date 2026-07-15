@@ -33,16 +33,22 @@ This is a **two-application system**, not one. A Next.js frontend serves everyth
 │                                   │   │  Storage bucket: applications  │
 │  - Job postings, applications    │   │                                │
 │  - AI CV screening (GPT-4o)      │   │  Used as a FALLBACK only, for: │
-│  - AI voice interview (Whisper / │   │  - listing jobs                │
-│    GPT-4o / Azure Realtime API)  │   │  - submitting an application   │
+│  - AI voice interview (Azure     │   │  - listing jobs                │
+│    Realtime API, primary; legacy │   │  - submitting an application   │
+│    Whisper/GPT-4o/TTS, fallback) │   │                                 │
 │  - HR auth, analytics, settings  │   │  when the Python backend       │
 │  - Own database: Postgres (prod) │   │  returns unreachable (502).    │
 │    / SQLite (dev)                │   │  See 02-data-model-and-        │
 │                                   │   │  storage.md for why this       │
-│  Deployed: not confirmed in repo │   │  creates two sources of truth. │
-│  (Dockerfile present; no CI      │   └──────────────────────────────┘
-│  workflow for it found in        │
-│  .github/workflows/)             │
+│  Deployed: Azure Web App for     │   │  creates two sources of truth. │
+│  Containers "techspecialist-api" │   └──────────────────────────────┘
+│  (resource group                 │
+│  "techspecialist"). Image built  │
+│  + pushed via Azure Container    │
+│  Registry "techspecialistacr";   │
+│  deployed manually               │
+│  (az acr build + az webapp       │
+│  restart) — no CI workflow.      │
 └───────┬───────────────────────────┘
         │
         ▼
@@ -74,15 +80,15 @@ This split matters for anyone maintaining the system:
 Browser → `POST /api/recruitment/applications` → proxied to backend `POST /api/applications` (protected by a shared `x-api-key` secret, not a user login) → backend extracts CV text, uploads files to storage, runs AI screening **synchronously in the same request** (see [07-deployment-and-operations.md](07-deployment-and-operations.md) for why this is worth knowing), writes the `Application` + `AIScreeningResult` rows, sends notification emails. If the backend call fails, the Next.js layer falls back to writing directly into Supabase's `applications` table and storage bucket instead — meaning that application would **never get AI-screened** (see [06-security-and-known-gaps.md](06-security-and-known-gaps.md)).
 
 **A candidate takes the AI voice interview:**
-Browser → `wss://.../api/assessment/{token}/realtime-ws` (or the legacy HTTP/WebSocket engine) → backend proxies a live audio session to Azure OpenAI's Realtime API → on completion, backend scores the conversation and writes a `StageResult` row.
+Browser → `wss://.../api/assessment/{token}/realtime-ws` → backend holds one persistent `gpt-realtime` session open for the whole interview (voice-to-voice, semantic VAD turn detection) → on completion, backend scores the conversation and writes a `StageResult` row. The legacy HTTP/WebSocket (Whisper/GPT-4o/TTS) engine still exists and is reachable at `/api/assessment/{token}/ws`, but is not what candidates get today — see [04-features/03-ai-voice-interview.md](04-features/03-ai-voice-interview.md).
 
 ## Environments
 
 | Environment | Frontend | Backend | Backend DB |
 |---|---|---|---|
 | Local dev | `npm run dev0` (`next dev`) | `uvicorn app.main:app --reload`, `RECRUITMENT_API_URL=http://localhost:8000` | SQLite (`backend/recruitment.db`), `dev_mode` true, local-disk file storage under `backend/storage/` |
-| Production | Azure Web App (Node/Next.js), per CI workflow | Not confirmed from this repo — see below | Postgres (per `backend/.env.example`), Azure Blob Storage |
+| Production | Azure Web App (Node/Next.js), per CI workflow | Azure Web App for Containers `techspecialist-api` (resource group `techspecialist`), image `techspecialistacr.azurecr.io/recruitment-api:latest` | Postgres (per `backend/.env.example`), Azure Blob Storage |
 
-**Gap worth flagging:** there is no CI/CD workflow in `.github/workflows/` for the `backend/` service, and no `docker-compose.yml` tying frontend and backend together. The backend has a `Dockerfile` (`python:3.12-slim`, exposes port 8000) but how/where it's actually deployed in production is not determinable from this repository alone — confirm with whoever manages infrastructure and record the answer here.
+**Gap worth flagging:** there is no CI/CD workflow in `.github/workflows/` for the `backend/` service, and no `docker-compose.yml` tying frontend and backend together. The backend has a `Dockerfile` (`python:3.12-slim`, exposes port 8000), and deployment is a **manual, human-run process**: `az acr build --registry techspecialistacr --image recruitment-api:latest ./backend` (rebuilds and pushes the image from the local `backend/` directory — not from git, so uncommitted local changes get deployed too if you're not careful), then `az webapp restart --name techspecialist-api --resource-group techspecialist`. See [07-deployment-and-operations.md](07-deployment-and-operations.md) for the full sequence and a real operational quirk (the first restart after a build sometimes still serves the old cached image — verify a field/behavior only the new code has before declaring the deploy done, don't just trust `/health`).
 
 A stray `out/` directory exists at the repo root (looks like a static export from `next export`/`output: 'export'` at some point), but the current `next.config.mjs` has no `output: 'export'` setting and `package.json`'s `build` script is plain `next build`. Treat `out/` as a stale build artifact unless someone confirms otherwise — it's not part of the live build pipeline.

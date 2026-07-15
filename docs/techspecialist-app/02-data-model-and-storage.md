@@ -34,6 +34,10 @@ A job listing HR has created.
 | `status` | string(20) | default "active" |
 | `is_deleted` | bool | soft-delete flag |
 | `is_closed` | bool | closed to new applications, but not deleted |
+| `auto_advance_enabled` | bool | default false — when true, candidates who clear `auto_advance_pass_mark` on CV screening skip the manual HR approval step for stage 2 |
+| `auto_advance_pass_mark` | float | default 70.0 — CV screening score threshold for auto-advance |
+| `auto_advance_delay_minutes` | int | default 5 — delay before the stage-2 invite email actually sends after auto-advance triggers (gives HR a window to intervene manually) |
+| `interview_max_minutes` | int | default 20 — soft target for the AI voice interview's length; the model is nudged to wrap up gracefully as this approaches (see [04-features/03-ai-voice-interview.md](04-features/03-ai-voice-interview.md)). A separate backend-wide hard cap (`realtime_max_session_seconds`, default 2700s) always applies underneath regardless of this value. |
 | `created_at` / `updated_at` | timestamp | |
 
 Relationship: one `JobPosting` → many `applications`.
@@ -48,13 +52,16 @@ One candidate's application to one job. The central record of the recruitment pi
 | `candidate_name`, `candidate_email` | string(255) | |
 | `cv_url`, `cover_letter_url` | text | storage URL (see storage section below) |
 | `cv_text`, `cover_letter_text` | text, nullable | extracted plain text used for AI screening |
-| `status` | string(20) | `pending`, `approved`, `rejected`, `assessment_completed`, `assessment_flagged`, `interview_scheduled` |
+| `status` | string(20) | `pending`, `approved`, `rejected`, `hired`, `assessment_completed`, `assessment_flagged`, `interview_scheduled` |
 | `stage` | int | default 1 (1 = CV screen, 2 = AI voice interview, 3 = human interview) |
+| `is_archived` | bool | default false — set via bulk archive/unarchive in the HR portal; archived applicants are hidden from the default list/board view but not deleted |
 | `assessment_token` | string(255), unique, nullable | magic-link token emailed to the candidate for stage 2 |
 | `assessment_sent_at`, `assessment_expires_at` | timestamp, nullable | |
 | `created_at` / `updated_at` | timestamp | |
 
-Relationships: belongs to one `JobPosting`; has one `AIScreeningResult`; has many `StageResult`; has one `ConversationSession`; has many `Interview`.
+Relationships: belongs to one `JobPosting`; has one `AIScreeningResult`; has many `StageResult`; has one `ConversationSession`; has many `Interview`; has many `InterviewScorecard` (via backref); has many `AuditLog` (not a formal FK).
+
+Note: the candidate email can be looked up across applications to flag likely duplicates in the HR portal (`application_count_for_email` computed field) — see [04-features/04-hr-portal.md](04-features/04-hr-portal.md).
 
 ### `ai_screening_results` (model: `AIScreeningResult`, file: `ai_result.py`)
 The AI's stage-1 verdict on a CV, one per application.
@@ -110,6 +117,19 @@ A **human-scheduled** final interview (stage 3) — distinct from the AI voice i
 | `location`, `meeting_link`, `interviewer_name`, `notes` | nullable | |
 | `status` | string(20) | default "scheduled" |
 | `created_at` / `updated_at` | timestamp | |
+
+### `interview_scorecards` (model: `InterviewScorecard`, file: `scorecard.py`)
+A structured scoring form an interviewer fills out after the stage-3 human interview. Multiple scorecards can exist per application (one per interviewer).
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID PK | |
+| `application_id` | UUID FK → `applications.id` | |
+| `interviewer_name` | string(255) | |
+| `communication_score`, `technical_score`, `culture_fit_score`, `problem_solving_score` | int | 1–5 scale each, entered via sliders in `ScorecardPanel.tsx` |
+| `recommendation` | string(20) | e.g. "strong_yes", "yes", "no", "strong_no" |
+| `notes` | text, nullable | |
+| `created_at` | timestamp | |
 
 ### `audit_logs` (model: `AuditLog`, file: `audit_log.py`)
 Compliance/history trail — every meaningful action taken on an application.

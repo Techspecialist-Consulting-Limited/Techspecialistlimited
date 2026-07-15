@@ -36,12 +36,12 @@ Defined in `backend/app/config.py` (Pydantic settings, loaded from `.env`).
 | Azure OpenAI — chat | `azure_openai_endpoint`, `azure_openai_key`, `azure_openai_api_version`, `gpt4o_deployment_name` | Powers CV screening and the "legacy" interview engine's conversation logic |
 | Azure OpenAI — Whisper | `azure_whisper_endpoint`, `azure_whisper_key`, `azure_whisper_api_version`, `whisper_deployment_name` | Speech-to-text for the legacy voice interview engine |
 | Azure OpenAI — TTS | `azure_tts_endpoint`, `azure_tts_key`, `azure_tts_api_version`, `tts_deployment_name`, `tts_voice` | Text-to-speech for the legacy voice interview engine |
-| Azure OpenAI — Realtime | `azure_realtime_endpoint`, `azure_realtime_key`, `realtime_deployment_name`, `realtime_voice`, `realtime_vad_threshold`, `realtime_vad_prefix_padding_ms`, `realtime_vad_silence_duration_ms`, `realtime_max_session_seconds`, `realtime_interview_enabled` | Voice-to-voice interview engine (newer, feature-flagged by `realtime_interview_enabled`) |
+| Azure OpenAI — Realtime | `azure_realtime_endpoint`, `azure_realtime_key`, `realtime_deployment_name`, `realtime_voice`, `realtime_vad_eagerness`, `realtime_noise_reduction_type`, `realtime_max_session_seconds`, `realtime_interview_enabled` | Voice-to-voice interview engine — this is the **primary** interview experience in production (`realtime_interview_enabled=True`), not an experimental flag. `realtime_vad_eagerness` (`low`/`medium`/`high`/`auto`) controls semantic turn detection (how long the model waits before assuming the candidate is done speaking); `realtime_noise_reduction_type` (`near_field`/`far_field`) filters ambient audio before it reaches VAD. `realtime_max_session_seconds` is a hard backend-wide safety cap (default 2700s) independent of the per-job `interview_max_minutes` soft target — see [04-features/03-ai-voice-interview.md](04-features/03-ai-voice-interview.md) |
 | Interview tuning | `topic_time_limit_seconds`, `max_turns_per_topic` | Shared by both interview engines' state machines |
 | Redis | `redis_url` | **Declared but unused** — see [07-deployment-and-operations.md](07-deployment-and-operations.md); no Celery task or worker process actually exists |
 | Storage | `azure_storage_connection_string`, `cvs_container_name`, `assessments_container_name` | Azure Blob Storage; falls back to local disk if unset |
 | Branding | `company_name`, `brand_color`, `logo_url` | Defaults, overridden at runtime by the `app_settings` DB table |
-| Email | `resend_api_key`, `sender_email`, `sender_display_name`, `hr_notification_email` | All recruitment transactional email |
+| Email | `resend_api_key`, `sender_email`, `sender_display_name`, `hr_notification_email`, `applicant_reply_to_email` | All recruitment transactional email. `sender_email` is a real repliable address (`recruitment@techspecialistlimited.com`, not a "do not reply" address). `applicant_reply_to_email` (comma-separated) sets the `Reply-To` header on all 7 applicant-facing emails (application received, stage-2 invite, rejection, final-interview invite, hired, expired-link notice) so replies land with a real person rather than nowhere — currently `Taofeeq@mswitchgroup.com,HR@mswitchgroup.com`. The 3 purely-internal emails (new-applicant alert, HR portal invite, password reset) are intentionally left non-repliable (`_branded_template(..., repliable=False)`) since they already go to real monitored inboxes |
 | Auth | `api_key`, `jwt_secret`, `hr_password` | `api_key` gates the public application-submit endpoint; `jwt_secret` signs real HR login JWTs (HS256); `hr_password` seeds the default HR account on first run |
 | Frontend | `frontend_url` | Used to build links in outgoing emails (e.g. "review this candidate" links) |
 
@@ -53,7 +53,7 @@ Defined in `backend/app/config.py` (Pydantic settings, loaded from `.env`).
 | **Azure OpenAI (GPT-4o)** | Backend | CV screening scoring, legacy interview conversation logic |
 | **Azure OpenAI (Whisper)** | Backend | Speech-to-text for the legacy voice interview |
 | **Azure OpenAI (TTS)** | Backend | Text-to-speech for the legacy voice interview |
-| **Azure OpenAI (Realtime API)** | Backend | Voice-to-voice AI interview engine (the newer of the two interview engines) |
+| **Azure OpenAI (Realtime API)** | Backend | Voice-to-voice AI interview engine — the primary interview experience in production, not just the newer of two options |
 | **Azure Blob Storage** | Backend | Production file storage for CVs and interview audio |
 | **Resend** | Both | Backend: all recruitment transactional email (approvals, rejections, invites, password resets). Frontend: AI Readiness Assessment PDF report delivery |
 | **Anthropic (Claude)** | Frontend | Primary generator of AI Readiness Assessment report content (model: `claude-sonnet-4-6`, structured JSON output) |
@@ -68,3 +68,7 @@ See [06-security-and-known-gaps.md](06-security-and-known-gaps.md) for the full 
 
 - Backend HR JWTs are signed with `jwt_secret` (backend env) — this is the **real** auth mechanism.
 - The frontend's `JWT_SECRET`/`HR_EMAIL`/`HR_PASSWORD` are a **separate, weaker fallback** that only activates if the frontend can't reach the backend during login. Keep these two sets of credentials in sync deliberately if you rotate one — they are not the same secret and rotating only one will not fully lock out the fallback path.
+
+## Local `.env` gotcha worth knowing
+
+The repo's local `backend/.env` has `dev_mode=False` with a real `resend_api_key` configured — this means running the backend locally sends **real emails through Resend**, not simulated/console-logged ones (that only happens when `dev_mode=True`, or no key is set). Anyone testing recruitment flows locally (applications, approvals, interview scheduling) should be aware every email actually sends. Safe targets for local testing: addresses on IANA-reserved test domains like `@example.com` (accepted by Resend's API but never deliver anywhere), or a real inbox you intend to check.

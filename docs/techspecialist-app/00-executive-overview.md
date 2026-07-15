@@ -22,29 +22,32 @@ TechSpecialist Limited's web presence is not just a marketing website — it's a
 This is the most complex part of the system, and the one that does the most work:
 
 ```
-1. HR posts a job
+1. HR posts a job (including whether stage 2 is manual-approve or auto-advance)
         ↓
 2. Candidate applies (CV + cover letter, no account needed)
         ↓
 3. AI reads the CV against the job requirements and produces a score + written strengths/concerns
         ↓
-4. HR reviews the AI's assessment and approves or rejects — this is a human decision, not automated
+4. HR reviews the AI's assessment and approves or rejects — or, if the job is configured for
+   auto-advance and the score clears the pass mark, this step happens automatically after a delay
         ↓
-5. Approved candidates get an emailed link to a short AI-conducted voice interview
+5. The candidate gets an emailed link to a short AI-conducted live voice interview
         ↓
-6. The AI interviews the candidate by voice, topic by topic, and produces a scorecard
+6. The AI interviews the candidate by voice in real time, topic by topic, and produces a scorecard
+   plus a written recommendation, surfaced to HR as a "pending decision" needing a human call
         ↓
-7. HR reviews the scorecard and schedules a final (human) interview, or rejects
+7. HR reviews the scorecard, schedules a final human interview (with a calendar invite),
+   collects one or more interviewer scorecards, and marks the candidate hired or rejected
 ```
 
-The AI never makes a final decision — it only produces scores and recommendations that a human reviews at two checkpoints (step 4 and step 7). Every action taken on a candidate (approved, rejected, interview scheduled, flagged for suspicious behavior during the AI interview) is written to an audit log.
+The AI never makes a final hiring decision — it only produces scores and recommendations that a human reviews at checkpoints throughout (steps 4, 6, and 7). Every action taken on a candidate (approved, rejected, hired, interview scheduled, archived, deleted, flagged for suspicious behavior during the AI interview) is written to an audit log. Candidates can also check their own application status at any time via a self-service link, without contacting HR.
 
 ## Major components (non-technical summary)
 
 - **The website you see** is built with Next.js, a modern web framework, and is what visitors' and candidates' browsers load directly.
 - **A separate backend service** (built in Python) does the actual work of storing recruitment data, running the AI screening, and running the AI voice interviews. The website talks to this backend behind the scenes.
 - **Two databases exist**: the Python backend's own database (the primary store for jobs, applications, interviews, HR accounts), and a Supabase (cloud Postgres) database that the website falls back to for job listings and applications if the backend is temporarily unreachable. See [02-data-model-and-storage.md](02-data-model-and-storage.md) for why there are two, and what that implies.
-- **AI providers**: Azure OpenAI (GPT-4o) powers CV screening and the voice interview; Anthropic's Claude (with Groq as a fallback) generates the AI Readiness Assessment reports. These are different AI systems for different features.
+- **AI providers**: Azure OpenAI (GPT-4o) powers CV screening; Azure OpenAI's Realtime API (`gpt-realtime`) powers the live, voice-to-voice AI interview — the candidate speaks and hears the AI respond in real time, the same way a phone screen would work, rather than a record-then-reply exchange; Anthropic's Claude (with Groq as a fallback) generates the AI Readiness Assessment reports. These are different AI systems for different features.
 - **Email** is sent through Resend (recruitment notifications, reports) and EmailJS (marketing lead notifications on the public site).
 
 ## What to know before relying on this system

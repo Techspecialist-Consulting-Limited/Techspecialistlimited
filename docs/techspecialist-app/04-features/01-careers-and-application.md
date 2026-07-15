@@ -6,12 +6,13 @@ Lets any visitor browse open roles and apply with a CV and optional cover letter
 
 ## Walkthrough
 
-1. **`/careers`** (`src/app/careers/page.tsx`) loads the job list via `fetchJobs()` (`src/lib/recruitment-api.ts`), which calls `GET /api/recruitment/jobs`. That route proxies to the backend's `GET /api/jobs`; if the backend is unreachable, it falls back to reading Supabase's `jobs` table directly. Only jobs with `status === 'active' && !is_closed` are shown.
+1. **`/careers`** (`src/app/careers/page.tsx`) loads the job list via `fetchJobs()` (`src/lib/recruitment-api.ts`), which calls `GET /api/recruitment/jobs`. That route proxies to the backend's `GET /api/jobs`; if the backend is unreachable, it falls back to reading Supabase's `jobs` table directly. Only jobs with `status === 'active' && !is_closed` are shown. Job cards show department, location, and job type alongside the title, without the page reading as overcrowded. The page structure is: a slim title bar (not a large hero) → job listings first, above the fold → a "Why Join Us" section (relocated mission copy/stats) below the listings — this ordering was deliberately changed so job openings are the first thing a visitor sees, since that's what most visitors come to the page to find.
 2. **`/careers/[id]`** (`CareerDetailClient.tsx`) shows one job's full description and requirements, with a link to `/apply?id=<jobId>`.
 3. **`/apply`** (`src/app/apply/page.tsx`, component `ApplyForm`) fetches the specific job (`fetchJob(jobId)`), then renders a 3-step form: candidate details → document upload (`src/components/recruitment/FileUploadZone.tsx`) → review.
 4. On submit, `submitApplication(jobId, formData)` tries, in order:
    - `POST /api/recruitment/applications` → proxied to the backend's `POST /api/applications` (protected by the `x-api-key` shared secret, not a login) → backend extracts CV text, uploads files to storage, **runs AI screening synchronously**, writes `Application` + `AIScreeningResult` rows, sends confirmation/notification emails.
    - If that whole path throws, it falls back to the legacy `POST /api/apply` route — a pure Supabase insert with **no AI screening at all**.
+5. The candidate gets a confirmation email (`send_application_received_email`) including a link to the self-service status page (`/application-status/[applicationId]`, see [04-hr-portal.md](04-hr-portal.md)) where they can check their status later without contacting HR.
 
 ## Where to make changes
 
@@ -27,3 +28,4 @@ Lets any visitor browse open roles and apply with a CV and optional cover letter
 
 - The `x-api-key` protecting `POST /api/applications` is a single shared secret, not per-user — it exists to keep the endpoint from being hit by arbitrary bots, not to authenticate the applicant.
 - If the backend is down at submission time, the candidate's application is silently accepted into Supabase instead, and will **not** be AI-screened or visible in the HR portal. See [02-data-model-and-storage.md](../02-data-model-and-storage.md) and [06-security-and-known-gaps.md](../06-security-and-known-gaps.md).
+- The confirmation email is sent from a real, repliable address (`recruitment@techspecialistlimited.com`) with a `Reply-To` header pointing at real monitored inboxes, not a "do not reply" address — see [03-configuration-and-integrations.md](../03-configuration-and-integrations.md).
