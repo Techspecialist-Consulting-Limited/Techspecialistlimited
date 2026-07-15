@@ -2165,6 +2165,10 @@
     margin-top: 24px;
     flex-wrap: wrap;
   }
+  .services-hero .hero-tab-icon {
+    display: inline-flex;
+    align-items: center;
+  }
   .services-hero .hero-tab {
     padding: 8px 14px;
     background: rgba(255, 255, 255, 0.08);
@@ -2347,6 +2351,9 @@
     margin-bottom: 8px;
   }
   .service-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 10px 20px;
     background: var(--bg-soft);
     border: 1px solid var(--border);
@@ -2691,7 +2698,7 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
-    font-size: 28px;
+    color: var(--blue);
     border: 1px solid var(--border);
   }
   .why-card h3 {

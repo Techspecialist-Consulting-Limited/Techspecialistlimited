@@ -40,6 +40,7 @@ class JobPosting(Base):
     auto_advance_enabled: Mapped[bool] = mapped_column(nullable=False, default=False)
     auto_advance_pass_mark: Mapped[float] = mapped_column(Float, nullable=False, default=70.0)
     auto_advance_delay_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
+    interview_max_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=20)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

@@ -93,6 +93,7 @@ async def get_assessment(
         "has_existing_session": session is not None,
         "existing_conversation_id": str(session.id) if session else None,
         "engine": "realtime" if settings.realtime_interview_enabled else "legacy",
+        "interview_max_minutes": app.job.interview_max_minutes,
     }
 
 

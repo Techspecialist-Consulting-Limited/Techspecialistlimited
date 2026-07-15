@@ -29,6 +29,7 @@ class JobCreate(BaseModel):
     auto_advance_enabled: bool = False
     auto_advance_pass_mark: float = 70.0
     auto_advance_delay_minutes: int = 5
+    interview_max_minutes: int = 20
 
 
 class JobResponse(BaseModel):
@@ -49,6 +50,7 @@ class JobResponse(BaseModel):
     auto_advance_enabled: bool = False
     auto_advance_pass_mark: float = 70.0
     auto_advance_delay_minutes: int = 5
+    interview_max_minutes: int = 20
     applicant_count: int = 0
     created_at: str | None = None
 
@@ -64,6 +66,7 @@ class JobUpdate(BaseModel):
     auto_advance_enabled: bool | None = None
     auto_advance_pass_mark: float | None = None
     auto_advance_delay_minutes: int | None = None
+    interview_max_minutes: int | None = None
 
 
 def parse_json_list(value: str | list | None) -> list:
@@ -105,6 +108,7 @@ async def _build_job_response(job: JobPosting, db: AsyncSession) -> JobResponse:
         auto_advance_enabled=job.auto_advance_enabled,
         auto_advance_pass_mark=job.auto_advance_pass_mark,
         auto_advance_delay_minutes=job.auto_advance_delay_minutes,
+        interview_max_minutes=job.interview_max_minutes,
         applicant_count=applicant_count,
         created_at=format_dt(job.created_at),
     )
@@ -126,6 +130,7 @@ async def create_job(job: JobCreate, db: AsyncSession = Depends(get_db), _: dict
         auto_advance_enabled=job.auto_advance_enabled,
         auto_advance_pass_mark=job.auto_advance_pass_mark,
         auto_advance_delay_minutes=job.auto_advance_delay_minutes,
+        interview_max_minutes=job.interview_max_minutes,
     )
     db.add(db_job)
     await db.commit()
@@ -209,6 +214,8 @@ async def update_job(
         job.auto_advance_pass_mark = update.auto_advance_pass_mark
     if update.auto_advance_delay_minutes is not None:
         job.auto_advance_delay_minutes = update.auto_advance_delay_minutes
+    if update.interview_max_minutes is not None:
+        job.interview_max_minutes = update.interview_max_minutes
 
     await db.commit()
     await db.refresh(job)

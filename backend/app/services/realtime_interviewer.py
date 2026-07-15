@@ -43,7 +43,13 @@ TOPICS:
 CURRENT STATE:
 - Current topic index: {current_topic_index}
 - Turns on current topic: {turns_on_current_topic}
-- Topics remaining: {topics_remaining}"""
+- Topics remaining: {topics_remaining}{wrap_up_notice}"""
+
+WRAP_UP_NOTICE = """
+
+TIME IS ALMOST UP: Only about {minutes_left} minute(s) remain in this interview. Do not start a new topic. \
+Wrap up warmly right now: briefly acknowledge the candidate's last answer, thank them for their time, \
+let them know this concludes the interview, and call advance_interview with action "end_interview"."""
 
 GREETING_INSTRUCTION = (
     "Start the interview now. Greet {candidate_name} warmly, then ask the first topic's "
@@ -85,7 +91,12 @@ def build_instructions(
     current_topic_index: int,
     turns_on_current_topic: int,
     max_turns_per_topic: int,
+    minutes_remaining: float | None = None,
 ) -> str:
+    wrap_up_notice = ""
+    if minutes_remaining is not None and minutes_remaining <= 2:
+        wrap_up_notice = WRAP_UP_NOTICE.format(minutes_left=max(1, round(minutes_remaining)))
+
     return INTERVIEWER_INSTRUCTIONS.format(
         job_title=job_title,
         candidate_name=candidate_name,
@@ -95,6 +106,7 @@ def build_instructions(
         current_topic_index=current_topic_index,
         turns_on_current_topic=turns_on_current_topic,
         topics_remaining=len(topics) - current_topic_index,
+        wrap_up_notice=wrap_up_notice,
     )
 
 
@@ -105,6 +117,7 @@ def build_session_update(
     topics: list[dict],
     current_topic_index: int,
     turns_on_current_topic: int,
+    minutes_remaining: float | None = None,
 ) -> dict:
     """Session config sent with session.update. Re-sent (with refreshed
     instructions) before every response.create so the model always sees the
@@ -120,16 +133,21 @@ def build_session_update(
             current_topic_index,
             turns_on_current_topic,
             settings.max_turns_per_topic,
+            minutes_remaining,
         ),
         "output_modalities": ["audio"],
         "audio": {
             "input": {
                 "transcription": {"model": "whisper-1"},
+                "noise_reduction": {"type": settings.realtime_noise_reduction_type},
+                # Semantic VAD scores whether the candidate has actually finished
+                # their thought (not just gone quiet), so a throat-clear or a
+                # mid-sentence pause ("let me think...") doesn't get treated as
+                # the end of their turn the way fixed-silence server_vad did.
                 "turn_detection": {
-                    "type": "server_vad",
-                    "threshold": settings.realtime_vad_threshold,
-                    "prefix_padding_ms": settings.realtime_vad_prefix_padding_ms,
-                    "silence_duration_ms": settings.realtime_vad_silence_duration_ms,
+                    "type": "semantic_vad",
+                    "eagerness": settings.realtime_vad_eagerness,
+                    "interrupt_response": True,
                 },
             },
             "output": {"voice": settings.realtime_voice},

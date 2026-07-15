@@ -39,10 +39,12 @@ class Settings(BaseSettings):
     azure_realtime_key: str = ""
     realtime_deployment_name: str = "gpt-realtime"
     realtime_voice: str = "alloy"
-    realtime_vad_threshold: float = 0.5
-    realtime_vad_prefix_padding_ms: int = 300
-    realtime_vad_silence_duration_ms: int = 500
-    realtime_max_session_seconds: int = 1800
+    # Semantic VAD uses a model (not just raw volume) to judge whether the candidate
+    # has actually finished speaking, so it tolerates thinking pauses, filler words,
+    # and quiet throat-clears far better than amplitude-based server_vad did.
+    realtime_vad_eagerness: str = "low"  # low waits longer before responding (up to ~8s)
+    realtime_noise_reduction_type: str = "far_field"  # far_field: laptop/room mics; near_field: headsets
+    realtime_max_session_seconds: int = 2700  # hard safety cap above any per-job interview_max_minutes
     realtime_interview_enabled: bool = False
 
     # Redis (not needed in dev mode)

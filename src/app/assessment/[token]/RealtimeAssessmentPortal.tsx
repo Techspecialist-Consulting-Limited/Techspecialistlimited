@@ -29,6 +29,13 @@ interface AssessmentMeta {
   instructions: string;
   has_existing_session: boolean;
   existing_conversation_id: string | null;
+  interview_max_minutes?: number;
+}
+
+function formatCountdown(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -84,6 +91,7 @@ export default function RealtimeAssessmentPortal() {
   const [completedTopics, setCompletedTopics] = useState<number[]>([]);
   const [transcriptLog, setTranscriptLog] = useState<{ role: 'ai' | 'candidate'; text: string }[]>([]);
   const [liveMicLevel, setLiveMicLevel] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   const [setupStep, setSetupStep] = useState<SetupStep>('mic_request');
   const [micLevel, setMicLevel] = useState(0);
@@ -99,6 +107,10 @@ export default function RealtimeAssessmentPortal() {
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const prevTopicIndexRef = useRef(0);
   const lastAiTextRef = useRef('');
+  const newAiTurnRef = useRef(true);
+  const audioFinishedRef = useRef(false);
+  const finalScoreReceivedRef = useRef(false);
+  const interviewStartRef = useRef(0);
 
   // Playback scheduling for streamed PCM16 chunks
   const playbackCtxRef = useRef<AudioContext | null>(null);
@@ -225,6 +237,20 @@ export default function RealtimeAssessmentPortal() {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [transcriptLog]);
 
+  // ── Countdown timer (interview_max_minutes, configured per job) ──
+
+  useEffect(() => {
+    if (state !== 'conversing' || !meta?.interview_max_minutes) return;
+    const totalMs = meta.interview_max_minutes * 60 * 1000;
+    const tick = () => {
+      const remaining = Math.max(0, totalMs - (Date.now() - interviewStartRef.current));
+      setSecondsLeft(Math.ceil(remaining / 1000));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [state, meta]);
+
   // ── Load metadata ──
 
   useEffect(() => {
@@ -278,6 +304,15 @@ export default function RealtimeAssessmentPortal() {
 
   // ── WebSocket ──
 
+  // Only flip to the "completed" screen once BOTH the closing statement has
+  // actually finished playing (not a guessed timeout) AND the final score has
+  // arrived — otherwise the screen can swap away while the AI is still talking.
+  function maybeFinishInterview() {
+    if (audioFinishedRef.current && finalScoreReceivedRef.current) {
+      setState('completed');
+    }
+  }
+
   const connectWebSocket = useCallback((convId: string) => {
     const ws = new WebSocket(`${WS_BASE}/api/assessment/${token}/realtime-ws?conversation_id=${convId}`);
     wsRef.current = ws;
@@ -295,6 +330,7 @@ export default function RealtimeAssessmentPortal() {
         case 'interrupt':
           stopScheduledPlayback();
           currentTurnBuffersRef.current = [];
+          newAiTurnRef.current = true;
           setPhase('listening');
           break;
         case 'audio_done': {
@@ -315,22 +351,39 @@ export default function RealtimeAssessmentPortal() {
           const ctx = playbackCtxRef.current;
           const remainingMs = ctx ? Math.max(0, (nextStartTimeRef.current - ctx.currentTime) * 1000) : 0;
           if (aiSpeakingWatchdogRef.current) clearTimeout(aiSpeakingWatchdogRef.current);
-          if (!msg.is_done) {
+          if (msg.is_done) {
+            // Wait for the closing statement's audio to actually finish playing
+            // (not a flat guessed delay) before allowing the completed screen.
+            audioFinishedRef.current = false;
+            setTimeout(() => {
+              audioFinishedRef.current = true;
+              maybeFinishInterview();
+            }, remainingMs + 300);
+          } else {
             aiSpeakingWatchdogRef.current = setTimeout(() => {
               setPhase('listening');
               playTurnCue();
             }, remainingMs + 150) as unknown as ReturnType<typeof setInterval>;
           }
-
-          if (msg.is_done) setTimeout(() => setState('completed'), 1500);
           break;
         }
+        case 'transcript_delta':
+          if (newAiTurnRef.current) {
+            setAiDisplayText(msg.text);
+            newAiTurnRef.current = false;
+          } else {
+            setAiDisplayText((prev) => prev + msg.text);
+          }
+          setPhase('ai_speaking');
+          break;
         case 'transcript':
           if (msg.role === 'candidate') {
+            newAiTurnRef.current = true;
             setCandidateTranscript(msg.text);
             setProcessingStatus('Preparing next question...');
             setTranscriptLog((prev) => [...prev, { role: 'candidate', text: msg.text }]);
           } else if (msg.role === 'ai') {
+            // Authoritative full text, in case any deltas were dropped — resyncs the caption.
             lastAiTextRef.current = msg.text;
             setAiDisplayText(msg.text);
             setHasReplayableMessage(true);
@@ -341,7 +394,8 @@ export default function RealtimeAssessmentPortal() {
           }
           break;
         case 'interview_complete':
-          setState('completed');
+          finalScoreReceivedRef.current = true;
+          maybeFinishInterview();
           break;
         case 'error':
           setErrorMsg(msg.message);
@@ -449,6 +503,7 @@ export default function RealtimeAssessmentPortal() {
   const handleStartInterview = async () => {
     setState('conversing');
     setPhase('ai_speaking');
+    interviewStartRef.current = Date.now();
 
     const convId = greetingConvIdRef.current || conversationId || '';
     const aiText = greetingTextRef.current;
@@ -505,6 +560,8 @@ export default function RealtimeAssessmentPortal() {
 
   const endInterview = () => {
     stopAllPlayback();
+    // Candidate-initiated end has no AI closing statement to wait for.
+    audioFinishedRef.current = true;
     wsRef.current?.send(JSON.stringify({ type: 'end' }));
     setPhase('processing');
     setProcessingStatus('Wrapping up your interview...');
@@ -905,6 +962,17 @@ export default function RealtimeAssessmentPortal() {
           </div>
         )}
         <div className="flex items-center gap-3">
+          {secondsLeft !== null && (
+            <span
+              className="hidden items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold tabular-nums sm:flex"
+              style={{
+                border: `1px solid ${secondsLeft <= 120 ? 'rgba(248,113,113,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                color: secondsLeft <= 120 ? '#f87171' : 'rgba(255,255,255,0.5)',
+              }}
+            >
+              {formatCountdown(secondsLeft)}
+            </span>
+          )}
           <span className="hidden items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/40 sm:flex" style={{ border: '1px solid rgba(255,255,255,0.1)' }}>
             <span className="h-1.5 w-1.5 rounded-full bg-red-400" style={{ animation: 'pulseDot 2s ease-in-out infinite' }} />
             Live

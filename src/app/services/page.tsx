@@ -81,24 +81,101 @@ const serviceData: Record<string, {
   }
 };
 
-const relatedServices: Record<string, { id: string; icon: string; name: string; desc: string }[]> = {
+const relatedServices: Record<string, { id: string; name: string; desc: string }[]> = {
   advisory: [
-    { id: 'automation', icon: '⚡', name: 'Business Process Automation', desc: 'From plan to reality' },
-    { id: 'security', icon: '🔒', name: 'Information Security', desc: 'Protect your investment' }
+    { id: 'automation', name: 'Business Process Automation', desc: 'From plan to reality' },
+    { id: 'security', name: 'Information Security', desc: 'Protect your investment' }
   ],
   automation: [
-    { id: 'advisory', icon: '📋', name: 'Digital Transformation Advisory', desc: 'Strategic planning' },
-    { id: 'itsm', icon: '🖥️', name: 'IT Service Management', desc: 'Keep it running' }
+    { id: 'advisory', name: 'Digital Transformation Advisory', desc: 'Strategic planning' },
+    { id: 'itsm', name: 'IT Service Management', desc: 'Keep it running' }
   ],
   security: [
-    { id: 'automation', icon: '⚡', name: 'Business Process Automation', desc: 'Secure workflows' },
-    { id: 'advisory', icon: '📋', name: 'Digital Transformation Advisory', desc: 'Risk-aware planning' }
+    { id: 'automation', name: 'Business Process Automation', desc: 'Secure workflows' },
+    { id: 'advisory', name: 'Digital Transformation Advisory', desc: 'Risk-aware planning' }
   ],
   itsm: [
-    { id: 'automation', icon: '⚡', name: 'Business Process Automation', desc: 'Automated IT ops' },
-    { id: 'security', icon: '🔒', name: 'Information Security', desc: 'Secure infrastructure' }
+    { id: 'automation', name: 'Business Process Automation', desc: 'Automated IT ops' },
+    { id: 'security', name: 'Information Security', desc: 'Secure infrastructure' }
   ]
 };
+
+function PillarIcon({ id, size = 20 }: { id: string; size?: number }) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none' as const,
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  switch (id) {
+    case 'advisory':
+      return (
+        <svg {...common}>
+          <rect x="5" y="3" width="14" height="18" rx="2" />
+          <path d="M9 8h6M9 12h6M9 16h4" />
+        </svg>
+      );
+    case 'automation':
+      return (
+        <svg {...common}>
+          <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+        </svg>
+      );
+    case 'security':
+      return (
+        <svg {...common}>
+          <path d="M12 3 5 6v5c0 5 3 8.5 7 10 4-1.5 7-5 7-10V6l-7-3Z" />
+        </svg>
+      );
+    case 'itsm':
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="18" height="13" rx="2" />
+          <path d="M8 21h8M12 17v4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function WhyIcon({ id, size = 28 }: { id: string; size?: number }) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none' as const,
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  switch (id) {
+    case 'cost':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m8.5 12.5 2.5 2.5 4.5-5" />
+        </svg>
+      );
+    case 'speed':
+      return <PillarIcon id="automation" size={size} />;
+    case 'sector':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <circle cx="12" cy="12" r="5" />
+          <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
 export default function Services() {
   const [panelService, setPanelService] = useState<string | null>(null);
@@ -367,10 +444,10 @@ export default function Services() {
             </div>
 
             <div className="hero-tabs">
-              <button className="hero-tab is-active" data-service="advisory"><span className="hero-tab-icon">📋</span> Advisory</button>
-              <button className="hero-tab" data-service="automation"><span className="hero-tab-icon">⚡</span> Automation</button>
-              <button className="hero-tab" data-service="security"><span className="hero-tab-icon">🔒</span> Security</button>
-              <button className="hero-tab" data-service="itsm"><span className="hero-tab-icon">🖥️</span> IT Support</button>
+              <button className="hero-tab is-active" data-service="advisory"><span className="hero-tab-icon"><PillarIcon id="advisory" size={14} /></span> Advisory</button>
+              <button className="hero-tab" data-service="automation"><span className="hero-tab-icon"><PillarIcon id="automation" size={14} /></span> Automation</button>
+              <button className="hero-tab" data-service="security"><span className="hero-tab-icon"><PillarIcon id="security" size={14} /></span> Security</button>
+              <button className="hero-tab" data-service="itsm"><span className="hero-tab-icon"><PillarIcon id="itsm" size={14} /></span> IT Support</button>
             </div>
 
             <div className="pillar-preview is-active" id="pillar-preview-advisory">
@@ -484,7 +561,7 @@ export default function Services() {
           <div className="hero-right">
             <div className="pillars-container">
               <div className="pillar-item" data-service="advisory" onClick={() => openPanel('advisory')}>
-                <div className="pillar-icon">📋</div>
+                <div className="pillar-icon"><PillarIcon id="advisory" size={26} /></div>
                 <div className="pillar-info">
                   <div className="pillar-num">01</div>
                   <div className="pillar-name">Digital Transformation Advisory</div>
@@ -492,7 +569,7 @@ export default function Services() {
                 <div className="pillar-arrow">→</div>
               </div>
               <div className="pillar-item" data-service="automation" onClick={() => openPanel('automation')}>
-                <div className="pillar-icon">⚡</div>
+                <div className="pillar-icon"><PillarIcon id="automation" size={26} /></div>
                 <div className="pillar-info">
                   <div className="pillar-num">02</div>
                   <div className="pillar-name">Business Process Automation</div>
@@ -500,7 +577,7 @@ export default function Services() {
                 <div className="pillar-arrow">→</div>
               </div>
               <div className="pillar-item" data-service="security" onClick={() => openPanel('security')}>
-                <div className="pillar-icon">🔒</div>
+                <div className="pillar-icon"><PillarIcon id="security" size={26} /></div>
                 <div className="pillar-info">
                   <div className="pillar-num">03</div>
                   <div className="pillar-name">Information Security</div>
@@ -508,7 +585,7 @@ export default function Services() {
                 <div className="pillar-arrow">→</div>
               </div>
               <div className="pillar-item" data-service="itsm" onClick={() => openPanel('itsm')}>
-                <div className="pillar-icon">🖥️</div>
+                <div className="pillar-icon"><PillarIcon id="itsm" size={26} /></div>
                 <div className="pillar-info">
                   <div className="pillar-num">04</div>
                   <div className="pillar-name">IT Service Management</div>
@@ -538,10 +615,10 @@ export default function Services() {
         <div className="services-grid">
           <div className="service-filters">
             <button className="service-filter-btn is-active" data-filter="all">All</button>
-            <button className="service-filter-btn" data-filter="advisory">📋 Advisory</button>
-            <button className="service-filter-btn" data-filter="automation">⚡ Automation</button>
-            <button className="service-filter-btn" data-filter="security">🔒 Security</button>
-            <button className="service-filter-btn" data-filter="itsm">🖥️ IT Support</button>
+            <button className="service-filter-btn" data-filter="advisory"><PillarIcon id="advisory" size={14} /> Advisory</button>
+            <button className="service-filter-btn" data-filter="automation"><PillarIcon id="automation" size={14} /> Automation</button>
+            <button className="service-filter-btn" data-filter="security"><PillarIcon id="security" size={14} /> Security</button>
+            <button className="service-filter-btn" data-filter="itsm"><PillarIcon id="itsm" size={14} /> IT Support</button>
           </div>
 
           <article className="service-card featured" data-service="advisory" onClick={() => openPanel('advisory')}>
@@ -664,7 +741,7 @@ export default function Services() {
           <div className="why-grid">
             {[
               {
-                icon: '💰',
+                icon: 'cost',
                 title: 'No New Software',
                 desc: 'We build exclusively on Microsoft tools your organization already pays for. Zero additional license costs.',
                 statNum: '₦0',
@@ -672,7 +749,7 @@ export default function Services() {
                 expandText: 'We leverage your existing M365 E3/E5, Power Platform, and Azure subscriptions. No new vendors, no new contracts, no new training overhead.'
               },
               {
-                icon: '⚡',
+                icon: 'speed',
                 title: 'Results in Weeks',
                 desc: 'From discovery to live — 10 weeks. Not 10 months. We move fast because your competitors are too.',
                 statNum: '10wk',
@@ -680,7 +757,7 @@ export default function Services() {
                 expandText: 'Our agile approach means you\'ll see tangible results within the first month. Week 1-2: discovery. Week 3-6: first automation live. Week 7-10: full deployment.'
               },
               {
-                icon: '🎯',
+                icon: 'sector',
                 title: 'Sector-Tailored',
                 desc: 'Government, NGOs, Private Sector — we understand your unique workflows, compliance needs, and challenges.',
                 statNum: '3',
@@ -689,7 +766,7 @@ export default function Services() {
               }
             ].map((card, i) => (
               <div key={i} className="why-card">
-                <div className="why-icon">{card.icon}</div>
+                <div className="why-icon"><WhyIcon id={card.icon} /></div>
                 <h3>{card.title}</h3>
                 <p>{card.desc}</p>
                 <div className="why-stat">
@@ -885,7 +962,7 @@ export default function Services() {
                   <div className="panel-related-list">
                     {related.map((r, i) => (
                       <div key={i} className="panel-related-item" onClick={() => openPanel(r.id)}>
-                        <div className="panel-related-icon">{r.icon}</div>
+                        <div className="panel-related-icon"><PillarIcon id={r.id} size={18} /></div>
                         <div className="panel-related-info">
                           <h4>{r.name}</h4>
                           <p>{r.desc}</p>

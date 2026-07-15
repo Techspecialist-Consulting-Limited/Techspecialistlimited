@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time
 import uuid as uuid_mod
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -65,6 +66,15 @@ async def assessment_realtime_websocket(
         candidate_name = app.candidate_name
         application_id = app.id
         session_id = session_obj.id
+        interview_max_seconds = min(
+            app.job.interview_max_minutes * 60, settings.realtime_max_session_seconds
+        )
+
+    session_start = time.monotonic()
+
+    def minutes_remaining() -> float:
+        elapsed = time.monotonic() - session_start
+        return (interview_max_seconds - elapsed) / 60
 
     ctx = {
         "conversation_history": json.loads(session_obj.conversation_history),
@@ -180,6 +190,15 @@ async def assessment_realtime_websocket(
             )
             ctx["pending_advance"] = (new_topic_index, new_turns, is_done, effective_action)
 
+            # Refresh the session's instructions with the just-computed topic/turn
+            # state (and remaining time) before the model speaks — otherwise the
+            # model keeps working off the state from when the connection opened,
+            # which is stale after the very first exchange.
+            await conn.session.update(session=build_session_update(
+                job_title, candidate_name, instructions_text, topics,
+                new_topic_index, new_turns, minutes_remaining(),
+            ))
+
             await conn.conversation.item.create(item={
                 "type": "function_call_output",
                 "call_id": event.call_id,
@@ -189,6 +208,7 @@ async def assessment_realtime_websocket(
 
         elif event.type == "response.output_audio_transcript.delta":
             ctx["transcript_buffer"] += event.delta
+            await websocket.send_json({"type": "transcript_delta", "text": event.delta})
 
         elif event.type == "response.output_audio.delta":
             await websocket.send_json({"type": "audio_chunk", "data": event.delta, "sample_rate": 24000})
@@ -276,7 +296,7 @@ async def assessment_realtime_websocket(
         async with client.realtime.connect(model=settings.realtime_deployment_name) as conn:
             await conn.session.update(session=build_session_update(
                 job_title, candidate_name, instructions_text, topics,
-                ctx["current_topic_index"], ctx["turns_on_current_topic"],
+                ctx["current_topic_index"], ctx["turns_on_current_topic"], minutes_remaining(),
             ))
 
             async for event in conn:
@@ -303,7 +323,11 @@ async def assessment_realtime_websocket(
             try:
                 await asyncio.wait_for(
                     asyncio.wait({browser_task, azure_task}, return_when=asyncio.FIRST_COMPLETED),
-                    timeout=settings.realtime_max_session_seconds,
+                    # A generous buffer above the job's configured limit — the
+                    # in-instructions wrap-up nudge (see minutes_remaining()) is
+                    # what should end the interview gracefully; this is only the
+                    # backstop for a model that ignores the nudge.
+                    timeout=interview_max_seconds + 120,
                 )
             except asyncio.TimeoutError:
                 logger.warning(f"Realtime session {session_id} hit max duration, force-ending")

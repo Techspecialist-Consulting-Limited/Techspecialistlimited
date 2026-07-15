@@ -43,6 +43,9 @@ async def run_migrations():
             if row and row[0] and "auto_advance_delay_minutes" not in row[0]:
                 logger.info("Adding auto_advance_delay_minutes column to job_postings")
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN auto_advance_delay_minutes INTEGER DEFAULT 5"))
+            if row and row[0] and "interview_max_minutes" not in row[0]:
+                logger.info("Adding interview_max_minutes column to job_postings")
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN interview_max_minutes INTEGER DEFAULT 20"))
 
             result2 = await conn.execute(
                 text("SELECT sql FROM sqlite_master WHERE type='table' AND name='applications'")
@@ -75,6 +78,7 @@ async def run_migrations():
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS auto_advance_enabled BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS auto_advance_pass_mark DOUBLE PRECISION DEFAULT 70.0"))
                 await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS auto_advance_delay_minutes INTEGER DEFAULT 5"))
+                await conn.execute(text("ALTER TABLE job_postings ADD COLUMN IF NOT EXISTS interview_max_minutes INTEGER DEFAULT 20"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT FALSE"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_sent_at TIMESTAMP"))
                 await conn.execute(text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS assessment_expires_at TIMESTAMP"))

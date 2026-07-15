@@ -45,6 +45,7 @@ export interface Job {
   auto_advance_enabled?: boolean;
   auto_advance_pass_mark?: number;
   auto_advance_delay_minutes?: number;
+  interview_max_minutes?: number;
   applicant_count?: number;
   created_at: string;
   updated_at?: string;
@@ -405,6 +406,7 @@ export interface AssessmentMeta {
   instructions: string;
   has_existing_session: boolean;
   existing_conversation_id: string | null;
+  interview_max_minutes?: number;
 }
 
 export interface AssessmentError {

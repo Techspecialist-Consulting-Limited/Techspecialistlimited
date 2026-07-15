@@ -24,6 +24,7 @@ export default function CreateJobPage() {
     auto_advance_enabled: false,
     auto_advance_pass_mark: 70,
     auto_advance_delay_minutes: 5,
+    interview_max_minutes: 20,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,6 +129,20 @@ export default function CreateJobPage() {
                 </span>
               </label>
             </div>
+            <label className={`${labelClass} max-w-[280px]`}>
+              Maximum Interview Duration (minutes)
+              <input
+                type="number"
+                min={5}
+                max={45}
+                value={form.interview_max_minutes}
+                onChange={(e) => setForm((p) => ({ ...p, interview_max_minutes: Number(e.target.value) }))}
+                className={inputClass}
+              />
+              <span className="text-[10px] font-normal normal-case text-[var(--body)]">
+                The AI wraps up gracefully as this limit approaches, and the candidate sees a countdown. Hard safety cutoff is 45 minutes regardless of this setting.
+              </span>
+            </label>
           </div>
         </div>
 
