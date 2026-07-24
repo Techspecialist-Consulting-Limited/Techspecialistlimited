@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
 from sqlalchemy import select, func
@@ -22,6 +22,7 @@ from app.models.interview import Interview
 from app.models.job_posting import JobPosting
 from app.models.stage import StageResult
 from app.models.audit_log import AuditLog
+from app.routers.applications import extract_text
 from app.services.audit_service import log_action, get_audit_logs
 from app.services.email_service import (
     send_approval_email,
@@ -29,6 +30,7 @@ from app.services.email_service import (
     send_rejection_email,
     send_stage2_invitation_email,
 )
+from app.services.storage import upload_file
 
 router = APIRouter(prefix="/api/hr", tags=["hr"])
 
@@ -484,6 +486,88 @@ async def approve_application(
         "stage": app.stage,
         "assessment_token": app.assessment_token,
         "assessment_sent_at": str(app.assessment_sent_at) if app.assessment_sent_at else None,
+        "assessment_expires_at": str(app.assessment_expires_at) if app.assessment_expires_at else None,
+    }
+
+
+@router.post("/applications/manual-interview-invite", status_code=status.HTTP_201_CREATED)
+async def manual_interview_invite(
+    job_id: uuid.UUID,
+    candidate_name: str,
+    candidate_email: str,
+    expiration_days: int | None = None,
+    cv: UploadFile | None = None,
+    cover_letter: UploadFile | None = None,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
+    """For candidates who applied outside the platform (e.g. directly to an HR
+    inbox) and HR wants to send straight to the stage-2 AI interview, with no
+    CV screening — mirrors approve_application's stage-2 invite logic, just
+    starting from a blank Application instead of an existing stage-1 one."""
+    job_result = await db.execute(select(JobPosting).where(JobPosting.id == job_id))
+    job = job_result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    cv_url = ""  # cv_url is NOT NULL on Application; empty means "no CV on file"
+    cv_text = None
+    if cv:
+        cv_content = await cv.read()
+        cv_url = await upload_file(cv, settings.cvs_container_name, content=cv_content)
+        cv_text = extract_text(cv_content, cv.filename or "cv.txt")
+
+    cover_letter_url = None
+    cover_letter_text = None
+    if cover_letter:
+        cl_content = await cover_letter.read()
+        cover_letter_url = await upload_file(cover_letter, settings.cvs_container_name, content=cl_content)
+        cover_letter_text = extract_text(cl_content, cover_letter.filename or "cover_letter.txt")
+
+    app = Application(
+        job_id=job_id,
+        candidate_name=candidate_name,
+        candidate_email=candidate_email,
+        cv_url=cv_url,
+        cv_text=cv_text,
+        cover_letter_url=cover_letter_url,
+        cover_letter_text=cover_letter_text,
+        status="approved",
+        stage=2,
+        assessment_token=secrets.token_urlsafe(32),
+        assessment_sent_at=datetime.now(timezone.utc),
+    )
+
+    expires_at = None
+    if expiration_days and expiration_days > 0:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=expiration_days)
+        app.assessment_expires_at = expires_at
+
+    db.add(app)
+    await db.commit()
+    await db.refresh(app)
+
+    magic_link = f"{settings.frontend_url}/assessment/{app.assessment_token}"
+
+    await log_action(
+        db, app.id, "manually_added_for_interview",
+        "Added directly by HR (applied outside the platform) and sent straight to the AI interview; CV screening was skipped.",
+    )
+
+    await send_stage2_invitation_email(
+        to=candidate_email,
+        name=candidate_name,
+        job_title=job.title,
+        magic_link=magic_link,
+        expires_at=expires_at,
+    )
+
+    return {
+        "id": str(app.id),
+        "status": app.status,
+        "stage": app.stage,
+        "assessment_token": app.assessment_token,
+        "assessment_sent_at": str(app.assessment_sent_at),
         "assessment_expires_at": str(app.assessment_expires_at) if app.assessment_expires_at else None,
     }
 

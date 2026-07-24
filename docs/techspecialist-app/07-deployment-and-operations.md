@@ -27,19 +27,19 @@ On every startup (`app/main.py`'s lifespan hook), the backend:
 
 ## Deployment
 
-**Frontend:** `.github/workflows/main_techspecialist-limited.yml` builds and deploys to an **Azure Web App** named `Techspecialist-Limited` on every push to `main` (via `azure/webapps-deploy`). Build-time secrets injected: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_ASSESSMENT_WS_URL`.
+**Frontend:** confirmed as of 2026-07-24 — **Vercel** (project `techspecialistlimited`) is the live, authoritative deployment of `techspecialistlimited.com`, deployed via `vercel --prod` from the repo root (or a git-triggered Vercel build). A `.github/workflows/main_techspecialist-limited.yml` workflow also exists, building and deploying to an **Azure Web App** named `Techspecialist-Limited` on every push to `main` — this pipeline still runs but is **not** what serves live traffic; don't assume it is during an incident. `RECRUITMENT_API_URL` and `NEXT_PUBLIC_ASSESSMENT_WS_URL` (the backend URLs — the latter baked in at build time since it's used client-side) are set in Vercel's project environment variables, not GitHub Actions secrets.
 
-A `.vercel/repo.json` project link also exists in the repo, which implies a Vercel project may also be (or have been) connected. **Confirm with whoever manages hosting which one is the live, authoritative deployment** before making assumptions in an incident — don't assume Azure is the only place this is running.
+**Backend:** has a `Dockerfile` (`python:3.12-slim`, installs `requirements.txt`, runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`), and no matching GitHub Actions workflow exists in `.github/workflows/` — deployment is entirely manual. Confirmed live setup as of 2026-07-24:
 
-**Backend:** has a `Dockerfile` (`python:3.12-slim`, installs `requirements.txt`, runs `uvicorn app.main:app --host 0.0.0.0 --port 8000`), and no matching GitHub Actions workflow exists in `.github/workflows/` — deployment is entirely manual. Confirmed live setup:
-
-- **Where it runs:** Azure Web App for Containers, name `techspecialist-api`, resource group `techspecialist`, region `canadacentral`. URL: `https://techspecialist-api-aub0eafrb0d4hcbq.canadacentral-01.azurewebsites.net`.
-- **Image registry:** Azure Container Registry `techspecialistacr`, image `recruitment-api:latest`.
+- **Where it runs:** Azure Web App for Containers, name `techspecialist-api-eastus2`, resource group `techspecialist`, region `eastus2`. URL: `https://techspecialist-api-eastus2.azurewebsites.net`. Deliberately co-located with the Realtime (`taofeeq-4580-resource`) and Whisper (`taofe-mqjku99p-eastus2`) AI resources, both also in East US 2 — the backend previously ran in Canada Central, which added a real cross-region network hop to every frame of the live voice interview that local testing never had, and was a genuine contributor to production-only interview reliability issues. See [[project_backend-region-migration]] in memory for the full story.
+  - A prior Web App, `techspecialist-api` (Canada Central), is kept temporarily as a rollback target (through roughly 2026-07-31) — kept in sync with identical app settings and the same deployed image, but not receiving live traffic. Confirm it still exists before relying on it as a rollback; it may have been decommissioned since.
+- **Image registry:** Azure Container Registry `techspecialistacr`, image `recruitment-api:latest` (registry itself did not move regions).
 - **Deploy sequence** (run from the repo root, needs the Azure CLI logged in with access to the `techspecialist` resource group):
   ```bash
   az acr build --registry techspecialistacr --image recruitment-api:latest ./backend
-  az webapp restart --name techspecialist-api --resource-group techspecialist
+  az webapp restart --name techspecialist-api-eastus2 --resource-group techspecialist
   ```
+  **Config vars added locally must also be set on the live Web App(s)** — updating `backend/.env`/`.env.example` does not propagate to Azure automatically. This was missed for a full session once (`APPLICANT_REPLY_TO_EMAIL`), silently disabling a shipped feature in production while it worked fine locally. Use `az webapp config appsettings set --name techspecialist-api-eastus2 --resource-group techspecialist --settings KEY=value` for any new var.
   `az acr build` uploads and builds from the **local `backend/` directory on disk** — not from git — so uncommitted local changes get deployed too if the working tree isn't clean when you run it. Check `git status backend/` first if that matters to you.
 - **Two operational quirks worth knowing before you trust a "successful" deploy:**
   1. On Windows, `az acr build`'s local log streaming can crash mid-build with `UnicodeEncodeError: 'charmap' codec can't encode characters` (a `colorama`/`cp1252` console issue) — this is cosmetic, the remote build usually keeps running fine. Don't treat a crashed local stream as a failed build; check the real status with `az acr task list-runs --registry techspecialistacr --top 1 --query "[0].status" -o tsv` instead.

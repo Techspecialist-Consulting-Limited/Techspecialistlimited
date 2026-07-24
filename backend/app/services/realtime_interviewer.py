@@ -147,7 +147,13 @@ def build_session_update(
                 "turn_detection": {
                     "type": "semantic_vad",
                     "eagerness": settings.realtime_vad_eagerness,
-                    "interrupt_response": True,
+                    # False so a stray cough or background noise while the AI is
+                    # speaking can never cut its audio off mid-sentence. Turn
+                    # detection (create_response, default true) still decides
+                    # normally when the candidate has finished talking — this
+                    # only disables treating "some sound was detected" as a
+                    # reason to cancel the AI's in-progress response.
+                    "interrupt_response": False,
                 },
             },
             "output": {"voice": settings.realtime_voice},

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchApplicants, fetchJob, bulkAction, type Application, type Job } from '@/lib/recruitment-api';
 import { isStalled, isDuplicate } from '@/lib/applicant-flags';
-import { StatusBadge, ScoreCircle, BrandedLoader, EmptyState, PipelineBoard, ConfirmDialog } from '@/components/recruitment';
+import { StatusBadge, ScoreCircle, BrandedLoader, EmptyState, PipelineBoard, ConfirmDialog, AddCandidateModal } from '@/components/recruitment';
 
 export default function ApplicantPipelinePage() {
   const { jobId } = useParams();
@@ -17,6 +17,7 @@ export default function ApplicantPipelinePage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkConfirm, setBulkConfirm] = useState<'archive' | 'unarchive' | 'reject' | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [showAddCandidate, setShowAddCandidate] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   const loadData = useCallback(async () => {
@@ -91,6 +92,12 @@ export default function ApplicantPipelinePage() {
             <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
             Show archived
           </label>
+          <button
+            onClick={() => setShowAddCandidate(true)}
+            className="rounded-md border border-[var(--border)] px-3 py-1.5 text-[12px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10"
+          >
+            + Add Candidate
+          </button>
           <div className="flex items-center gap-1 rounded-md border border-[var(--border)] p-1 dark:border-white/10">
             <button
               onClick={() => setViewMode('board')}
@@ -148,6 +155,7 @@ export default function ApplicantPipelinePage() {
             const sr = app.screening_result;
             const stalled = isStalled(app);
             const duplicate = isDuplicate(app);
+            const manuallyAdded = !sr && app.stage >= 2;
             return (
               <div
                 key={app.id}
@@ -177,10 +185,13 @@ export default function ApplicantPipelinePage() {
                     </div>
                     {sr && <ScoreCircle score={sr.overall_score} size={40} strokeWidth={3} showLabel={false} />}
                   </div>
-                  {(stalled || duplicate || app.is_archived) && (
+                  {(stalled || duplicate || app.is_archived || manuallyAdded) && (
                     <div className="mb-3 flex flex-wrap gap-1.5">
                       {app.is_archived && (
                         <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[10px] font-semibold text-gray-600 dark:bg-white/10 dark:text-white/60">Archived</span>
+                      )}
+                      {manuallyAdded && (
+                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-[var(--blue)] dark:bg-blue-900/20" title="Added directly by HR; no CV screening was run">Added by HR</span>
                       )}
                       {stalled && (
                         <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">Stalled</span>
@@ -202,6 +213,15 @@ export default function ApplicantPipelinePage() {
             );
           })}
         </div>
+      )}
+
+      {jobId && !Array.isArray(jobId) && (
+        <AddCandidateModal
+          open={showAddCandidate}
+          jobId={jobId}
+          onClose={() => setShowAddCandidate(false)}
+          onAdded={() => { setShowAddCandidate(false); loadData(); }}
+        />
       )}
 
       <ConfirmDialog

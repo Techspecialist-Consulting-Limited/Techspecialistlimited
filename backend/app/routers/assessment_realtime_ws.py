@@ -16,7 +16,7 @@ from app.models.conversation import ConversationSession
 from app.models.stage import StageResult
 from app.services.audit_service import log_action
 from app.services.conversation import evaluate_full_conversation
-from app.services.realtime_interviewer import advance_topic, build_session_update
+from app.services.realtime_interviewer import GREETING_INSTRUCTION, advance_topic, build_session_update
 
 router = APIRouter(prefix="/api/assessment", tags=["assessment-realtime-ws"])
 logger = logging.getLogger(__name__)
@@ -157,10 +157,14 @@ async def assessment_realtime_websocket(
             await db_session.commit()
 
     async def handle_azure_event(event, conn) -> None:
-        if event.type == "input_audio_buffer.speech_started":
-            await websocket.send_json({"type": "interrupt"})
+        # Note: turn_detection.interrupt_response is false (see
+        # realtime_interviewer.py), so speech_started no longer means "cancel
+        # the AI's response" server-side — it fires on any detected sound,
+        # including background noise, and forwarding it as a client-side
+        # "interrupt" here would still cut local playback even though the
+        # server keeps generating. Deliberately not forwarded.
 
-        elif event.type == "conversation.item.input_audio_transcription.completed":
+        if event.type == "conversation.item.input_audio_transcription.completed":
             topic_label = (
                 topics[min(ctx["current_topic_index"], len(topics) - 1)]["label"]
                 if topics else "Complete"
@@ -307,6 +311,8 @@ async def assessment_realtime_websocket(
                     await websocket.close()
                     return
 
+            is_fresh_start = not ctx["conversation_history"]
+
             for entry in ctx["conversation_history"]:
                 await conn.conversation.item.create(item={
                     "type": "message",
@@ -319,6 +325,22 @@ async def assessment_realtime_websocket(
 
             browser_task = asyncio.create_task(browser_reader(conn))
             azure_task = asyncio.create_task(azure_reader(conn))
+
+            if is_fresh_start and topics:
+                # The model speaks the opening greeting itself, live, over this
+                # same connection — so its voice is identical to the rest of the
+                # interview instead of switching from a separately-synthesized
+                # (and different-sounding) legacy TTS greeting.
+                greeting_session = build_session_update(
+                    job_title, candidate_name, instructions_text, topics, 0, 0, minutes_remaining(),
+                )
+                greeting_session["instructions"] += "\n\n" + GREETING_INSTRUCTION.format(
+                    candidate_name=candidate_name,
+                    first_topic_label=topics[0]["label"],
+                    first_seed_question=topics[0]["seed_question"],
+                )
+                await conn.session.update(session=greeting_session)
+                await conn.response.create()
 
             try:
                 await asyncio.wait_for(

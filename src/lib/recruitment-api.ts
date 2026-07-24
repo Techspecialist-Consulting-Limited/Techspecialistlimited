@@ -215,6 +215,46 @@ export function fetchApplicants(jobId: string, includeArchived = false): Promise
   return request(`/hr/applications/${jobId}${includeArchived ? '?include_archived=true' : ''}`, { headers: authHeaders() });
 }
 
+export interface ManualInterviewInviteResponse {
+  id: string;
+  status: string;
+  stage: number;
+  assessment_token: string;
+  assessment_sent_at: string;
+  assessment_expires_at: string | null;
+}
+
+export async function manualInterviewInvite(params: {
+  jobId: string;
+  candidateName: string;
+  candidateEmail: string;
+  expirationDays?: number;
+  cv?: File | null;
+  coverLetter?: File | null;
+}): Promise<ManualInterviewInviteResponse> {
+  const query = new URLSearchParams({
+    job_id: params.jobId,
+    candidate_name: params.candidateName,
+    candidate_email: params.candidateEmail,
+  });
+  if (params.expirationDays) query.set('expiration_days', String(params.expirationDays));
+
+  const formData = new FormData();
+  if (params.cv) formData.set('cv', params.cv);
+  if (params.coverLetter) formData.set('cover_letter', params.coverLetter);
+
+  const res = await fetch(`${API_BASE}/hr/applications/manual-interview-invite?${query}`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(body || `Failed ${res.status}`);
+  }
+  return res.json();
+}
+
 export interface ReviewResponse {
   status: string;
   stage: number;

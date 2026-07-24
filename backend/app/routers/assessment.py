@@ -135,10 +135,28 @@ async def start_assessment(
         topics.append({"label": label, "seed_question": q})
 
     if existing_session:
-        history = json.loads(existing_session.conversation_history)
-        ai_message_text = history[-1]["content"] if history and history[-1]["role"] == "ai" else "Welcome back. Let's continue."
         topic_idx = existing_session.current_topic_index
         topic_label = topics[min(topic_idx, len(topics) - 1)]["label"] if topics else "Topic 1"
+
+        # The realtime engine speaks its own greeting/resume line live over the
+        # WebSocket (see assessment_realtime_ws.py) so its voice is consistent
+        # throughout — it must not be pre-voiced here via the separate legacy
+        # TTS pipeline, which uses a different underlying model and can sound
+        # like a different person entirely.
+        if existing_session.engine == "realtime":
+            return StreamingResponse(
+                io.BytesIO(b""),
+                media_type="audio/mpeg",
+                headers={
+                    "X-Topic-Label": topic_label,
+                    "X-Conversation-Id": str(existing_session.id),
+                    "X-Interview-Done": "false",
+                    "X-AI-Text": "",
+                },
+            )
+
+        history = json.loads(existing_session.conversation_history)
+        ai_message_text = history[-1]["content"] if history and history[-1]["role"] == "ai" else "Welcome back. Let's continue."
         try:
             audio_bytes = await synthesize_speech(ai_message_text)
         except Exception:
@@ -152,6 +170,31 @@ async def start_assessment(
                 "X-Conversation-Id": str(existing_session.id),
                 "X-Interview-Done": "false",
                 "X-AI-Text": _sanitize_header(ai_message_text),
+            },
+        )
+
+    if settings.realtime_interview_enabled:
+        session = ConversationSession(
+            application_id=app.id,
+            status="in_progress",
+            current_topic_index=0,
+            turns_on_current_topic=0,
+            topics=json.dumps(topics),
+            conversation_history=json.dumps([]),
+            engine="realtime",
+        )
+        db.add(session)
+        await db.commit()
+        await db.refresh(session)
+
+        return StreamingResponse(
+            io.BytesIO(b""),
+            media_type="audio/mpeg",
+            headers={
+                "X-Topic-Label": topics[0]["label"] if topics else "Topic 1",
+                "X-Conversation-Id": str(session.id),
+                "X-Interview-Done": "false",
+                "X-AI-Text": "",
             },
         )
 
@@ -169,7 +212,7 @@ async def start_assessment(
         turns_on_current_topic=1,
         topics=json.dumps(topics),
         conversation_history=json.dumps(history),
-        engine="realtime" if settings.realtime_interview_enabled else "legacy",
+        engine="legacy",
     )
     db.add(session)
     await db.commit()

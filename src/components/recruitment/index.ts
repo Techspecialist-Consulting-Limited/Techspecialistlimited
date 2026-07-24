@@ -10,3 +10,4 @@ export { default as TranscriptViewer } from './TranscriptViewer';
 export { default as ScheduleInterviewModal } from './ScheduleInterviewModal';
 export { default as PipelineBoard } from './PipelineBoard';
 export { default as ScorecardPanel } from './ScorecardPanel';
+export { default as AddCandidateModal } from './AddCandidateModal';

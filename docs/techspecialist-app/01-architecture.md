@@ -18,11 +18,11 @@ This is a **two-application system**, not one. A Next.js frontend serves everyth
 │  - /admin/assessments (leads dashboard)                              │
 │  - /api/** route handlers — mostly thin proxies to the backend       │
 │                                                                        │
-│  Deployed: Azure Web App "Techspecialist-Limited"                    │
-│  (GitHub Actions, .github/workflows/main_techspecialist-limited.yml, │
-│  triggers on push to `main`). A `.vercel/` project link also exists  │
-│  in the repo — confirm with whoever manages hosting which target is  │
-│  actually authoritative before assuming Azure is the only one live.  │
+│  Deployed: Vercel (project "techspecialistlimited") — confirmed      │
+│  live/authoritative as of 2026-07-24. A GitHub Actions workflow       │
+│  (.github/workflows/main_techspecialist-limited.yml) also deploys    │
+│  to an Azure Web App "Techspecialist-Limited" on push to `main`,     │
+│  but that is NOT what serves live traffic — don't assume it is.      │
 └───────┬───────────────────────────────────────┬─────────────────────┘
         │ server-side fetch()                   │ direct client SDK calls
         │ (proxyToBackend, RECRUITMENT_API_URL)  │ (NEXT_PUBLIC_SUPABASE_*)
@@ -41,14 +41,20 @@ This is a **two-application system**, not one. A Next.js frontend serves everyth
 │    / SQLite (dev)                │   │  See 02-data-model-and-        │
 │                                   │   │  storage.md for why this       │
 │  Deployed: Azure Web App for     │   │  creates two sources of truth. │
-│  Containers "techspecialist-api" │   └──────────────────────────────┘
+│  Containers                      │   └──────────────────────────────┘
+│  "techspecialist-api-eastus2"    │
 │  (resource group                 │
-│  "techspecialist"). Image built  │
-│  + pushed via Azure Container    │
-│  Registry "techspecialistacr";   │
-│  deployed manually               │
-│  (az acr build + az webapp       │
-│  restart) — no CI workflow.      │
+│  "techspecialist", region        │
+│  East US 2 — co-located with     │
+│  the Realtime/Whisper resources; │
+│  see 07-deployment-and-          │
+│  operations.md for why this      │
+│  region choice matters). Image   │
+│  built + pushed via Azure        │
+│  Container Registry              │
+│  "techspecialistacr"; deployed   │
+│  manually (az acr build + az     │
+│  webapp restart) — no CI.        │
 └───────┬───────────────────────────┘
         │
         ▼
@@ -87,8 +93,8 @@ Browser → `wss://.../api/assessment/{token}/realtime-ws` → backend holds one
 | Environment | Frontend | Backend | Backend DB |
 |---|---|---|---|
 | Local dev | `npm run dev0` (`next dev`) | `uvicorn app.main:app --reload`, `RECRUITMENT_API_URL=http://localhost:8000` | SQLite (`backend/recruitment.db`), `dev_mode` true, local-disk file storage under `backend/storage/` |
-| Production | Azure Web App (Node/Next.js), per CI workflow | Azure Web App for Containers `techspecialist-api` (resource group `techspecialist`), image `techspecialistacr.azurecr.io/recruitment-api:latest` | Postgres (per `backend/.env.example`), Azure Blob Storage |
+| Production | Vercel (project `techspecialistlimited`) | Azure Web App for Containers `techspecialist-api-eastus2` (resource group `techspecialist`, region East US 2), image `techspecialistacr.azurecr.io/recruitment-api:latest` | Postgres (per `backend/.env.example`), Azure Blob Storage |
 
-**Gap worth flagging:** there is no CI/CD workflow in `.github/workflows/` for the `backend/` service, and no `docker-compose.yml` tying frontend and backend together. The backend has a `Dockerfile` (`python:3.12-slim`, exposes port 8000), and deployment is a **manual, human-run process**: `az acr build --registry techspecialistacr --image recruitment-api:latest ./backend` (rebuilds and pushes the image from the local `backend/` directory — not from git, so uncommitted local changes get deployed too if you're not careful), then `az webapp restart --name techspecialist-api --resource-group techspecialist`. See [07-deployment-and-operations.md](07-deployment-and-operations.md) for the full sequence and a real operational quirk (the first restart after a build sometimes still serves the old cached image — verify a field/behavior only the new code has before declaring the deploy done, don't just trust `/health`).
+**Gap worth flagging:** there is no CI/CD workflow in `.github/workflows/` for the `backend/` service, and no `docker-compose.yml` tying frontend and backend together. The backend has a `Dockerfile` (`python:3.12-slim`, exposes port 8000), and deployment is a **manual, human-run process**: `az acr build --registry techspecialistacr --image recruitment-api:latest ./backend` (rebuilds and pushes the image from the local `backend/` directory — not from git, so uncommitted local changes get deployed too if you're not careful), then `az webapp restart --name techspecialist-api-eastus2 --resource-group techspecialist`. See [07-deployment-and-operations.md](07-deployment-and-operations.md) for the full sequence, why the backend lives in East US 2 specifically, and a real operational quirk (the first restart after a build sometimes still serves the old cached image — verify a field/behavior only the new code has before declaring the deploy done, don't just trust `/health`).
 
 A stray `out/` directory exists at the repo root (looks like a static export from `next export`/`output: 'export'` at some point), but the current `next.config.mjs` has no `output: 'export'` setting and `package.json`'s `build` script is plain `next build`. Treat `out/` as a stale build artifact unless someone confirms otherwise — it's not part of the live build pipeline.

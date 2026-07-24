@@ -6,6 +6,8 @@ This is the reference documentation for the TechSpecialist Limited web applicati
 
 **Last verified against codebase:** 2026-07-15. This documentation describes what the code actually does, not what it was intended to do — including gaps and inconsistencies found along the way. If the code changes, this documentation will drift; treat it as a snapshot, and re-verify anything security- or data-critical before relying on it.
 
+**A single downloadable PDF** — [TechSpecialist-Limited-Documentation.pdf](TechSpecialist-Limited-Documentation.pdf) — combines everything below into one shareable file for stakeholder distribution. It opens with a standalone, plain-language business overview (what the platform does, the business case, how it compares to commercial hiring software, and the path to a commercial product) written for executives and non-technical stakeholders, followed by the complete technical reference that mirrors the markdown files in this folder. Regenerate it after any documentation change that should be reflected in the distributed copy — it is a generated artifact, not hand-maintained.
+
 ## Contents
 
 | Doc | Covers |

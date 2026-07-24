@@ -111,6 +111,11 @@ export default function RealtimeAssessmentPortal() {
   const audioFinishedRef = useRef(false);
   const finalScoreReceivedRef = useRef(false);
   const interviewStartRef = useRef(0);
+  // Guards against a fast double-click sending two overlapping "skip"/"end"
+  // messages before React re-renders the disabled button — the realtime API
+  // errors (and can behave erratically) if a second response.create() fires
+  // while the first is still in flight.
+  const actionLockRef = useRef(false);
 
   // Playback scheduling for streamed PCM16 chunks
   const playbackCtxRef = useRef<AudioContext | null>(null);
@@ -324,10 +329,12 @@ export default function RealtimeAssessmentPortal() {
       const msg = JSON.parse(event.data);
       switch (msg.type) {
         case 'audio_chunk':
+          actionLockRef.current = false;
           setPhase('ai_speaking');
           schedulePcmChunk(msg.data);
           break;
         case 'interrupt':
+          actionLockRef.current = false;
           stopScheduledPlayback();
           currentTurnBuffersRef.current = [];
           newAiTurnRef.current = true;
@@ -552,6 +559,8 @@ export default function RealtimeAssessmentPortal() {
   // ── Skip / End interview ──
 
   const handleSkipQuestion = useCallback(() => {
+    if (actionLockRef.current) return;
+    actionLockRef.current = true;
     setPhase('processing');
     setProcessingStatus('Moving to next question...');
     setCandidateTranscript('');
@@ -559,6 +568,8 @@ export default function RealtimeAssessmentPortal() {
   }, []);
 
   const endInterview = () => {
+    if (actionLockRef.current) return;
+    actionLockRef.current = true;
     stopAllPlayback();
     // Candidate-initiated end has no AI closing statement to wait for.
     audioFinishedRef.current = true;
@@ -1102,7 +1113,7 @@ export default function RealtimeAssessmentPortal() {
                     {phase === 'processing' && (processingStatus || 'Processing...')}
                   </p>
                   <p className="text-[11px] text-white/40">
-                    {phase === 'ai_speaking' && 'You can interrupt at any time'}
+                    {phase === 'ai_speaking' && 'Please wait for the question to finish'}
                     {phase === 'listening' && "Speak naturally. I'll know when you're done"}
                     {phase === 'processing' && candidateTranscript && `"${candidateTranscript}"`}
                   </p>
