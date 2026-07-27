@@ -136,29 +136,32 @@ function StatusDonut({ segments }: { segments: DonutSegment[] }) {
   const r = 44;
   const circumference = 2 * Math.PI * r;
   const arcSegments = arrangeAvoidingRiskAdjacency(segments.filter((s) => s.value > 0));
-  let offset = 0;
+  // Precompute each arc's length + cumulative offset as plain data before rendering, so the
+  // JSX-producing map below only reads values — mutating a closed-over variable inside a map
+  // callback that returns JSX trips the React Compiler's render-purity check.
+  const arcsWithOffset = arcSegments.reduce<{ segment: DonutSegment; len: number; offset: number }[]>((acc, s) => {
+    const len = total > 0 ? (s.value / total) * circumference : 0;
+    const prev = acc[acc.length - 1];
+    acc.push({ segment: s, len, offset: prev ? prev.offset + prev.len : 0 });
+    return acc;
+  }, []);
 
   return (
     <div className="flex items-center gap-5">
       <div className="relative h-[104px] w-[104px] flex-shrink-0">
         <svg width="104" height="104" style={{ transform: 'rotate(-90deg)' }}>
           <circle cx="52" cy="52" r={r} fill="none" stroke="var(--bg-soft)" strokeWidth="12" />
-          {arcSegments.map((s) => {
-            const len = total > 0 ? (s.value / total) * circumference : 0;
-            const seg = (
-              <circle
-                key={s.label}
-                cx="52" cy="52" r={r} fill="none"
-                stroke={s.color}
-                strokeWidth="12"
-                strokeDasharray={`${Math.max(0, len - 2)} ${circumference - len + 2}`}
-                strokeDashoffset={-offset}
-                strokeLinecap="round"
-              />
-            );
-            offset += len;
-            return seg;
-          })}
+          {arcsWithOffset.map(({ segment: s, len, offset }) => (
+            <circle
+              key={s.label}
+              cx="52" cy="52" r={r} fill="none"
+              stroke={s.color}
+              strokeWidth="12"
+              strokeDasharray={`${Math.max(0, len - 2)} ${circumference - len + 2}`}
+              strokeDashoffset={-offset}
+              strokeLinecap="round"
+            />
+          ))}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-[19px] font-extrabold text-[var(--heading)]" style={{ letterSpacing: '-0.02em' }}>{total}</span>
