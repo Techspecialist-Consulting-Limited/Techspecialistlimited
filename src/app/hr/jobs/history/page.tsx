@@ -37,13 +37,13 @@ export default function JobHistoryPage() {
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-syne text-[28px] font-extrabold text-[var(--heading)]">Job History</h1>
-          <p className="mt-1 text-[14px] text-[var(--body)]">Soft-deleted job postings — restore them to make them active again</p>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Job History</h1>
+          <p className="mt-1 text-[13px] text-[var(--body)]">Soft-deleted job postings — restore them to make them active again.</p>
         </div>
-        <Link href="/hr/jobs" className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-5 py-[11px] text-[13px] font-bold text-[var(--body)] transition-all hover:-translate-y-0.5 hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+        <Link href="/hr/jobs" className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--bg)] px-5 py-2.5 text-[12.5px] font-semibold text-[var(--heading)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
           Back to Jobs
         </Link>
       </div>
@@ -63,10 +63,9 @@ export default function JobHistoryPage() {
           {jobs.map((job) => (
             <div
               key={job.id}
-              className="group relative flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 transition-all hover:shadow-md dark:border-white/10 dark:bg-[#101827]"
+              className="group relative flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#101827]"
             >
-              <div className="absolute left-0 top-0 h-full w-[3px] rounded-r bg-[var(--status-rejected)] opacity-30" />
-              <div className="flex items-center gap-4 pl-2">
+              <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[rgba(239,68,68,0.1)] text-sm font-bold text-[var(--status-rejected)]">
                   {job.title.charAt(0)}
                 </div>
@@ -88,7 +87,7 @@ export default function JobHistoryPage() {
                 <button
                   onClick={() => handleRestore(job.id)}
                   disabled={restoring === job.id}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--blue)] px-4 py-2 text-[12px] font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[var(--blue)] px-4 py-2 text-[12px] font-bold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50"
                 >
                   {restoring === job.id ? (
                     <>Restoring...</>

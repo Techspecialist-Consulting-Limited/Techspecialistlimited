@@ -10,7 +10,9 @@ import { BrandedLoader, ConfirmDialog } from '@/components/recruitment';
 
 const inputClass = 'w-full rounded-md border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-[14px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5 dark:text-white';
 const labelClass = 'grid gap-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--body)]';
-const cardClass = 'rounded-xl border border-[var(--border)] bg-[var(--bg)] p-6 dark:border-white/10 dark:bg-[#101827]';
+const cardClass = 'rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-6 dark:border-white/10 dark:bg-[#101827]';
+const btnPrimaryClass = 'rounded-full px-5 py-2.5 text-[13px] font-bold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg';
+const btnPrimaryStyle = { background: 'var(--blue)' };
 
 function Toast({ message, kind }: { message: string; kind: 'success' | 'error' }) {
   return (
@@ -72,7 +74,7 @@ function NotificationsAndBrandingCard() {
 
   return (
     <div className={cardClass}>
-      <h2 className="mb-1 font-syne text-[16px] font-bold text-[var(--heading)]">Notifications &amp; Branding</h2>
+      <h2 className="mb-1 text-[16px] font-bold text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Notifications &amp; Branding</h2>
       <p className="mb-5 text-[13px] text-[var(--body)]">
         Control who gets emailed when a new applicant applies, and how outbound emails look.
       </p>
@@ -136,7 +138,7 @@ function NotificationsAndBrandingCard() {
         {status && <Toast message={status.message} kind={status.kind} />}
 
         <div className="flex justify-end">
-          <button onClick={handleSave} disabled={saving} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className={`${btnPrimaryClass} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none`} style={btnPrimaryStyle}>
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
@@ -198,7 +200,7 @@ function HrTeamCard() {
 
   return (
     <div className={cardClass}>
-      <h2 className="mb-1 font-syne text-[16px] font-bold text-[var(--heading)]">HR Team</h2>
+      <h2 className="mb-1 text-[16px] font-bold text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>HR Team</h2>
       <p className="mb-5 text-[13px] text-[var(--body)]">
         Manage who has access to the HR Portal. New teammates get an email to set their own password.
       </p>
@@ -210,28 +212,28 @@ function HrTeamCard() {
           {users.map((user) => (
             <div
               key={user.id}
-              className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border)] px-4 py-3 dark:border-white/10"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--border)] px-4 py-3 dark:border-white/10"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
                 <div
-                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-[var(--blue)]"
-                  style={{ background: 'rgba(69,132,237,0.1)' }}
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
+                  style={{ background: 'linear-gradient(135deg, var(--blue), #7c5cff)' }}
                 >
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <div className="text-[13px] font-semibold text-[var(--heading)]">{user.name}</div>
-                  <div className="text-[12px] text-[var(--body)]">{user.email}</div>
+                <div className="min-w-0">
+                  <div className="truncate text-[13px] font-semibold text-[var(--heading)]">{user.name}</div>
+                  <div className="truncate text-[12px] text-[var(--body)]">{user.email}</div>
                 </div>
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                  className={`flex-shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                     user.is_active ? 'bg-[rgba(34,197,94,0.1)] text-green-600' : 'bg-[rgba(148,163,184,0.15)] text-[var(--body)]'
                   }`}
                 >
                   {user.is_active ? 'Active' : 'Inactive'}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-shrink-0 items-center gap-2">
                 <button
                   onClick={() => handleToggleActive(user)}
                   className="rounded-md border border-[var(--border)] px-3 py-1.5 text-[12px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10"
@@ -261,7 +263,7 @@ function HrTeamCard() {
           Email
           <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="jane@techspecialistlimited.com" />
         </label>
-        <button type="submit" disabled={inviting} className="btn-primary whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="submit" disabled={inviting} className={`${btnPrimaryClass} whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none`} style={btnPrimaryStyle}>
           {inviting ? 'Sending...' : 'Invite Teammate'}
         </button>
       </form>
@@ -314,7 +316,7 @@ function ChangePasswordCard() {
 
   return (
     <div className={cardClass}>
-      <h2 className="mb-1 font-syne text-[16px] font-bold text-[var(--heading)]">Change Password</h2>
+      <h2 className="mb-1 text-[16px] font-bold text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Change Password</h2>
       <p className="mb-5 text-[13px] text-[var(--body)]">Update the password for your own HR account.</p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -336,7 +338,7 @@ function ChangePasswordCard() {
         {status && <Toast message={status.message} kind={status.kind} />}
 
         <div className="flex justify-end">
-          <button type="submit" disabled={saving} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">
+          <button type="submit" disabled={saving} className={`${btnPrimaryClass} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none`} style={btnPrimaryStyle}>
             {saving ? 'Saving...' : 'Update Password'}
           </button>
         </div>
@@ -348,8 +350,8 @@ function ChangePasswordCard() {
 export default function HrSettingsPage() {
   return (
     <div className="mx-auto max-w-[800px]">
-      <h1 className="mb-2 font-syne text-[28px] font-extrabold text-[var(--heading)]">Settings</h1>
-      <p className="mb-8 text-[14px] text-[var(--body)]">Manage notifications, branding, your HR team, and your account.</p>
+      <h1 className="mb-2 text-[26px] font-extrabold tracking-[-0.02em] text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Settings</h1>
+      <p className="mb-8 text-[13px] text-[var(--body)]">Manage notifications, branding, your HR team, and your account.</p>
 
       <div className="space-y-6">
         <NotificationsAndBrandingCard />

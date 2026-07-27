@@ -151,16 +151,17 @@ export default function SidebarNav({ userEmail, onSignOut }: SidebarNavProps) {
                   gap: '12px',
                   padding: collapsed ? '12px' : '10px 14px',
                   borderRadius: '10px',
-                  color: active ? 'var(--blue)' : 'var(--body)',
-                  background: active ? 'rgba(69, 132, 237, 0.08)' : 'transparent',
+                  color: active ? '#ffffff' : 'var(--body)',
+                  background: active ? 'var(--blue)' : 'transparent',
+                  boxShadow: active ? '0 4px 14px rgba(69, 132, 237, 0.35)' : 'none',
                   textDecoration: 'none',
                   fontSize: '13px',
                   fontWeight: active ? 600 : 500,
                   transition: 'all 0.2s',
                   justifyContent: collapsed ? 'center' : 'flex-start',
                 }}
-                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'var(--bg-soft)'; } }}
-                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; } }}
+                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = 'var(--bg-soft)'; e.currentTarget.style.color = 'var(--heading)'; } }}
+                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--body)'; } }}
               >
                 {item.icon}
                 {!collapsed && item.label}

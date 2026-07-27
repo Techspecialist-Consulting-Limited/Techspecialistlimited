@@ -54,13 +54,13 @@ export default function CreateJobPage() {
         Back to Jobs
       </Link>
 
-      <h1 className="mb-2 font-syne text-[28px] font-extrabold text-[var(--heading)]">Create Job Posting</h1>
-      <p className="mb-8 text-[14px] text-[var(--body)]">Fill in the details to create a new job posting with AI screening configuration.</p>
+      <h1 className="mb-2 text-[26px] font-extrabold tracking-[-0.02em] text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Create Job Posting</h1>
+      <p className="mb-8 text-[13px] text-[var(--body)]">Fill in the details to create a new job posting with AI screening configuration.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Job Details */}
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-6">
-          <h2 className="mb-5 font-syne text-[16px] font-bold text-[var(--heading)]">Job Details</h2>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-6 dark:border-white/10 dark:bg-[#101827]">
+          <h2 className="mb-5 text-[16px] font-bold text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Job Details</h2>
           <div className="space-y-5">
             <label className={labelClass}>
               Job Title <span className="text-[var(--status-rejected)]">*</span>
@@ -97,12 +97,12 @@ export default function CreateJobPage() {
         </div>
 
         {/* AI Configuration */}
-        <div className="rounded-xl border border-[rgba(69,132,237,0.15)] p-6" style={{ background: 'rgba(69, 132, 237, 0.02)' }}>
+        <div className="rounded-2xl border border-[rgba(69,132,237,0.15)] p-6" style={{ background: 'rgba(69, 132, 237, 0.02)' }}>
           <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: 'rgba(69, 132, 237, 0.1)' }}>
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--blue)" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl" style={{ background: 'rgba(69, 132, 237, 0.1)' }}>
+              <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="var(--blue)" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" /></svg>
             </div>
-            <h2 className="font-syne text-[16px] font-bold text-[var(--heading)]">AI Configuration</h2>
+            <h2 className="text-[16px] font-bold text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>AI Configuration</h2>
           </div>
           <div className="space-y-5">
             <label className={labelClass}>
@@ -147,8 +147,8 @@ export default function CreateJobPage() {
         </div>
 
         {/* Stage 2 Invitation Flow */}
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg)] p-6">
-          <h2 className="mb-2 font-syne text-[16px] font-bold text-[var(--heading)]">Stage 2 Invitation Flow</h2>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-6 dark:border-white/10 dark:bg-[#101827]">
+          <h2 className="mb-2 text-[16px] font-bold text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Stage 2 Invitation Flow</h2>
           <p className="mb-5 text-[13px] text-[var(--body)]">Choose how candidates move from CV screening to the AI interview stage.</p>
 
           <div className="grid gap-3 sm:grid-cols-2">
@@ -211,10 +211,15 @@ export default function CreateJobPage() {
         )}
 
         <div className="flex justify-end gap-3">
-          <Link href="/hr/jobs" className="rounded-md border border-[var(--border)] px-6 py-3 text-[13px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)]">
+          <Link href="/hr/jobs" className="rounded-full border border-[var(--border)] px-6 py-2.5 text-[13px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10">
             Cancel
           </Link>
-          <button type="submit" disabled={loading} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            style={{ background: 'var(--blue)' }}
+          >
             {loading ? 'Creating...' : 'Create Job'}
           </button>
         </div>

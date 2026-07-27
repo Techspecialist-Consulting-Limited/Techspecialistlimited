@@ -482,6 +482,12 @@ export interface DashboardStats {
   pending_review: number;
   completed: number;
   total_applicants: number;
+  hired: number;
+  score_high: number;
+  score_medium: number;
+  score_low: number;
+  score_unscored: number;
+  avg_score: number | null;
 }
 
 export function fetchDashboardStats(): Promise<DashboardStats> {

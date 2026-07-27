@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { fetchJobs, fetchApplicants, fetchDocumentUrl, Application, Job } from '@/lib/recruitment-api';
+import { StatusBadge, BrandedLoader } from '@/components/recruitment';
 
 export default function DocumentsPage() {
   const router = useRouter();
@@ -54,31 +55,23 @@ export default function DocumentsPage() {
       a.href = url;
       a.download = `${name}_CV.pdf`;
       a.click();
-    } catch {}
+    } catch { /* empty */ }
   };
 
-  if (loading) {
-    return <div style={{ padding: '24px', color: 'var(--body)' }}>Loading jobs...</div>;
-  }
+  if (loading) return <BrandedLoader text="Loading jobs..." />;
 
   return (
     <div>
-      <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--heading)', margin: 0 }}>Documents</h1>
-        <p style={{ fontSize: '13px', color: 'var(--body)', marginTop: '4px' }}>Browse applicant CVs grouped by job opening</p>
+      <div className="mb-7">
+        <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>Documents</h1>
+        <p className="mt-1 text-[13px] text-[var(--body)]">Browse applicant CVs grouped by job opening.</p>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+      <div className="mb-6 flex flex-wrap gap-3">
         <select
           value={selectedJobId}
-          onChange={(e) => {
-            setSelectedJobId(e.target.value);
-            if (!e.target.value) setApplicants([]);
-          }}
-          style={{
-            padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)',
-            background: 'var(--bg)', color: 'var(--heading)', fontSize: '13px', minWidth: '220px',
-          }}
+          onChange={(e) => { setSelectedJobId(e.target.value); if (!e.target.value) setApplicants([]); }}
+          className="min-w-[220px] rounded-full border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
         >
           <option value="">Select a job...</option>
           {jobs.map((j) => (
@@ -86,24 +79,23 @@ export default function DocumentsPage() {
           ))}
         </select>
 
-        <input
-          type="text"
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)',
-            background: 'var(--bg)', color: 'var(--heading)', fontSize: '13px', flex: 1, minWidth: '200px',
-          }}
-        />
+        <div className="relative min-w-[200px] flex-1">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--body)" strokeWidth={2} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-full border border-[var(--border)] bg-[var(--bg)] py-2.5 pl-10 pr-4 text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
+          />
+        </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border)',
-            background: 'var(--bg)', color: 'var(--heading)', fontSize: '13px',
-          }}
+          className="rounded-full border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
         >
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
@@ -113,80 +105,52 @@ export default function DocumentsPage() {
         </select>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: previewAppId ? '1fr 1fr' : '1fr', gap: '20px' }}>
+      <div className={previewAppId ? 'grid gap-5 lg:grid-cols-2' : ''}>
         <div>
           {!selectedJobId && (
-            <div style={{
-              padding: '40px', textAlign: 'center', borderRadius: '12px',
-              border: '1px dashed var(--border)', color: 'var(--body)', fontSize: '14px',
-            }}>
-              Select a job opening above to view applicant documents
+            <div className="rounded-2xl border border-dashed border-[var(--border)] p-10 text-center text-[13px] text-[var(--body)] dark:border-white/10">
+              Select a job opening above to view applicant documents.
             </div>
           )}
 
           {selectedJobId && filtered.length === 0 && (
-            <div style={{
-              padding: '40px', textAlign: 'center', borderRadius: '12px',
-              border: '1px dashed var(--border)', color: 'var(--body)', fontSize: '14px',
-            }}>
-              No applicants found{search ? ' matching your search' : ''}
+            <div className="rounded-2xl border border-dashed border-[var(--border)] p-10 text-center text-[13px] text-[var(--body)] dark:border-white/10">
+              No applicants found{search ? ' matching your search' : ''}.
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {filtered.map((app) => (
+          <div className="flex flex-col gap-2.5">
+            {filtered.map((app, i) => (
               <div
                 key={app.id}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '14px 16px', borderRadius: '12px',
-                  background: previewAppId === app.id ? 'rgba(69,132,237,0.06)' : 'var(--bg)',
-                  border: previewAppId === app.id ? '1.5px solid var(--blue)' : '1px solid var(--border)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
                 onClick={() => handlePreview(app.id)}
+                className="group flex cursor-pointer items-center gap-3 rounded-2xl border p-4 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-white/10"
+                style={{
+                  animation: `cardSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.04}s both`,
+                  background: previewAppId === app.id ? 'rgba(69,132,237,0.05)' : 'var(--bg)',
+                  borderColor: previewAppId === app.id ? 'var(--blue)' : undefined,
+                }}
               >
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '10px',
-                  background: 'rgba(69,132,237,0.1)', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--blue)', fontSize: '14px', fontWeight: 700, flexShrink: 0,
-                }}>
-                  {app.candidate_name.charAt(0)}
+                <div
+                  className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
+                  style={{ background: 'linear-gradient(135deg, var(--blue), #7c5cff)' }}
+                >
+                  {app.candidate_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--heading)' }}>{app.candidate_name}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--body)', marginTop: '2px' }}>{app.candidate_email}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-[13.5px] font-semibold text-[var(--heading)]">{app.candidate_name}</div>
+                  <div className="truncate text-[11.5px] text-[var(--body)]">{app.candidate_email}</div>
                 </div>
-                <span style={{
-                  fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '20px',
-                  background: app.status === 'pending' ? 'rgba(245,158,11,0.12)' : app.status === 'approved' ? 'rgba(16,185,129,0.12)' : app.status === 'rejected' ? 'rgba(239,68,68,0.12)' : 'rgba(69,132,237,0.12)',
-                  color: app.status === 'pending' ? '#f59e0b' : app.status === 'approved' ? '#10b981' : app.status === 'rejected' ? '#ef4444' : 'var(--blue)',
-                  textTransform: 'capitalize',
-                }}>
-                  {app.status.replace(/_/g, ' ')}
-                </span>
+                <StatusBadge status={app.status} />
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDownload(app.id, app.candidate_name); }}
-                  style={{
-                    padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)',
-                    background: 'transparent', color: 'var(--body)', fontSize: '11px',
-                    fontWeight: 500, cursor: 'pointer', flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--blue)'; e.currentTarget.style.color = 'var(--blue)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--body)'; }}
+                  className="flex-shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[11px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10"
                 >
                   Download
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); router.push(`/hr/applicants/${app.id}`); }}
-                  style={{
-                    padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)',
-                    background: 'transparent', color: 'var(--body)', fontSize: '11px',
-                    fontWeight: 500, cursor: 'pointer', flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--blue)'; e.currentTarget.style.color = 'var(--blue)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--body)'; }}
+                  className="flex-shrink-0 rounded-lg border border-[var(--border)] px-3 py-1.5 text-[11px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10"
                 >
                   Profile
                 </button>
@@ -196,43 +160,22 @@ export default function DocumentsPage() {
         </div>
 
         {previewAppId && (
-          <div style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
-            <div style={{
-              borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden',
-              background: 'var(--bg)',
-            }}>
-              <div style={{
-                padding: '12px 16px', borderBottom: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--heading)' }}>
-                  CV Preview
-                </span>
+          <div className="sticky top-6 self-start">
+            <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] dark:border-white/10 dark:bg-[#101827]">
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5 dark:border-white/10">
+                <span className="text-[13px] font-bold text-[var(--heading)]">CV Preview</span>
                 <button
                   onClick={() => { setPreviewAppId(null); setPreviewUrl(null); }}
-                  style={{
-                    padding: '4px 8px', borderRadius: '6px', border: 'none',
-                    background: 'transparent', color: 'var(--body)', cursor: 'pointer',
-                    fontSize: '16px', lineHeight: 1,
-                  }}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg text-[var(--body)] transition-colors hover:bg-[var(--bg-soft)] hover:text-[var(--heading)] dark:hover:bg-white/10"
                 >
-                  &times;
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div style={{ height: '70vh', background: '#f5f5f5' }}>
+              <div className="h-[70vh] bg-[var(--bg-soft)] dark:bg-white/[0.02]">
                 {previewUrl ? (
-                  <iframe
-                    src={previewUrl}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    title="CV Preview"
-                  />
+                  <iframe src={previewUrl} className="h-full w-full border-0" title="CV Preview" />
                 ) : (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    height: '100%', color: 'var(--body)', fontSize: '13px',
-                  }}>
-                    Loading preview...
-                  </div>
+                  <div className="flex h-full items-center justify-center text-[13px] text-[var(--body)]">Loading preview...</div>
                 )}
               </div>
             </div>

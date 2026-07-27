@@ -41,6 +41,12 @@ class StatsResponse(BaseModel):
     pending_review: int
     completed: int
     total_applicants: int
+    hired: int
+    score_high: int
+    score_medium: int
+    score_low: int
+    score_unscored: int
+    avg_score: float | None
 
 
 @router.get("/stats", response_model=StatsResponse)
@@ -77,12 +83,31 @@ async def get_dashboard_stats(
     )
     total_applicants = total_applicants_result.scalar() or 0
 
+    hired_result = await db.execute(
+        select(func.count(Application.id)).where(Application.status == "hired")
+    )
+    hired = hired_result.scalar() or 0
+
+    scores_result = await db.execute(select(AIScreeningResult.overall_score))
+    all_scores = [s for (s,) in scores_result.all() if s is not None]
+    score_high = sum(1 for s in all_scores if s >= 70)
+    score_medium = sum(1 for s in all_scores if 40 <= s < 70)
+    score_low = sum(1 for s in all_scores if s < 40)
+    score_unscored = max(0, total_applications - len(all_scores))
+    avg_score = round(sum(all_scores) / len(all_scores), 1) if all_scores else None
+
     return StatsResponse(
         active_jobs=active_jobs,
         total_applications=total_applications,
         pending_review=pending_review,
         completed=completed,
         total_applicants=total_applicants,
+        hired=hired,
+        score_high=score_high,
+        score_medium=score_medium,
+        score_low=score_low,
+        score_unscored=score_unscored,
+        avg_score=avg_score,
     )
 
 
@@ -121,7 +146,15 @@ async def get_pending_decisions(
     rows = result.all()
 
     decisions = []
+    seen_application_ids: set[uuid.UUID] = set()
     for app, stage_result, job in rows:
+        # An application can end up with more than one stage-2 StageResult (e.g. a
+        # retried evaluation); rows are ordered newest-first, so keep only the
+        # first (most recent) one per application to avoid duplicate cards.
+        if app.id in seen_application_ids:
+            continue
+        seen_application_ids.add(app.id)
+
         feedback = _parse_ai_feedback(stage_result.ai_feedback) or {}
         decisions.append(PendingDecision(
             application_id=app.id,

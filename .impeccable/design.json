@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-25T00:00:00.000Z",
+  "title": "Design System: TechSpecialist HR Portal",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Working Blue",
+        "canonical": "oklch(58% 0.19 258)",
+        "tonalRamp": ["oklch(20% 0.08 258)", "oklch(30% 0.12 258)", "oklch(40% 0.15 258)", "oklch(50% 0.18 258)", "oklch(58% 0.19 258)", "oklch(70% 0.14 258)", "oklch(85% 0.08 258)", "oklch(95% 0.02 258)"]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Working Blue, Pressed",
+        "canonical": "oklch(48% 0.18 260)",
+        "tonalRamp": ["oklch(18% 0.07 260)", "oklch(28% 0.11 260)", "oklch(38% 0.14 260)", "oklch(48% 0.18 260)", "oklch(58% 0.19 258)", "oklch(70% 0.14 258)", "oklch(85% 0.08 258)", "oklch(95% 0.02 258)"]
+      },
+      "secondary-orange": {
+        "role": "secondary",
+        "displayName": "Signal Orange",
+        "canonical": "oklch(64% 0.19 39)",
+        "tonalRamp": ["oklch(22% 0.09 39)", "oklch(32% 0.13 39)", "oklch(42% 0.16 39)", "oklch(53% 0.18 39)", "oklch(64% 0.19 39)", "oklch(75% 0.14 39)", "oklch(88% 0.07 39)", "oklch(96% 0.02 39)"]
+      },
+      "deep-navy": {
+        "role": "neutral",
+        "displayName": "Deep Navy",
+        "canonical": "oklch(16% 0.03 260)",
+        "tonalRamp": ["oklch(10% 0.02 260)", "oklch(16% 0.03 260)", "oklch(24% 0.04 260)", "oklch(34% 0.05 260)", "oklch(46% 0.05 260)", "oklch(60% 0.04 260)", "oklch(78% 0.02 260)", "oklch(95% 0.005 260)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Charcoal Ink",
+        "canonical": "oklch(24% 0 0)",
+        "tonalRamp": ["oklch(12% 0 0)", "oklch(24% 0 0)", "oklch(36% 0 0)", "oklch(48% 0 0)", "oklch(60% 0 0)", "oklch(74% 0 0)", "oklch(88% 0 0)", "oklch(97% 0 0)"]
+      },
+      "body-text": {
+        "role": "neutral",
+        "displayName": "Slate Body",
+        "canonical": "oklch(48% 0.01 250)",
+        "tonalRamp": ["oklch(20% 0.01 250)", "oklch(32% 0.01 250)", "oklch(48% 0.01 250)", "oklch(60% 0.01 250)", "oklch(70% 0.01 250)", "oklch(80% 0.008 250)", "oklch(90% 0.005 250)", "oklch(97% 0.002 250)"]
+      },
+      "neutral-bg": { "role": "neutral", "displayName": "Paper White", "canonical": "oklch(100% 0 0)", "tonalRamp": ["oklch(15% 0 0)", "oklch(30% 0 0)", "oklch(50% 0 0)", "oklch(70% 0 0)", "oklch(85% 0 0)", "oklch(93% 0 0)", "oklch(97% 0 0)", "oklch(100% 0 0)"] },
+      "neutral-surface": { "role": "neutral", "displayName": "Quiet Surface", "canonical": "oklch(97.5% 0.004 250)", "tonalRamp": ["oklch(20% 0.01 250)", "oklch(35% 0.01 250)", "oklch(55% 0.01 250)", "oklch(75% 0.008 250)", "oklch(88% 0.005 250)", "oklch(94% 0.004 250)", "oklch(97.5% 0.004 250)", "oklch(99% 0.002 250)"] },
+      "neutral-border": { "role": "neutral", "displayName": "Hairline Border", "canonical": "oklch(91% 0.005 250)", "tonalRamp": ["oklch(20% 0.01 250)", "oklch(35% 0.01 250)", "oklch(55% 0.008 250)", "oklch(75% 0.006 250)", "oklch(85% 0.006 250)", "oklch(91% 0.005 250)", "oklch(95% 0.003 250)", "oklch(98% 0.001 250)"] },
+      "status-new": { "role": "status", "displayName": "Amber (New / Mid-score)", "canonical": "oklch(77% 0.16 70)" },
+      "status-screening": { "role": "status", "displayName": "Signal Blue (Screening)", "canonical": "oklch(62% 0.19 258)" },
+      "status-approved": { "role": "status", "displayName": "Green (Approved / High-score)", "canonical": "oklch(72% 0.19 149)" },
+      "status-rejected": { "role": "status", "displayName": "Red (Rejected / Low-score)", "canonical": "oklch(63% 0.21 25)" },
+      "status-assessment": { "role": "status", "displayName": "Purple (In Assessment)", "canonical": "oklch(63% 0.22 320)" },
+      "status-completed": { "role": "status", "displayName": "Cyan (Completed)", "canonical": "oklch(74% 0.13 220)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles and candidate names on detail pages." },
+      "title": { "displayName": "Title", "purpose": "Card headers, section titles, modal titles." },
+      "body": { "displayName": "Body", "purpose": "Dominant size across tables, cards, form inputs, descriptions." },
+      "label": { "displayName": "Label", "purpose": "Field labels, status-badge micro-text, in-card eyebrows." }
+    },
+    "shadows": [
+      { "name": "ambient-small", "value": "0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04)", "purpose": "Rare resting elevation, mostly on marketing-side media cards." },
+      { "name": "interactive-medium", "value": "0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)", "purpose": "Hover state for cards and list rows, paired with a 1-4px lift." },
+      { "name": "overlay-large", "value": "0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06)", "purpose": "Modals, dropdowns, anything rendered above page content." },
+      { "name": "score-glow", "value": "drop-shadow(0 0 6px var(--score-color-10pct))", "purpose": "Soft glow behind score-circle rings, colored to match the score's semantic color." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "ease", "purpose": "Default transition easing across the product surface (background-color, transform, box-shadow)." },
+      { "name": "duration-fast", "value": "0.2s", "purpose": "Button and badge state changes." },
+      { "name": "duration-standard", "value": "0.25s-0.3s", "purpose": "Card hover lift, modal entrance (fadeUp)." },
+      { "name": "duration-score-reveal", "value": "1s", "purpose": "Score circle stroke-dashoffset animation on mount." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "nav", "value": "960px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid Working Blue action button, the only button style that carries brand color.",
+      "html": "<button class=\"ds-btn-primary\">Send AI Interview Invite</button>",
+      "css": ".ds-btn-primary { background: #4584ed; color: #fff; padding: 13px 26px; border: none; border-radius: 6px; font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; } .ds-btn-primary:hover { background: #2d65c4; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(69,132,237,0.3); } .ds-btn-primary:focus-visible { outline: 2px solid #4584ed; outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary / Ghost Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Bordered, transparent-background button for secondary actions (Cancel, toolbar actions).",
+      "html": "<button class=\"ds-btn-ghost\">+ Add Candidate</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #5f6368; border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, color 0.2s; } .ds-btn-ghost:hover { border-color: #4584ed; color: #4584ed; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "Pill badge with a tinted background, solid-color text, and a leading dot. One instance shown in the 'approved' state.",
+      "html": "<span class=\"ds-badge\"><span class=\"ds-badge-dot\"></span>Approved</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(34,197,94,0.1); color: #22c55e; padding: 4px 10px; border-radius: 100px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; } .ds-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat resting card with a hairline border, lifting to a shadow on hover when it's clickable.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Taofeeq Abbas</div><div class=\"ds-card-body\">taofeeq@example.com</div></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; } .ds-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04); border-color: rgba(69,132,237,0.22); } .ds-card-title { font-family: 'Roboto Slab', serif; font-size: 14px; font-weight: 700; color: #2f2f2f; margin-bottom: 4px; } .ds-card-body { font-size: 11px; color: #5f6368; }"
+    },
+    {
+      "name": "Confirm Modal",
+      "kind": "custom",
+      "refersTo": "modal",
+      "description": "The one dialog primitive in the product — replaces all native confirm()/alert()/prompt() calls.",
+      "html": "<div class=\"ds-modal-overlay\"><div class=\"ds-modal\"><h3 class=\"ds-modal-title\">Delete Application</h3><p class=\"ds-modal-desc\">This permanently deletes this application and all associated data. This cannot be undone.</p><div class=\"ds-modal-actions\"><button class=\"ds-btn-ghost\">Cancel</button><button class=\"ds-btn-danger\">Delete</button></div></div></div>",
+      "css": ".ds-modal-overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); } .ds-modal { background: #ffffff; border-radius: 16px; padding: 28px; max-width: 420px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06); } .ds-modal-title { font-size: 18px; font-weight: 700; color: #2f2f2f; margin-bottom: 8px; letter-spacing: -0.01em; } .ds-modal-desc { font-size: 14px; color: #5f6368; line-height: 1.6; margin-bottom: 24px; } .ds-modal-actions { display: flex; gap: 10px; justify-content: flex-end; } .ds-btn-danger { padding: 10px 20px; border-radius: 6px; border: none; background: #ef4444; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }"
+    },
+    {
+      "name": "Score Circle",
+      "kind": "custom",
+      "refersTo": "score-circle",
+      "description": "Signature component: an SVG ring gauge for any 0-100 evidence-backed score, color-coded by threshold with a matching soft glow.",
+      "html": "<div class=\"ds-score\"><svg width=\"80\" height=\"80\" viewBox=\"0 0 80 80\"><circle cx=\"40\" cy=\"40\" r=\"37\" fill=\"none\" stroke=\"#e5e7eb\" stroke-width=\"6\"/><circle cx=\"40\" cy=\"40\" r=\"37\" fill=\"none\" stroke=\"#22c55e\" stroke-width=\"6\" stroke-dasharray=\"232\" stroke-dashoffset=\"58\" stroke-linecap=\"round\" transform=\"rotate(-90 40 40)\" style=\"filter: drop-shadow(0 0 6px rgba(34,197,94,0.15))\"/></svg><span class=\"ds-score-num\">75</span></div>",
+      "css": ".ds-score { position: relative; width: 80px; height: 80px; display: inline-flex; align-items: center; justify-content: center; } .ds-score-num { position: absolute; font-size: 24px; font-weight: 800; color: #22c55e; letter-spacing: -0.02em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Briefing Room",
+    "overview": "HR staff open this product dozens of times a day to make real decisions about real people. The system is built like a briefing room, not a showroom: evidence laid out clearly, scored and labeled, ready for a fast and confident call. Nothing here performs for a viewer, every score circle, badge, and panel exists to answer one question (can I trust this candidate's file enough to act on it right now) as fast as possible. The palette stays restrained on purpose: a single blue carries interaction and identity, neutrals do the rest, and saturated color is reserved entirely for status and score meaning so color is always information, never decoration.",
+    "keyCharacteristics": [
+      "One accent color (#4584ed) carries all interactive/brand meaning; saturated color elsewhere is reserved for status and score semantics only",
+      "Heavy, tight-tracked slab-serif display type paired with a plain system sans body",
+      "Evidence-first component design: scores are always shown with their reasoning, never as a bare number",
+      "Elevation is a response to interaction (hover lift + shadow), not ambient decoration",
+      "Every destructive or blocking action routes through a real modal component; native confirm()/alert()/prompt() never appear"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Working Blue is the only color allowed to mean \"click here\" or \"this is the brand.\" Every other saturated color on screen means something about candidate/application state, and only that.", "section": "colors" },
+      { "name": "The Tinted Fill Rule", "body": "A status or score color never appears as a large solid fill. It appears as a small dot, text, a thin ring stroke, or a background tint at ~10% opacity.", "section": "colors" },
+      { "name": "The Density Rule", "body": "Body copy runs small (12.5-13px) and tight (1.5-1.6 line-height) everywhere data needs to be scanned. This is a working tool used all day, not a marketing page.", "section": "typography" },
+      { "name": "The Earned Elevation Rule", "body": "Nothing floats just to look premium. A shadow either responds to interaction (hover, focus) or exists because the element genuinely sits above the page (modal, dropdown, toast).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Working Blue as the only color that means \"interactive\"",
+      "Do pair every score or AI verdict with its reasoning visible nearby",
+      "Do use flat cards with hairline borders at rest, promoting to shadow + lift only on hover or genuine elevation",
+      "Do reuse the existing Score Circle, StatusBadge, and ConfirmDialog components rather than inventing parallel one-off styles",
+      "Do keep body copy dense - this is a working tool used all day, not a marketing page"
+    ],
+    "donts": [
+      "Don't introduce the vibrant purple/blue gradient SaaS look - no gradient header banners, no glassmorphic cards floating over saturated color, no heavily saturated donut charts as decoration",
+      "Don't let this read as a generic admin-dashboard template - no interchangeable icon-in-a-circle stat cards, no stock dashboard-kit identity",
+      "Don't use border-left/border-right as a colored accent stripe on cards or list items",
+      "Don't use gradient text anywhere in the product UI",
+      "Don't use a native confirm(), alert(), or prompt() anywhere",
+      "Don't use emojis anywhere in the product UI",
+      "Don't apply a static drop shadow to a card or panel that isn't interactive or genuinely elevated"
+    ]
+  }
+}

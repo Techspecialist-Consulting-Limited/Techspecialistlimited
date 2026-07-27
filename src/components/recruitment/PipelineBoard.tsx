@@ -15,13 +15,13 @@ interface Column {
   match: (status: string) => boolean;
 }
 
-const COLUMNS: Column[] = [
-  { key: 'new', label: 'New', match: (s) => s === 'pending' },
-  { key: 'assessment_sent', label: 'Assessment Sent', match: (s) => s === 'approved' },
-  { key: 'assessment_completed', label: 'Assessment Completed', match: (s) => s === 'assessment_completed' || s === 'assessment_flagged' },
-  { key: 'interview_scheduled', label: 'Interview Scheduled', match: (s) => s === 'interview_scheduled' },
-  { key: 'hired', label: 'Hired', match: (s) => s === 'hired' },
-  { key: 'rejected', label: 'Rejected', match: (s) => s === 'rejected' },
+const COLUMNS: (Column & { color: string })[] = [
+  { key: 'new', label: 'New', match: (s) => s === 'pending', color: 'var(--status-new)' },
+  { key: 'assessment_sent', label: 'Assessment Sent', match: (s) => s === 'approved', color: 'var(--blue)' },
+  { key: 'assessment_completed', label: 'Assessment Completed', match: (s) => s === 'assessment_completed' || s === 'assessment_flagged', color: 'var(--status-assessment)' },
+  { key: 'interview_scheduled', label: 'Interview Scheduled', match: (s) => s === 'interview_scheduled', color: '#7c5cff' },
+  { key: 'hired', label: 'Hired', match: (s) => s === 'hired', color: 'var(--status-approved)' },
+  { key: 'rejected', label: 'Rejected', match: (s) => s === 'rejected', color: 'var(--status-rejected)' },
 ];
 
 function columnKeyForStatus(status: string): string {
@@ -127,7 +127,10 @@ export default function PipelineBoard({ applicants, onRefresh }: PipelineBoardPr
               }}
             >
               <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3 dark:border-white/10">
-                <span className="text-[12px] font-bold uppercase tracking-[0.06em] text-[var(--heading)]">{col.label}</span>
+                <span className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.06em] text-[var(--heading)]">
+                  <span className="h-2 w-2 flex-shrink-0 rounded-full" style={{ background: col.color }} />
+                  {col.label}
+                </span>
                 <span className="rounded-full bg-[var(--bg)] px-2 py-0.5 text-[11px] font-semibold text-[var(--body)] dark:bg-white/5">{cardsInColumn.length}</span>
               </div>
               <div className="flex min-h-[120px] flex-col gap-2 p-2.5">
@@ -141,12 +144,17 @@ export default function PipelineBoard({ applicants, onRefresh }: PipelineBoardPr
                       draggable
                       onDragStart={(e) => { e.dataTransfer.setData('text/plain', JSON.stringify(app)); }}
                       onClick={() => router.push(`/hr/applicants/${app.id}`)}
-                      className="cursor-grab rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 transition-all hover:border-[rgba(69,132,237,0.22)] hover:shadow-md active:cursor-grabbing dark:border-white/10 dark:bg-[#101827]"
+                      className="cursor-grab rounded-lg border border-[var(--border)] bg-[var(--bg)] p-3 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[rgba(124,92,255,0.3)] hover:shadow-md active:cursor-grabbing dark:border-white/10 dark:bg-[#101827]"
                     >
                       <div className="mb-2 flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="truncate text-[13px] font-semibold text-[var(--heading)]">{app.candidate_name}</div>
-                          <div className="truncate text-[10.5px] text-[var(--body)]">{app.candidate_email}</div>
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: 'linear-gradient(135deg, var(--blue), #7c5cff)' }}>
+                            {app.candidate_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate text-[13px] font-semibold text-[var(--heading)]">{app.candidate_name}</div>
+                            <div className="truncate text-[10.5px] text-[var(--body)]">{app.candidate_email}</div>
+                          </div>
                         </div>
                         {sr && <ScoreCircle score={sr.overall_score} size={30} strokeWidth={3} showLabel={false} />}
                       </div>

@@ -79,12 +79,23 @@ export default function AllApplicantsPage() {
 
   if (loading) return <BrandedLoader text="Loading applicants..." />;
 
+  const pendingCount = applicants.filter((a) => a.status === 'pending').length;
+  const hiredCount = applicants.filter((a) => a.status === 'hired').length;
+  const rejectedCount = applicants.filter((a) => a.status === 'rejected').length;
+
+  const statCards = [
+    { label: 'Total Applicants', value: applicants.length, color: 'var(--blue)', bg: 'rgba(69,132,237,0.1)', icon: <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" /></svg> },
+    { label: 'Pending Review', value: pendingCount, color: 'var(--status-new)', bg: 'rgba(245,158,11,0.1)', icon: <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+    { label: 'Hired', value: hiredCount, color: 'var(--status-approved)', bg: 'rgba(34,197,94,0.1)', icon: <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg> },
+    { label: 'Rejected', value: rejectedCount, color: 'var(--status-rejected)', bg: 'rgba(239,68,68,0.1)', icon: <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg> },
+  ];
+
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-syne text-[28px] font-extrabold text-[var(--heading)]">All Applicants</h1>
-        <p className="mt-1 text-[14px] text-[var(--body)]">
+      <div className="mb-7">
+        <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>All Applicants</h1>
+        <p className="mt-1 text-[13px] text-[var(--body)]">
           {applicants.length} applicant{applicants.length !== 1 ? 's' : ''} across all positions
         </p>
       </div>
@@ -113,13 +124,30 @@ export default function AllApplicantsPage() {
         />
       ) : (
         <>
+          {/* Stat cards */}
+          <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {statCards.map((card, i) => (
+              <div
+                key={card.label}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-[#101827]"
+                style={{ animation: `cardSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.05}s both`, boxShadow: `0 2px 12px ${card.color}14` }}
+              >
+                <div className="mb-3.5 flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: card.bg, color: card.color }}>
+                  {card.icon}
+                </div>
+                <div className="text-[24px] font-extrabold text-[var(--heading)]" style={{ letterSpacing: '-0.02em' }}>{card.value}</div>
+                <div className="mt-0.5 text-[12px] font-medium text-[var(--body)]">{card.label}</div>
+              </div>
+            ))}
+          </div>
+
           {/* Filter bar */}
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-1 gap-3">
               <div className="relative flex-1 sm:max-w-xs">
                 <svg
                   width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--body)" strokeWidth={2}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
@@ -128,13 +156,13 @@ export default function AllApplicantsPage() {
                   placeholder="Search by name, email, or position..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] py-[11px] pl-9 pr-4 text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
+                  className="w-full rounded-full border border-[var(--border)] bg-[var(--bg)] py-2.5 pl-10 pr-4 text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
                 />
               </div>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-[11px] text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
+                className="rounded-full border border-[var(--border)] bg-[var(--bg)] px-4 py-2.5 text-[13px] text-[var(--heading)] outline-none transition-colors focus:border-[var(--blue)] dark:border-white/10 dark:bg-white/5"
               >
                 <option value="">All Statuses</option>
                 {statuses.map((s) => (
@@ -158,16 +186,16 @@ export default function AllApplicantsPage() {
                 <Link
                   key={app.id}
                   href={`/hr/applicants/${app.id}`}
-                  className="group relative block overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(69,132,237,0.22)] hover:shadow-lg dark:border-white/10 dark:bg-[#101827]"
-                  style={{ animation: `cardSlideIn 0.4s ease ${i * 0.05}s both` }}
+                  className="group relative block overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-[rgba(124,92,255,0.25)] hover:shadow-lg dark:border-white/10 dark:bg-[#101827]"
+                  style={{ animation: `cardSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.05}s both` }}
                 >
-                  <div className="absolute left-0 right-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--blue),var(--orange))] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="absolute left-0 right-0 top-0 h-[3px] opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: 'linear-gradient(90deg, var(--blue), #7c5cff)' }} />
                   <div className="p-5">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
                           className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
-                          style={{ background: 'var(--blue)' }}
+                          style={{ background: 'linear-gradient(135deg, var(--blue), #7c5cff)' }}
                         >
                           {app.candidate_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>

@@ -78,10 +78,10 @@ export default function ApplicantPipelinePage() {
 
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-syne text-[28px] font-extrabold text-[var(--heading)]">{job?.title || 'Applicants'}</h1>
-          <p className="mt-1 text-[14px] text-[var(--body)]">{applicants.length} applicant{applicants.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.02em] text-[var(--heading)]" style={{ fontFamily: "'Roboto Slab', sans-serif" }}>{job?.title || 'Applicants'}</h1>
+          <p className="mt-1 text-[13px] text-[var(--body)]">{applicants.length} applicant{applicants.length !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {hasScreeningInProgress && (
             <div className="flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-semibold" style={{ background: 'rgba(59, 130, 246, 0.08)', color: 'var(--status-screening)' }}>
               <div className="h-2 w-2 rounded-full" style={{ background: 'var(--status-screening)', animation: 'breathe 2s ease-in-out infinite' }} />
@@ -94,21 +94,21 @@ export default function ApplicantPipelinePage() {
           </label>
           <button
             onClick={() => setShowAddCandidate(true)}
-            className="rounded-md border border-[var(--border)] px-3 py-1.5 text-[12px] font-semibold text-[var(--body)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10"
+            className="rounded-full border border-[var(--border)] bg-[var(--bg)] px-4 py-2 text-[12.5px] font-semibold text-[var(--heading)] transition-colors hover:border-[var(--blue)] hover:text-[var(--blue)] dark:border-white/10"
           >
             + Add Candidate
           </button>
-          <div className="flex items-center gap-1 rounded-md border border-[var(--border)] p-1 dark:border-white/10">
+          <div className="flex items-center gap-1 rounded-full border border-[var(--border)] p-1 dark:border-white/10">
             <button
               onClick={() => setViewMode('board')}
-              className="rounded px-3 py-1.5 text-[12px] font-semibold transition-colors"
+              className="rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-200"
               style={{ background: viewMode === 'board' ? 'var(--blue)' : 'transparent', color: viewMode === 'board' ? '#fff' : 'var(--body)' }}
             >
               Board
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className="rounded px-3 py-1.5 text-[12px] font-semibold transition-colors"
+              className="rounded-full px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-200"
               style={{ background: viewMode === 'cards' ? 'var(--blue)' : 'transparent', color: viewMode === 'cards' ? '#fff' : 'var(--body)' }}
             >
               Cards
@@ -159,10 +159,10 @@ export default function ApplicantPipelinePage() {
             return (
               <div
                 key={app.id}
-                className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 hover:-translate-y-1 hover:border-[rgba(69,132,237,0.22)] hover:shadow-lg dark:border-white/10 dark:bg-[#101827]"
-                style={{ animation: `cardSlideIn 0.4s ease ${i * 0.06}s both`, opacity: app.is_archived ? 0.6 : 1 }}
+                className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-[rgba(124,92,255,0.25)] hover:shadow-lg dark:border-white/10 dark:bg-[#101827]"
+                style={{ animation: `cardSlideIn 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.05}s both`, opacity: app.is_archived ? 0.6 : 1 }}
               >
-                <div className="absolute left-0 right-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--blue),var(--orange))] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="absolute left-0 right-0 top-0 h-[3px] opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ background: 'linear-gradient(90deg, var(--blue), #7c5cff)' }} />
                 <div className="p-5">
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -174,7 +174,7 @@ export default function ApplicantPipelinePage() {
                       />
                       <div
                         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
-                        style={{ background: 'var(--blue)' }}
+                        style={{ background: 'linear-gradient(135deg, var(--blue), #7c5cff)' }}
                       >
                         {app.candidate_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
