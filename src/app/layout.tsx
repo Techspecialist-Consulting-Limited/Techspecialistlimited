@@ -21,6 +21,9 @@ export const metadata = {
     url: 'https://techspecialistlimited.com',
     siteName: 'TechSpecialist',
   },
+  verification: {
+    google: 'sKH1h9aFGy8UWSmNwVado73ahBrMrTVZ_ivB1gWOdqM',
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
