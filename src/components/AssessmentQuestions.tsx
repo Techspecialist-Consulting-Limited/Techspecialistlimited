@@ -11,7 +11,7 @@ import {
 } from '@/data/assessment';
 import AssessmentStepper from './AssessmentStepper';
 import PillarIcon from './PillarIcon';
-import styles from '@/app/ai-readiness-assessment/assessment.module.css';
+import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
 
 function shuffleOptions(options: Option[]): Option[] {
   const shuffled = [...options];

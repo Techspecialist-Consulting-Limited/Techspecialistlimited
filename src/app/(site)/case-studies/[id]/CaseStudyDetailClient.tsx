@@ -74,7 +74,7 @@ export default function CaseStudyDetailClient() {
       </section>
 
       {/* CONTENT */}
-      <main className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <article className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-16 lg:grid-cols-[1fr_300px]">
             {/* Main content */}
@@ -185,7 +185,7 @@ export default function CaseStudyDetailClient() {
             </div>
           </div>
         </div>
-      </main>
+      </article>
 
       {/* Related Case Studies */}
       {related.length > 0 && (

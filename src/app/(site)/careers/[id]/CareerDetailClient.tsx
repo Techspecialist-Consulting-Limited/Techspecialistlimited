@@ -152,7 +152,7 @@ export default function CareerDetailClient() {
       </header>
 
       {/* Content */}
-      <main className="px-6 py-12 lg:px-8 lg:py-16">
+      <article className="px-6 py-12 lg:px-8 lg:py-16">
         <div className="mx-auto grid max-w-[1280px] gap-10 lg:grid-cols-[1fr_320px]">
           {/* Main Content */}
           <div>
@@ -245,7 +245,7 @@ export default function CareerDetailClient() {
             </div>
           </div>
         </div>
-      </main>
+      </article>
     </div>
   );
 }

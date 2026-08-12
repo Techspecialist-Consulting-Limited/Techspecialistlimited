@@ -93,7 +93,7 @@ export default function BlogDetailClient() {
       </section>
 
       {/* CONTENT */}
-      <main className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <article className="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-12 lg:grid-cols-[280px_1fr]">
             {/* TOC SIDEBAR */}
@@ -214,7 +214,7 @@ export default function BlogDetailClient() {
             </div>
           </div>
         </div>
-      </main>
+      </article>
 
       {/* RELATED POSTS */}
       {related.length > 0 && (

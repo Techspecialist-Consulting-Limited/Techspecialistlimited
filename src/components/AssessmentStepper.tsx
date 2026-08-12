@@ -1,7 +1,7 @@
 'use client';
 
 import { PillarId, pillars } from '@/data/assessment';
-import styles from '@/app/ai-readiness-assessment/assessment.module.css';
+import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
 
 interface Props {
   selectedPillars: PillarId[];

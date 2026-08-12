@@ -2,7 +2,7 @@
 
 import { PillarId, pillars } from '@/data/assessment';
 import PillarIcon from './PillarIcon';
-import styles from '@/app/ai-readiness-assessment/assessment.module.css';
+import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
 import { motion } from 'framer-motion';
 
 interface Props {

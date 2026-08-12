@@ -12,7 +12,7 @@ import {
   EASE_OUT,
 } from '@/data/assessment';
 import PillarIcon from './PillarIcon';
-import styles from '@/app/ai-readiness-assessment/assessment.module.css';
+import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
 
 const UNLOCK_STORAGE_KEY = 'ts-ai-assessment-unlocked';
 const EMAIL_STORAGE_KEY = 'ts-ai-assessment-email';

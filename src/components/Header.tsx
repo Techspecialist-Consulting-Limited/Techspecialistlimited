@@ -97,7 +97,7 @@ export default function Header() {
   };
 
   return (
-    <>
+    <header>
       <nav
         id="mainNav"
         className={`fixed left-0 right-0 top-0 z-[9999] border-b bg-white transition-shadow dark:bg-[#0b1020] dark:border-white/10 ${isScrolled ? 'shadow-[0_1px_4px_rgba(0,0,0,0.06),0_2px_8px_rgba(0,0,0,0.04)]' : 'shadow-none'}`}
@@ -297,6 +297,6 @@ export default function Header() {
           </a>
         </div>
       </div>
-    </>
+    </header>
   );
 }

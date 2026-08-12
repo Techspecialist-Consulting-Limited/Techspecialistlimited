@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import ExecutivePanel from '../components/ExecutivePanel';
-import HeroVideoBackground from '../components/HeroVideoBackground';
-import { sendDiscoveryCallEmail } from '../lib/emailjs';
+import ExecutivePanel from '@/components/ExecutivePanel';
+import HeroVideoBackground from '@/components/HeroVideoBackground';
+import { sendDiscoveryCallEmail } from '@/lib/emailjs';
 
 export default function HomeClient() {
   useEffect(() => {

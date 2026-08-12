@@ -1,12 +1,13 @@
 import { ThemeProvider } from '../context/ThemeContext';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import ChatBot from '../components/ChatBot';
-import BackToTop from '../components/BackToTop';
 import Script from 'next/script';
-import ClientOnly from '../components/ClientOnly';
-import { headers } from 'next/headers';
+import { Roboto_Slab } from 'next/font/google';
 import './globals.css';
+
+const robotoSlab = Roboto_Slab({
+  subsets: ['latin'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+});
 
 export const metadata = {
   metadataBase: new URL('https://techspecialistlimited.com'),
@@ -27,13 +28,9 @@ export const metadata = {
   },
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || '';
-  const isStandalone = pathname.startsWith('/hr') || pathname.startsWith('/assessment');
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" className={robotoSlab.className} suppressHydrationWarning={true}>
       <head>
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -41,27 +38,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased" suppressHydrationWarning={true}>
-        <ClientOnly>
-          <ThemeProvider>
-            {isStandalone ? (
-              <>{children}</>
-            ) : (
-              <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-grow">
-                  {children}
-                </main>
-                <Footer />
-                <ChatBot />
-                <BackToTop />
-              </div>
-            )}
-            <Script
-              src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"
-              strategy="lazyOnload"
-            />
-          </ThemeProvider>
-        </ClientOnly>
+        <ThemeProvider>
+          {children}
+          <Script
+            src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"
+            strategy="lazyOnload"
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

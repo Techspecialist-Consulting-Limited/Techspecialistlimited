@@ -9,7 +9,7 @@ import {
   pillarOrder,
   EASE_OUT,
 } from '@/data/assessment';
-import styles from '@/app/ai-readiness-assessment/assessment.module.css';
+import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
 
 interface Props {
   onStart: (pillars: PillarId[]) => void;
