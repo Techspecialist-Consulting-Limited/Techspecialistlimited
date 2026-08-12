@@ -9,6 +9,7 @@ import { headers } from 'next/headers';
 import './globals.css';
 
 export const metadata = {
+  metadataBase: new URL('https://techspecialistlimited.com'),
   title: 'TechSpecialist — Executive Intelligence',
   description: 'Transform your organization with AI-powered executive intelligence. Built on Microsoft tools you already own.',
   keywords: ['Microsoft solutions', 'executive intelligence', 'business automation', 'Power BI', 'Copilot', 'Azure'],
