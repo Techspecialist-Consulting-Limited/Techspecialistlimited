@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What We Built</title>
+<style>
+  :root {
+    --ground: #F7F9FC;
+    --surface: #FFFFFF;
+    --surface-2: #EFF3F9;
+    --ink: #0E1626;
+    --ink-2: #4E5A6E;
+    --ink-3: #7C879A;
+    --rule: #DCE3ED;
+    --band: #0B1020;
+    --band-2: #16264A;
+    --band-ink: #F2F5FA;
+    --band-ink-2: #A9B6CE;
+    --accent: #4584ed;
+    --accent-deep: #2F6FE0;
+    --accent-soft: #E7F0FD;
+    --auto: #08704F;
+    --auto-soft: #E1F1EA;
+    --human: #8A4B12;
+    --human-soft: #FBEEE0;
+    --shadow: 0 1px 2px rgba(14,22,38,.05), 0 12px 30px -18px rgba(14,22,38,.28);
+
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #090E1A;
+      --surface: #111A2C;
+      --surface-2: #17223A;
+      --ink: #EAEEF6;
+      --ink-2: #A8B3C7;
+      --ink-3: #78849B;
+      --rule: #25314A;
+      --band: #060A14;
+      --band-2: #142242;
+      --band-ink: #F2F5FA;
+      --band-ink-2: #A9B6CE;
+      --accent: #78A8F5;
+      --accent-deep: #8EB7F8;
+      --accent-soft: #16264A;
+      --auto: #5FCCA4;
+      --auto-soft: #0E3029;
+      --human: #E0A868;
+      --human-soft: #35260F;
+      --shadow: 0 1px 2px rgba(0,0,0,.45), 0 12px 30px -18px rgba(0,0,0,.8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #090E1A;
+    --surface: #111A2C;
+    --surface-2: #17223A;
+    --ink: #EAEEF6;
+    --ink-2: #A8B3C7;
+    --ink-3: #78849B;
+    --rule: #25314A;
+    --band: #060A14;
+    --band-2: #142242;
+    --band-ink: #F2F5FA;
+    --band-ink-2: #A9B6CE;
+    --accent: #78A8F5;
+    --accent-deep: #8EB7F8;
+    --accent-soft: #16264A;
+    --auto: #5FCCA4;
+    --auto-soft: #0E3029;
+    --human: #E0A868;
+    --human-soft: #35260F;
+    --shadow: 0 1px 2px rgba(0,0,0,.45), 0 12px 30px -18px rgba(0,0,0,.8);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16.5px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Hero band ---------- */
+
+  .band {
+    background: linear-gradient(160deg, var(--band) 0%, var(--band-2) 100%);
+    color: var(--band-ink);
+    padding: 68px 28px 0;
+  }
+
+  .band-inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--band-ink-2);
+  }
+
+  .band h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 6vw, 60px);
+    line-height: 1.03;
+    letter-spacing: -.02em;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .band .lede {
+    font-family: var(--serif);
+    font-size: clamp(18px, 2.3vw, 23px);
+    line-height: 1.5;
+    color: var(--band-ink-2);
+    margin: 0;
+    max-width: 54ch;
+  }
+
+  .figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 26px 20px;
+    padding: 16px 0 60px;
+    border-top: 1px solid rgba(255,255,255,.14);
+    margin-top: 12px;
+  }
+
+  .figures div { display: flex; flex-direction: column; gap: 2px; }
+
+  .figures b {
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .figures span { font-size: 14px; color: var(--band-ink-2); line-height: 1.45; }
+
+  /* ---------- Page ---------- */
+
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 64px 28px 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 62px;
+  }
+
+  .measure { max-width: 64ch; }
+
+  section { display: flex; flex-direction: column; gap: 24px; }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(25px, 3.4vw, 34px);
+    line-height: 1.14;
+    letter-spacing: -.014em;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .sub { font-size: 16px; color: var(--ink-2); margin: 0; max-width: 62ch; }
+
+  h3 { font-family: var(--sans); font-size: 16px; font-weight: 650; margin: 0; letter-spacing: -.004em; }
+  p { margin: 0; }
+  strong { font-weight: 650; color: var(--ink); }
+
+  /* ---------- Journey ---------- */
+
+  .journey { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+
+  .leg {
+    background: var(--surface);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 6px 16px;
+    align-items: start;
+  }
+
+  .leg-n {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-deep);
+    font-variant-numeric: tabular-nums;
+    padding-top: 3px;
+  }
+
+  .leg-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .leg p { grid-column: 2; font-size: 15.3px; color: var(--ink-2); }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .tag-auto { background: var(--auto-soft); color: var(--auto); }
+  .tag-human { background: var(--human-soft); color: var(--human); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; color: var(--ink-2); align-items: center; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+
+  /* ---------- Two column lists ---------- */
+
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow);
+  }
+
+  .card p { font-size: 14.8px; color: var(--ink-2); }
+
+  .card-accent { border-top: 3px solid var(--accent); }
+
+  /* ---------- Relief list ---------- */
+
+  .relief { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .relief div { background: var(--surface); padding: 15px 22px; font-size: 15.3px; color: var(--ink-2); display: flex; gap: 14px; align-items: baseline; }
+  .relief div::before { content: ""; flex: 0 0 7px; height: 7px; border-radius: 50%; background: var(--accent); transform: translateY(-2px); }
+  .relief strong { color: var(--ink); }
+
+  /* ---------- Scope ---------- */
+
+  .scope {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .scope > div { background: var(--surface); padding: 22px; display: flex; flex-direction: column; gap: 5px; }
+
+  .scope b {
+    font-family: var(--serif);
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 600;
+    color: var(--accent-deep);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scope small {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .scope span { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+
+  /* ---------- Governance ---------- */
+
+  .gov {
+    background: var(--accent-soft);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 28px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .gov h2 { font-size: clamp(21px, 2.6vw, 26px); }
+  .gov-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  .gov-grid div { display: flex; flex-direction: column; gap: 5px; }
+  .gov-grid p { font-size: 14.8px; color: var(--ink-2); }
+
+  .closing {
+    border-top: 2px solid var(--ink);
+    padding-top: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .closing p { font-size: 16px; color: var(--ink-2); max-width: 64ch; }
+
+  footer { font-size: 13px; color: var(--ink-3); }
+
+  @media (max-width: 640px) {
+    .band { padding: 48px 18px 0; }
+    .figures { padding-bottom: 44px; }
+    .figures b { font-size: 33px; }
+    .page { padding: 46px 18px 64px; gap: 48px; }
+    .leg { padding: 17px 18px; }
+  }
+
+  @media print {
+    :root {
+      --ground: #FFFFFF; --surface: #FFFFFF; --surface-2: #F1F4F9;
+      --ink: #0E1626; --ink-2: #3C4658; --ink-3: #6B7588; --rule: #D3DBE6;
+      --band: #0B1020; --band-2: #16264A;
+      --accent: #2F6FE0; --accent-deep: #23539F; --accent-soft: #EFF4FC;
+      --auto: #05573D; --auto-soft: #E1F1EA; --human: #6E3B0D; --human-soft: #FBEEE0;
+      --shadow: none;
+    }
+    @page { margin: 13mm; }
+    body { background: #fff; font-size: 10.5pt; line-height: 1.5; }
+    .band { padding: 0 0 4mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .band-inner { max-width: none; }
+    .band h1 { font-size: 28pt; }
+    .figures { padding-bottom: 8mm; }
+    .figures b { font-size: 22pt; }
+    .page { max-width: none; padding: 8mm 0 0; gap: 9mm; }
+    h2 { font-size: 15pt; }
+    section, .leg, .card, .scope > div, .gov, .relief div { break-inside: avoid; page-break-inside: avoid; }
+    h2, h3 { break-after: avoid; page-break-after: avoid; }
+    .card, .gov { box-shadow: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="band">
+  <div class="band-inner">
+    <div class="kicker">TechSpecialist Limited &nbsp;/&nbsp; Recruitment Platform</div>
+    <h1>What We Built</h1>
+    <p class="lede">
+      A hiring system that receives every application, assesses it against the role,
+      interviews the strongest candidates by voice, and hands our team a decision to make
+      rather than a pile of admin.
+    </p>
+    <div class="figures">
+      <div>
+        <b>18</b>
+        <span>purpose-built screens, for the team and for candidates</span>
+      </div>
+      <div>
+        <b>10</b>
+        <span>automated emails covering the whole candidate journey</span>
+      </div>
+      <div>
+        <b>5</b>
+        <span>built-in reports on hiring activity</span>
+      </div>
+      <div>
+        <b>24/7</b>
+        <span>applications received, assessed and interviewed without staff present</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <section>
+    <h2>What happens when someone applies</h2>
+    <p class="sub">
+      The full journey, from a role opening to a hire. Each step is marked according to
+      whether the system handles it or a person does.
+    </p>
+
+    <div class="legend">
+      <span><span class="tag tag-auto">System</span> runs without anyone present</span>
+      <span><span class="tag tag-human">Our team</span> a person decides or acts</span>
+    </div>
+
+    <div class="journey">
+
+      <div class="leg">
+        <div class="leg-n">01</div>
+        <div class="leg-head">
+          <h3>The role is set up once</h3>
+          <span class="tag tag-human">Our team</span>
+        </div>
+        <p>
+          HR writes the job, what a strong candidate looks like, and the topics the first
+          interview should cover. Everything that follows runs off that one setup, so every
+          applicant to the role is treated on the same basis.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">02</div>
+        <div class="leg-head">
+          <h3>A candidate applies, at any hour</h3>
+          <span class="tag tag-auto">System</span>
+        </div>
+        <p>
+          CV and cover letter, no account to create. They receive confirmation immediately and a
+          link they can use to check their own progress at any point afterwards.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">03</div>
+        <div class="leg-head">
+          <h3>The application is assessed within minutes</h3>
+          <span class="tag tag-auto">System</span>
+        </div>
+        <p>
+          Scored against that role's criteria, with written strengths, concerns, and direct
+          quotations from the candidate's own CV supporting the assessment. Nothing is a bare
+          number. Whoever reads it can see the reasoning and disagree with it.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">04</div>
+        <div class="leg-head">
+          <h3>The shortlist forms</h3>
+          <span class="tag tag-human">Our team</span>
+        </div>
+        <p>
+          HR either reviews each candidate individually, or sets a standard and lets those who
+          meet it move forward on their own. The choice is made per role, depending on volume.
+          Nobody is ever turned down automatically.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">05</div>
+        <div class="leg-head">
+          <h3>The first interview happens with nobody in the room</h3>
+          <span class="tag tag-auto">System</span>
+        </div>
+        <p>
+          A live spoken conversation with an AI interviewer, covering the topics set for the
+          role, with time limits per topic. The candidate receives the rules by email
+          beforehand, confirms they have understood them, and tests their microphone and camera
+          before starting. They take it whenever suits them, including evenings and weekends.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">06</div>
+        <div class="leg-head">
+          <h3>The team receives the complete picture</h3>
+          <span class="tag tag-auto">System</span>
+        </div>
+        <p>
+          A full word-for-word transcript of the interview, scores across the areas that matter
+          for the role, and a written recommendation. The candidate arrives on the team's list
+          marked as awaiting a decision.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">07</div>
+        <div class="leg-head">
+          <h3>A person makes the call</h3>
+          <span class="tag tag-human">Our team</span>
+        </div>
+        <p>
+          Approve, reject or hire, in one action, with the candidate notified automatically.
+          Large groups can be handled together when volume demands it, without losing the record
+          of what was decided.
+        </p>
+      </div>
+
+      <div class="leg">
+        <div class="leg-n">08</div>
+        <div class="leg-head">
+          <h3>The final interview is arranged</h3>
+          <span class="tag tag-auto">System</span>
+        </div>
+        <p>
+          Virtual or in person, with the invitation and calendar entry issued automatically.
+          Afterwards each interviewer scores the candidate separately on the same four measures,
+          so opinions are recorded rather than negotiated in a corridor.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>What this takes off the team's desk</h2>
+    <div class="relief">
+      <div><span>Reading every CV that arrives in order to build a shortlist.</span></div>
+      <div><span>Writing confirmations, updates, rejections and invitations one at a time.</span></div>
+      <div><span>Finding a slot in three calendars for a first-round conversation that may last fifteen minutes.</span></div>
+      <div><span>Answering <strong>"has there been any news on my application?"</strong> by email, individually.</span></div>
+      <div><span>Chasing interviewers for the notes they meant to write up last week.</span></div>
+      <div><span>Assembling a picture of hiring activity by hand when someone asks for one.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What most employers cannot offer</h2>
+    <p class="sub">
+      These are the parts that put us ahead of standard practice rather than level with it.
+    </p>
+    <div class="cols">
+      <div class="card card-accent">
+        <h3>Candidates are never left in the dark</h3>
+        <p>
+          Anyone who applies can check exactly where they stand, themselves, at any time,
+          without contacting anybody. Most employers still leave applicants guessing, and it is
+          the single most common complaint about hiring anywhere.
+        </p>
+      </div>
+      <div class="card card-accent">
+        <h3>A real interview, on the candidate's schedule</h3>
+        <p>
+          A spoken conversation rather than a form or a recorded answer, available the moment the
+          candidate is ready. Strong people are usually employed elsewhere and hard to reach
+          during working hours. This removes that obstacle entirely.
+        </p>
+      </div>
+      <div class="card card-accent">
+        <h3>Everyone is measured the same way</h3>
+        <p>
+          Same criteria, same questions, same time limits, for every applicant to a role. Not
+          dependent on who happened to review the file, or how late in the day they got to it.
+        </p>
+      </div>
+      <div class="card card-accent">
+        <h3>Nothing rests on memory</h3>
+        <p>
+          Every interview leaves a full transcript. Every decision is recorded with its reason
+          and the time it was taken. If a decision is ever questioned, months later, the evidence
+          is there rather than in somebody's recollection.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The scale of what has been delivered</h2>
+    <p class="sub">
+      This is a complete working system in daily use, not a demonstration or a pilot.
+    </p>
+    <div class="scope">
+      <div>
+        <small>For the team</small>
+        <b>13</b>
+        <span>Screens covering jobs, applicants, individual candidate files, interviews, documents, reporting and account management.</span>
+      </div>
+      <div>
+        <small>For candidates</small>
+        <b>5</b>
+        <span>The careers board, individual job pages, the application form, the progress checker, and the live interview room.</span>
+      </div>
+      <div>
+        <small>Automated correspondence</small>
+        <b>10</b>
+        <span>From application received through to offer, including invitations, rejections, expiry notices and internal alerts.</span>
+      </div>
+      <div>
+        <small>Reporting</small>
+        <b>5</b>
+        <span>Pipeline position, interview outcomes, time taken to hire, activity trends and an overall summary.</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="gov">
+    <h2>How decisions actually get made</h2>
+    <div class="gov-grid">
+      <div>
+        <h3>The system assists. People decide.</h3>
+        <p>
+          It reads, scores, transcribes and prioritises. It does not hire and it does not reject.
+          No candidate is turned down, hired or removed without a member of staff signing in and
+          taking that action deliberately.
+        </p>
+      </div>
+      <div>
+        <h3>Candidates know before they apply.</h3>
+        <p>
+          They are told AI is used to assess applications and must agree before proceeding. The
+          interview rules are sent to them in advance, in writing.
+        </p>
+      </div>
+      <div>
+        <h3>Everything is written down.</h3>
+        <p>
+          Every assessment carries its reasoning. Every interview leaves a transcript. Every
+          decision is recorded with its justification and the time it was made.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="closing">
+    <h2>Where it stands</h2>
+    <p>
+      The platform is live and running our hiring today. The capability described here is built
+      and working, not planned.
+    </p>
+    <p>
+      Ongoing work is focused on strengthening the system for heavier use: resilience under high
+      applicant volumes, tighter internal access controls, and formal rules on how long candidate
+      information is kept. None of it changes what the platform does. It prepares it to do the
+      same thing at greater scale and under closer scrutiny.
+    </p>
+  </div>
+
+  <footer>Prepared 17 August 2026.</footer>
+
+</div>
+
+</body>
+</html>
