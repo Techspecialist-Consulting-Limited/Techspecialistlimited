@@ -4,6 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.audit_log import AuditLog
 
+# Used when an action is genuinely automatic rather than staff-initiated, so that a null
+# performed_by never has to be read as "we don't know who did this".
+SYSTEM_ACTOR = "system"
+
+
+def actor_label(payload: dict | None, fallback: str = SYSTEM_ACTOR) -> str:
+    """Turn a decoded HR token into the identity recorded against an audit entry.
+
+    Prefers the email in `sub` because that is what HR staff recognise in the timeline;
+    falls back to the user id when a token predates that claim.
+    """
+    if not payload:
+        return fallback
+    return payload.get("sub") or payload.get("uid") or fallback
+
 
 async def log_action(
     db: AsyncSession,

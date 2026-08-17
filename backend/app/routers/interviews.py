@@ -12,7 +12,7 @@ from app.database import get_db
 from app.models.application import Application
 from app.models.interview import Interview
 from app.models.job_posting import JobPosting
-from app.services.audit_service import log_action
+from app.services.audit_service import actor_label, log_action
 from app.services.email_service import send_interview_invitation_email
 
 router = APIRouter(prefix="/api/hr/interviews", tags=["interviews"])
@@ -66,7 +66,7 @@ class InterviewResponse(BaseModel):
 async def create_interview(
     data: InterviewCreate,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     app_result = await db.execute(
         select(Application)
@@ -96,7 +96,11 @@ async def create_interview(
     app.status = "interview_scheduled"
     await db.commit()
 
-    await log_action(db, data.application_id, "interview_scheduled", f"Interview scheduled - {data.interview_type}, {data.scheduled_date} at {data.scheduled_time}, {data.duration_minutes}min")
+    await log_action(
+        db, data.application_id, "interview_scheduled",
+        f"Interview scheduled - {data.interview_type}, {data.scheduled_date} at {data.scheduled_time}, {data.duration_minutes}min",
+        performed_by=actor_label(actor),
+    )
 
     job_title = app.job.title if app.job else "the position"
     await send_interview_invitation_email(
@@ -201,7 +205,7 @@ async def update_interview(
     interview_id: str,
     data: InterviewUpdate,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     result = await db.execute(
         select(Interview).where(Interview.id == uuid.UUID(interview_id))
@@ -237,6 +241,7 @@ async def update_interview(
         str(interview.application_id),
         f"interview_{data.status or 'updated'}",
         f"Interview updated: {data.interview_type or 'unchanged'}, status={data.status or 'unchanged'}",
+        performed_by=actor_label(actor),
     )
 
     app_result = await db.execute(
