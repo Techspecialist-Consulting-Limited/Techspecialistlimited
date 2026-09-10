@@ -14,7 +14,7 @@ from app.database import async_session
 from app.models.application import Application
 from app.models.conversation import ConversationSession
 from app.models.stage import StageResult
-from app.services.audit_service import log_action
+from app.services.audit_service import SYSTEM_ACTOR, log_action
 from app.services.conversation import evaluate_full_conversation
 from app.services.realtime_interviewer import GREETING_INSTRUCTION, advance_topic, build_session_update
 
@@ -153,6 +153,7 @@ async def assessment_realtime_websocket(
                 application_id,
                 "interview_terminated_violation",
                 f"Candidate left the interview window/tab (reason: {reason}). Session ended automatically and flagged for HR review.",
+                performed_by=SYSTEM_ACTOR,
             )
             await db_session.commit()
 

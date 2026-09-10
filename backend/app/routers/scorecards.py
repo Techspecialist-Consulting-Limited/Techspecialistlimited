@@ -10,7 +10,7 @@ from app.auth import verify_hr_token
 from app.database import get_db
 from app.models.application import Application
 from app.models.scorecard import InterviewScorecard
-from app.services.audit_service import log_action
+from app.services.audit_service import actor_label, log_action
 
 router = APIRouter(prefix="/api/hr/scorecards", tags=["scorecards"])
 
@@ -62,7 +62,7 @@ def _to_response(s: InterviewScorecard) -> ScorecardResponse:
 async def create_scorecard(
     data: ScorecardCreate,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     if data.recommendation not in RECOMMENDATIONS:
         raise HTTPException(status_code=400, detail="Invalid recommendation")
@@ -88,6 +88,7 @@ async def create_scorecard(
     await log_action(
         db, data.application_id, "scorecard_submitted",
         f"{data.interviewer_name} submitted a scorecard: {data.recommendation.replace('_', ' ')}",
+        performed_by=actor_label(actor),
     )
 
     return _to_response(scorecard)

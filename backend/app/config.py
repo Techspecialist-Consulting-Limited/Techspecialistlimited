@@ -1,4 +1,15 @@
+import logging
+
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger(__name__)
+
+# These placeholders exist so the app runs out of the box locally. They are published in
+# source control, so treating them as usable credentials anywhere real is the same as
+# having no credential at all. verify_startup_secrets() below refuses to start on them.
+DEV_API_KEY = "dev-api-key-123"
+DEV_JWT_SECRET = "dev-jwt-secret-456"
+DEV_HR_PASSWORD = "admin123"
 
 
 class Settings(BaseSettings):
@@ -68,9 +79,9 @@ class Settings(BaseSettings):
     applicant_reply_to_email: str = ""  # comma-separated list; replies to applicant-facing emails land here
 
     # Auth
-    api_key: str = "dev-api-key-123"
-    jwt_secret: str = "dev-jwt-secret-456"
-    hr_password: str = "admin123"
+    api_key: str = DEV_API_KEY
+    jwt_secret: str = DEV_JWT_SECRET
+    hr_password: str = DEV_HR_PASSWORD
 
     # Frontend
     frontend_url: str = "http://localhost:3000"
@@ -79,3 +90,59 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def _looks_like_production(s: Settings) -> bool:
+    """Decide whether this process is serving real traffic.
+
+    dev_mode is the intended signal, but it defaults to True, so a deployment that simply
+    forgets to set DEV_MODE=False would skip every check below. Local development is
+    always SQLite against a localhost frontend, so a real database plus a real frontend
+    URL is treated as production regardless of what dev_mode claims.
+    """
+    if not s.dev_mode:
+        return True
+    on_real_database = not s.database_url.startswith("sqlite")
+    on_real_frontend = not (
+        "localhost" in s.frontend_url or "127.0.0.1" in s.frontend_url
+    )
+    return on_real_database and on_real_frontend
+
+
+def verify_startup_secrets(s: Settings | None = None) -> list[str]:
+    """Refuse to serve real traffic on the placeholder credentials in this file.
+
+    Returns the names of settings still left at their published defaults. Raises in
+    production rather than returning, so the failure is a refusal to start rather than a
+    service that quietly accepts a known password.
+    """
+    s = s or settings
+
+    at_default = [
+        name
+        for name, value, placeholder in (
+            ("API_KEY", s.api_key, DEV_API_KEY),
+            ("JWT_SECRET", s.jwt_secret, DEV_JWT_SECRET),
+            ("HR_PASSWORD", s.hr_password, DEV_HR_PASSWORD),
+        )
+        if value == placeholder
+    ]
+
+    if not at_default:
+        return []
+
+    if _looks_like_production(s):
+        raise RuntimeError(
+            "Refusing to start: "
+            + ", ".join(at_default)
+            + " still hold the placeholder values published in app/config.py. "
+            "Set them to real secrets in the environment. If this is a local machine, "
+            "point DATABASE_URL at SQLite and FRONTEND_URL at localhost, or set DEV_MODE=True."
+        )
+
+    logger.warning(
+        "Running with placeholder credentials for: %s. This is fine locally and must "
+        "never reach a deployed environment.",
+        ", ".join(at_default),
+    )
+    return at_default

@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 const BACKEND_URL = process.env.RECRUITMENT_API_URL || 'http://localhost:8000';
-const API_KEY = process.env.RECRUITMENT_API_KEY || process.env.API_KEY || 'dev-api-key-123';
+
+// No default: the backend rejects a wrong key, and a baked-in fallback turns that into a
+// silent "applications stopped working" instead of a visible configuration error. Local
+// development sets this in .env.local alongside the backend's own API_KEY.
+const API_KEY = process.env.RECRUITMENT_API_KEY || process.env.API_KEY;
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,6 +16,16 @@ function getSupabase() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!API_KEY) {
+    // Deliberately not falling through to Supabase here: that path skips AI screening, so
+    // a misconfigured key would quietly produce unscreened applications HR never sees.
+    console.error('RECRUITMENT_API_KEY is not set; refusing to submit applications.');
+    return NextResponse.json(
+      { error: 'Applications are temporarily unavailable. Please try again shortly.' },
+      { status: 503 }
+    );
+  }
+
   const jobId = req.nextUrl.searchParams.get('job_id') || '';
   const formData = await req.formData();
 

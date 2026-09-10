@@ -23,7 +23,7 @@ from app.models.job_posting import JobPosting
 from app.models.stage import StageResult
 from app.models.audit_log import AuditLog
 from app.routers.applications import extract_text
-from app.services.audit_service import log_action, get_audit_logs
+from app.services.audit_service import actor_label, log_action, get_audit_logs
 from app.services.email_service import (
     send_approval_email,
     send_hired_email,
@@ -476,7 +476,7 @@ async def approve_application(
     application_id: uuid.UUID,
     req: ApprovalRequest,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     app_result = await db.execute(
         select(Application).where(Application.id == application_id)
@@ -504,7 +504,11 @@ async def approve_application(
     magic_link = f"{settings.frontend_url}/assessment/{app.assessment_token}"
     await db.commit()
 
-    await log_action(db, application_id, "assessment_approved", f"Approved for stage {app.stage}, link expires in {req.expiration_days or 'default'} days")
+    await log_action(
+        db, application_id, "assessment_approved",
+        f"Approved for stage {app.stage}, link expires in {req.expiration_days or 'default'} days",
+        performed_by=actor_label(actor),
+    )
 
     await send_stage2_invitation_email(
         to=app.candidate_email,
@@ -532,7 +536,7 @@ async def manual_interview_invite(
     cv: UploadFile | None = None,
     cover_letter: UploadFile | None = None,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     """For candidates who applied outside the platform (e.g. directly to an HR
     inbox) and HR wants to send straight to the stage-2 AI interview, with no
@@ -585,6 +589,7 @@ async def manual_interview_invite(
     await log_action(
         db, app.id, "manually_added_for_interview",
         "Added directly by HR (applied outside the platform) and sent straight to the AI interview; CV screening was skipped.",
+        performed_by=actor_label(actor),
     )
 
     await send_stage2_invitation_email(
@@ -610,7 +615,7 @@ async def review_application(
     application_id: uuid.UUID,
     review: ReviewAction,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     app_result = await db.execute(
         select(Application).where(Application.id == application_id)
@@ -639,7 +644,11 @@ async def review_application(
         magic_link = f"{settings.frontend_url}/assessment/{app.assessment_token}"
         await db.commit()
 
-        await log_action(db, application_id, "approved", f"Approved to stage {app.stage} via review, expires in {review.expiration_days or 'default'} days")
+        await log_action(
+            db, application_id, "approved",
+            f"Approved to stage {app.stage} via review, expires in {review.expiration_days or 'default'} days",
+            performed_by=actor_label(actor),
+        )
 
         if old_stage == 1:
             await send_stage2_invitation_email(
@@ -662,7 +671,10 @@ async def review_application(
     elif review.action == "reject":
         app.status = "rejected"
         await db.commit()
-        await log_action(db, application_id, "rejected", f"Rejected at stage {app.stage}")
+        await log_action(
+            db, application_id, "rejected", f"Rejected at stage {app.stage}",
+            performed_by=actor_label(actor),
+        )
         await send_rejection_email(
             to=app.candidate_email,
             name=app.candidate_name,
@@ -673,7 +685,10 @@ async def review_application(
     elif review.action == "hire":
         app.status = "hired"
         await db.commit()
-        await log_action(db, application_id, "hired", f"Marked as hired at stage {app.stage}")
+        await log_action(
+            db, application_id, "hired", f"Marked as hired at stage {app.stage}",
+            performed_by=actor_label(actor),
+        )
         await send_hired_email(
             to=app.candidate_email,
             name=app.candidate_name,
@@ -700,7 +715,7 @@ class BulkActionRequest(BaseModel):
 async def bulk_action(
     req: BulkActionRequest,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     if req.action not in ("archive", "unarchive", "reject"):
         raise HTTPException(status_code=400, detail="Invalid bulk action")
@@ -724,13 +739,14 @@ async def bulk_action(
 
     await db.commit()
 
+    performed_by = actor_label(actor)
     for app in apps:
         if req.action == "archive":
-            await log_action(db, app.id, "archived", "Archived via bulk action")
+            await log_action(db, app.id, "archived", "Archived via bulk action", performed_by=performed_by)
         elif req.action == "unarchive":
-            await log_action(db, app.id, "unarchived", "Restored from archive via bulk action")
+            await log_action(db, app.id, "unarchived", "Restored from archive via bulk action", performed_by=performed_by)
         elif req.action == "reject":
-            await log_action(db, app.id, "rejected", "Rejected via bulk action")
+            await log_action(db, app.id, "rejected", "Rejected via bulk action", performed_by=performed_by)
 
     if req.action == "reject":
         for app in apps:
@@ -797,7 +813,7 @@ async def resend_assessment(
     application_id: uuid.UUID,
     req: ApprovalRequest,
     db: AsyncSession = Depends(get_db),
-    _: dict = Depends(verify_hr_token),
+    actor: dict = Depends(verify_hr_token),
 ):
     app_result = await db.execute(
         select(Application).where(Application.id == application_id)
@@ -828,7 +844,11 @@ async def resend_assessment(
     magic_link = f"{settings.frontend_url}/assessment/{app.assessment_token}"
     await db.commit()
 
-    await log_action(db, application_id, "assessment_resent", f"Resent assessment link, expires in {req.expiration_days or 'default'} days")
+    await log_action(
+        db, application_id, "assessment_resent",
+        f"Resent assessment link, expires in {req.expiration_days or 'default'} days",
+        performed_by=actor_label(actor),
+    )
 
     await send_stage2_invitation_email(
         to=app.candidate_email,
@@ -847,7 +867,7 @@ async def resend_assessment(
 
 
 @router.post("/clear/{job_id}", status_code=status.HTTP_200_OK)
-async def clear_applications(job_id: uuid.UUID, db: AsyncSession = Depends(get_db), _: dict = Depends(verify_hr_token)):
+async def clear_applications(job_id: uuid.UUID, db: AsyncSession = Depends(get_db), actor: dict = Depends(verify_hr_token)):
     app_result = await db.execute(
         select(Application).where(Application.job_id == job_id)
     )
@@ -877,8 +897,12 @@ async def clear_applications(job_id: uuid.UUID, db: AsyncSession = Depends(get_d
             await db.delete(iv)
         await db.delete(a)
     await db.commit()
+    performed_by = actor_label(actor)
     for a in apps:
-        await log_action(db, a.id, "application_cleared", "Application removed from system")
+        await log_action(
+            db, a.id, "application_cleared", "Application removed from system",
+            performed_by=performed_by,
+        )
     return {"deleted": count}
 
 

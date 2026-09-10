@@ -16,7 +16,7 @@ from app.database import async_session, get_db
 from app.models.ai_result import AIScreeningResult
 from app.models.application import Application
 from app.models.job_posting import JobPosting
-from app.services.audit_service import log_action
+from app.services.audit_service import SYSTEM_ACTOR, log_action
 from app.services.email_service import (
     send_application_received_email,
     send_new_application_notification,
@@ -55,6 +55,7 @@ async def _auto_advance_after_delay(application_id: uuid.UUID, delay_minutes: in
             await log_action(
                 db, application_id, "auto_advanced",
                 f"Auto-advanced to stage {app.stage} - CV screening score met the configured pass mark",
+                performed_by=SYSTEM_ACTOR,
             )
 
             await send_stage2_invitation_email(

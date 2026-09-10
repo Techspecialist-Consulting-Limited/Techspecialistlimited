@@ -4,6 +4,18 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { sendDiscoveryCallEmail } from '@/lib/emailjs';
+import {
+  ArrowRightIcon,
+  BoltIcon,
+  BuildingOffice2Icon,
+  ChatBubbleLeftRightIcon,
+  CheckIcon,
+  ClipboardDocumentListIcon,
+  ComputerDesktopIcon,
+  LockClosedIcon,
+  TrophyIcon,
+} from '@heroicons/react/24/outline';
+import type { ComponentType, SVGProps } from 'react';
 
 const serviceData: Record<string, {
   num: string;
@@ -13,6 +25,7 @@ const serviceData: Record<string, {
   included: string[];
   deliver: string;
   deliverStat: string;
+  deliverStatIcon: ComponentType<SVGProps<SVGSVGElement>>;
   industries: string[];
 }> = {
   advisory: {
@@ -28,7 +41,8 @@ const serviceData: Record<string, {
       'Change Management Planning'
     ],
     deliver: 'Roadmap aligned to your sector, budget, and growth stage, built on Microsoft tools you already own. Evaluate your data maturity, workflow gaps, and team capability before any AI deployment begins. Identification and prioritization of your top operational bottlenecks with clear, measurable improvement targets. Stakeholder mapping, adoption frameworks, and communication plans so the transformation sticks.',
-    deliverStat: '📋 Strategic roadmap',
+    deliverStat: 'Strategic roadmap',
+    deliverStatIcon: ClipboardDocumentListIcon,
     industries: ['Government MDAs', 'International NGOs', 'Private Sector Organizations', 'Financial Services', 'Healthcare']
   },
   automation: {
@@ -44,7 +58,8 @@ const serviceData: Record<string, {
       'Automated Reporting & Predictive Analytics'
     ],
     deliver: 'Connect siloed systems into a single, clean data layer, so every report draws from one source of truth. Copilot Studio agents that handle approvals, responses, and workflows autonomously 24/7, inside your Microsoft tenant. Dashboards that surface live KPIs, budget tracking, and operational health for decision-makers to get answers in seconds, not weeks. Workflows that eliminate manual handoffs, approvals, notifications, data capture, and reporting in one connected system. Scheduled reports, donor summaries, audit trails, and board packs are generated automatically with zero manual effort.',
-    deliverStat: '⚡ Live within weeks',
+    deliverStat: 'Live within weeks',
+    deliverStatIcon: BoltIcon,
     industries: ['Government Agencies', 'Healthcare Organizations', 'Financial Institutions', 'Educational Institutions', 'NGOs with sensitive data']
   },
   security: {
@@ -60,7 +75,8 @@ const serviceData: Record<string, {
       'Security Awareness Training'
     ],
     deliver: 'A full review of your current vulnerabilities, access controls, and data handling with a prioritized remediation plan. Implement identity-first security with conditional access, MFA, and least-privilege controls across your Microsoft 365 environment. Policies that prevent sensitive data from leaving your tenant across email, SharePoint, Teams, and OneDrive. NDPR, ISO 27001, and donor compliance frameworks embedded into your day-to-day operations, not bolted at audit time. Staff phishing simulations, policy briefings, and incident response drills, so your people are your first line of defense.',
-    deliverStat: '🔒 Protected at every layer',
+    deliverStat: 'Protected at every layer',
+    deliverStatIcon: LockClosedIcon,
     industries: ['Government Ministries', 'International Development Organizations', 'Corporate Enterprises', 'Donor-funded Organizations', 'Regulatory Bodies']
   },
   itsm: {
@@ -76,7 +92,8 @@ const serviceData: Record<string, {
       'IT Policy & Documentation'
     ],
     deliver: 'Device procurement, configuration, Microsoft 365 licensing, and user onboarding done right the first time. Responsive L1–L3 support for your team from ticket management, remote resolution, and escalation on a managed retainer. Track, maintain, and retire hardware and software across your organization with full visibility in a live asset register. Azure and Microsoft 365 tenant administration, user provisioning, storage, licensing, and performance monitoring. Acceptable use of policies, IT handbooks, and SLA frameworks that bring structure and accountability to your IT operations.',
-    deliverStat: '🖥️ IT that works',
+    deliverStat: 'IT that works',
+    deliverStatIcon: ComputerDesktopIcon,
     industries: ['Public Sector Organizations', 'NGO Staff', 'Corporate Teams', 'Educational Institutions', 'Parastatals']
   }
 };
@@ -386,7 +403,7 @@ export default function ServicesClient() {
         }
 
         if (btn) btn.disabled = false;
-        if (btnText) btnText.style.display = 'inline';
+        if (btnText) btnText.style.display = 'inline-flex';
         if (btnSpinner) btnSpinner.style.display = 'none';
       });
 
@@ -440,7 +457,7 @@ export default function ServicesClient() {
 
             <div className="hero-actions">
               <a href="#discovery" className="btn-primary">Book a Discovery Call</a>
-              <a href="#services" className="btn-secondary">Explore Services →</a>
+              <a href="#services" className="btn-secondary">Explore Services <ArrowRightIcon className="inline h-4 w-4" aria-hidden="true" /></a>
             </div>
 
             <div className="hero-tabs">
@@ -470,7 +487,7 @@ export default function ServicesClient() {
                   Change Management Planning
                 </div>
               </div>
-              <button className="pillar-preview-cta" onClick={() => openPanel('advisory')}>View full details →</button>
+              <button className="pillar-preview-cta" onClick={() => openPanel('advisory')}>View full details <ArrowRightIcon className="inline h-3.5 w-3.5" aria-hidden="true" /></button>
             </div>
 
             <div className="pillar-preview" id="pillar-preview-automation">
@@ -493,7 +510,7 @@ export default function ServicesClient() {
                   Data Integration
                 </div>
               </div>
-              <button className="pillar-preview-cta" onClick={() => openPanel('automation')}>View full details →</button>
+              <button className="pillar-preview-cta" onClick={() => openPanel('automation')}>View full details <ArrowRightIcon className="inline h-3.5 w-3.5" aria-hidden="true" /></button>
             </div>
 
             <div className="pillar-preview" id="pillar-preview-security">
@@ -516,7 +533,7 @@ export default function ServicesClient() {
                   Security Awareness Training
                 </div>
               </div>
-              <button className="pillar-preview-cta" onClick={() => openPanel('security')}>View full details →</button>
+              <button className="pillar-preview-cta" onClick={() => openPanel('security')}>View full details <ArrowRightIcon className="inline h-3.5 w-3.5" aria-hidden="true" /></button>
             </div>
 
             <div className="pillar-preview" id="pillar-preview-itsm">
@@ -539,7 +556,7 @@ export default function ServicesClient() {
                   Cloud Infrastructure
                 </div>
               </div>
-              <button className="pillar-preview-cta" onClick={() => openPanel('itsm')}>View full details →</button>
+              <button className="pillar-preview-cta" onClick={() => openPanel('itsm')}>View full details <ArrowRightIcon className="inline h-3.5 w-3.5" aria-hidden="true" /></button>
             </div>
 
             <div className="hero-stats">
@@ -566,7 +583,7 @@ export default function ServicesClient() {
                   <div className="pillar-num">01</div>
                   <div className="pillar-name">Digital Transformation Advisory</div>
                 </div>
-                <div className="pillar-arrow">→</div>
+                <div className="pillar-arrow"><ArrowRightIcon className="h-4 w-4" aria-hidden="true" /></div>
               </div>
               <div className="pillar-item" data-service="automation" onClick={() => openPanel('automation')}>
                 <div className="pillar-icon"><PillarIcon id="automation" size={26} /></div>
@@ -574,7 +591,7 @@ export default function ServicesClient() {
                   <div className="pillar-num">02</div>
                   <div className="pillar-name">Business Process Automation</div>
                 </div>
-                <div className="pillar-arrow">→</div>
+                <div className="pillar-arrow"><ArrowRightIcon className="h-4 w-4" aria-hidden="true" /></div>
               </div>
               <div className="pillar-item" data-service="security" onClick={() => openPanel('security')}>
                 <div className="pillar-icon"><PillarIcon id="security" size={26} /></div>
@@ -582,7 +599,7 @@ export default function ServicesClient() {
                   <div className="pillar-num">03</div>
                   <div className="pillar-name">Information Security</div>
                 </div>
-                <div className="pillar-arrow">→</div>
+                <div className="pillar-arrow"><ArrowRightIcon className="h-4 w-4" aria-hidden="true" /></div>
               </div>
               <div className="pillar-item" data-service="itsm" onClick={() => openPanel('itsm')}>
                 <div className="pillar-icon"><PillarIcon id="itsm" size={26} /></div>
@@ -590,7 +607,7 @@ export default function ServicesClient() {
                   <div className="pillar-num">04</div>
                   <div className="pillar-name">IT Service Management</div>
                 </div>
-                <div className="pillar-arrow">→</div>
+                <div className="pillar-arrow"><ArrowRightIcon className="h-4 w-4" aria-hidden="true" /></div>
               </div>
             </div>
           </div>
@@ -851,19 +868,19 @@ export default function ServicesClient() {
             </p>
             <div className="cta-features">
               <div className="cta-feature">
-                <div className="cta-feature-icon">✓</div>
+                <div className="cta-feature-icon"><CheckIcon className="h-4 w-4" aria-hidden="true" strokeWidth={3} /></div>
                 <span>Free 45-minute discovery call</span>
               </div>
               <div className="cta-feature">
-                <div className="cta-feature-icon">✓</div>
+                <div className="cta-feature-icon"><CheckIcon className="h-4 w-4" aria-hidden="true" strokeWidth={3} /></div>
                 <span>No obligation beyond the call</span>
               </div>
               <div className="cta-feature">
-                <div className="cta-feature-icon">✓</div>
+                <div className="cta-feature-icon"><CheckIcon className="h-4 w-4" aria-hidden="true" strokeWidth={3} /></div>
                 <span>First workflow live in 6 weeks</span>
               </div>
               <div className="cta-feature">
-                <div className="cta-feature-icon">✓</div>
+                <div className="cta-feature-icon"><CheckIcon className="h-4 w-4" aria-hidden="true" strokeWidth={3} /></div>
                 <span>Zero new software to purchase</span>
               </div>
             </div>
@@ -883,12 +900,12 @@ export default function ServicesClient() {
                 autoComplete="email"
               />
               <button type="submit" className="btn-primary inline-flex items-center gap-2.5 rounded-[10px] bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold tracking-[0.01em] text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)] cta-submit" id="ctaSubmitBtn">
-                <span id="ctaBtnText">Book Your Free Call →</span>
+                <span id="ctaBtnText" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>Book Your Free Call <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" /></span>
                 <span id="ctaBtnSpinner" style={{ display: 'none' }}>Sending…</span>
               </button>
             </form>
             <div id="ctaFormMsg" className="cta-form-msg"></div>
-            <div className="cta-guarantee">🔒 Your information is never shared. Unsubscribe anytime.</div>
+            <div className="cta-guarantee"><LockClosedIcon className="inline h-3 w-3" aria-hidden="true" /> Your information is never shared. Unsubscribe anytime.</div>
           </div>
         </div>
       </section>
@@ -917,13 +934,13 @@ export default function ServicesClient() {
 
               <div className="panel-tabs">
                 <button className={`panel-tab ${activeTab === 'included' ? 'active' : ''}`} onClick={() => setActiveTab('included')}>
-                  📋 What&apos;s Included
+                  <ClipboardDocumentListIcon className="inline h-4 w-4" aria-hidden="true" /> What&apos;s Included
                 </button>
                 <button className={`panel-tab ${activeTab === 'deliver' ? 'active' : ''}`} onClick={() => setActiveTab('deliver')}>
-                  🎯 What We Deliver
+                  <TrophyIcon className="inline h-4 w-4" aria-hidden="true" /> What We Deliver
                 </button>
                 <button className={`panel-tab ${activeTab === 'industries' ? 'active' : ''}`} onClick={() => setActiveTab('industries')}>
-                  🏢 Industries
+                  <BuildingOffice2Icon className="inline h-4 w-4" aria-hidden="true" /> Industries
                 </button>
               </div>
 
@@ -941,7 +958,7 @@ export default function ServicesClient() {
                 <div className="panel-tab-content active">
                   <div className="panel-deliverable">
                     <p>{service.deliver}</p>
-                    <div className="panel-deliverable-stat">{service.deliverStat}</div>
+                    <div className="panel-deliverable-stat"><service.deliverStatIcon className="inline h-4 w-4" aria-hidden="true" /> {service.deliverStat}</div>
                   </div>
                 </div>
               )}
@@ -967,7 +984,7 @@ export default function ServicesClient() {
                           <h4>{r.name}</h4>
                           <p>{r.desc}</p>
                         </div>
-                        <div className="panel-related-arrow">→</div>
+                        <div className="panel-related-arrow"><ArrowRightIcon className="h-4 w-4" aria-hidden="true" /></div>
                       </div>
                     ))}
                   </div>
@@ -975,11 +992,11 @@ export default function ServicesClient() {
               )}
 
               <div className="panel-ctas">
-                <a href="#discovery" className="btn-primary panel-cta-primary" onClick={closePanel}>
-                  Book Discovery Call →
+                <a href="#discovery" className="btn-primary panel-cta-primary inline-flex items-center gap-1.5" onClick={closePanel}>
+                  Book Discovery Call <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
                 </a>
-                <button className="panel-cta-secondary" onClick={closePanel}>
-                  <span>💬</span> Chat with Robina
+                <button className="panel-cta-secondary inline-flex items-center gap-1.5" onClick={closePanel}>
+                  <ChatBubbleLeftRightIcon className="h-4 w-4" aria-hidden="true" /> Chat with Robina
                 </button>
               </div>
 

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import verify_hr_token
 from app.database import get_db
 from app.models.ai_readiness_assessment import AiReadinessAssessment
 
@@ -67,8 +68,13 @@ async def submit_assessment(req: SubmitRequest, db: AsyncSession = Depends(get_d
     return _to_response(row)
 
 
+# Only /submit is public: it is the quiz itself, posted by anonymous site visitors.
+# Everything below reads or edits captured personal data and is staff-only.
 @router.get("/results", response_model=list[AssessmentResponse])
-async def list_assessments(db: AsyncSession = Depends(get_db)):
+async def list_assessments(
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
     result = await db.execute(
         select(AiReadinessAssessment).order_by(AiReadinessAssessment.created_at.desc())
     )
@@ -81,7 +87,10 @@ class UpdateRequest(BaseModel):
 
 @router.patch("/results/{assessment_id}", response_model=AssessmentResponse)
 async def update_assessment(
-    assessment_id: uuid.UUID, req: UpdateRequest, db: AsyncSession = Depends(get_db)
+    assessment_id: uuid.UUID,
+    req: UpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
 ):
     row = await db.get(AiReadinessAssessment, assessment_id)
     if not row:
@@ -94,7 +103,11 @@ async def update_assessment(
 
 
 @router.delete("/results/{assessment_id}")
-async def delete_assessment(assessment_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def delete_assessment(
+    assessment_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(verify_hr_token),
+):
     row = await db.get(AiReadinessAssessment, assessment_id)
     if not row:
         raise HTTPException(status_code=404, detail="Assessment not found")

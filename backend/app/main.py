@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import settings
+from app.config import settings, verify_startup_secrets
 from app.database import engine, Base
 from app.routers import (
     analytics_router,
@@ -23,6 +23,7 @@ from app.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    verify_startup_secrets()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     from app.migrate import run_migrations, seed_defaults

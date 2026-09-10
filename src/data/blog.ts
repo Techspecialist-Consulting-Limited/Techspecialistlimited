@@ -102,7 +102,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Explore AI-Powered Productivity?',
       body: 'If you\'re curious about how Microsoft Copilot or other AI tools can transform your daily work, you don\'t need to figure it out alone. In a focused consultation, we\'ll help you understand the practical applications that matter most to your role or organization.',
-      buttonText: 'Schedule Your Free AI Productivity Consultation →',
+      buttonText: 'Schedule Your Free AI Productivity Consultation',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['ai-adoption-gap', 'ai-implementation-roadmap'],
@@ -208,7 +208,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Prepare Your Data for AI?',
       body: 'If your organization is exploring Agentic AI but uncertain about data readiness, the right place to start is a strategic data assessment. We help government institutions build the foundations that make AI actually work.',
-      buttonText: 'Schedule Your Free Data Readiness Assessment →',
+      buttonText: 'Schedule Your Free Data Readiness Assessment',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['data-silos-competitive-advantage', 'ai-implementation-roadmap', 'ai-adoption-gap'],
@@ -305,7 +305,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Unify Your Data?',
       body: 'If your organization is struggling with fragmented information, conflicting data sources, or slow decision-making cycles, the solution is closer than you think. In a 30-minute strategic consultation, we\'ll help you quantify the cost of your current data fragmentation and identify quick wins for immediate impact.',
-      buttonText: 'Schedule Your Free Data Unification Assessment →',
+      buttonText: 'Schedule Your Free Data Unification Assessment',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['ai-implementation-roadmap', 'security-digital-transformation', 'cloud-security-shared-responsibility'],
@@ -403,7 +403,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Start Capturing AI Advantage?',
       body: 'If you\'re uncertain where to start or how to approach AI implementation strategically, you\'re not alone. The solution isn\'t a massive enterprise AI project. It\'s a strategic assessment followed by focused, high-impact implementation.',
-      buttonText: 'Schedule Your Free AI Opportunity Assessment →',
+      buttonText: 'Schedule Your Free AI Opportunity Assessment',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['ai-implementation-roadmap', 'data-silos-competitive-advantage', 'security-digital-transformation'],
@@ -493,7 +493,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Build Secure Transformation?',
       body: 'If your organization is accelerating digital transformation but security has been trailing behind, the time to address it is now—before vulnerabilities become breaches. The solution isn\'t a complex security overhaul. It\'s a strategic security assessment followed by prioritized implementation.',
-      buttonText: 'Schedule Your Free Security & Digital Transformation Assessment →',
+      buttonText: 'Schedule Your Free Security & Digital Transformation Assessment',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['cloud-security-shared-responsibility', 'ai-implementation-roadmap', 'data-silos-competitive-advantage'],
@@ -569,7 +569,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Identify Your AI Starting Point?',
       body: 'If you understand AI matters but aren\'t sure where to begin, you\'re not alone. The solution isn\'t a massive AI project. It\'s a focused assessment that reveals your highest-impact starting point.',
-      buttonText: 'Schedule Your Free AI Implementation Strategy Session →',
+      buttonText: 'Schedule Your Free AI Implementation Strategy Session',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['ai-adoption-gap', 'data-silos-competitive-advantage', 'security-digital-transformation'],
@@ -661,7 +661,7 @@ export const blogPosts: BlogPost[] = [
     cta: {
       heading: 'Ready to Strengthen Your Cloud Security?',
       body: 'If your organization is using cloud platforms but uncertain about your security posture, it\'s time to assess your shared responsibilities. The solution isn\'t panic. It\'s strategic assessment followed by prioritized implementation.',
-      buttonText: 'Schedule Your Free Cloud Security Assessment →',
+      buttonText: 'Schedule Your Free Cloud Security Assessment',
       buttonUrl: '/#discovery',
     },
     relatedSlugs: ['security-digital-transformation', 'ai-adoption-gap', 'data-silos-competitive-advantage'],

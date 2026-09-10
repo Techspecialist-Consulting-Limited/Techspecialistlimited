@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
+import { ArrowRightIcon, ArrowUpIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 export default function ExecutivePanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -226,7 +227,7 @@ export default function ExecutivePanel() {
           <div className="exec-metric-cell">
             <div className="exec-metric-label">Revenue Growth</div>
             <div className="exec-metric-value green" ref={revenueRef}>+18%</div>
-            <div className="exec-metric-sub">↑ vs last quarter</div>
+            <div className="exec-metric-sub"><ArrowUpIcon className="inline h-2.5 w-2.5" aria-hidden="true" /> vs last quarter</div>
           </div>
           <div className="exec-metric-cell">
             <div className="exec-metric-label">Active Alerts</div>
@@ -258,7 +259,7 @@ export default function ExecutivePanel() {
         <div className="exec-feed">
           <div className="exec-feed-label">Agent Activity Feed</div>
           <div className="exec-feed-item">
-            <div className="exec-feed-icon">✦</div>
+            <div className="exec-feed-icon text-[#4584ed]"><SparklesIcon className="h-3.5 w-3.5" aria-hidden="true" /></div>
             <div className="exec-feed-text" ref={feedRef}>
               Q3 variance 12% above threshold — Lagos logistics. Recommend board review.
             </div>
@@ -269,8 +270,9 @@ export default function ExecutivePanel() {
           <button className="exec-action-btn primary" onClick={() => scrollTo('#discovery')}>
             Request Briefing
           </button>
-          <button className="exec-action-btn ghost" onClick={() => scrollTo('#how')}>
-            View Pipeline →
+          <button className="exec-action-btn ghost inline-flex items-center gap-1.5" onClick={() => scrollTo('#how')}>
+            View Pipeline
+            <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getCaseStudy, getRelatedCaseStudies } from '@/data/case-studies';
+import { ArrowLeftIcon, ArrowRightIcon, CheckCircleIcon, DocumentTextIcon, ExclamationTriangleIcon, LightBulbIcon } from '@heroicons/react/24/outline';
 
 export default function CaseStudyDetailClient() {
   const params = useParams();
@@ -14,9 +15,11 @@ export default function CaseStudyDetailClient() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 text-6xl">📄</div>
+          <DocumentTextIcon className="mx-auto mb-4 h-16 w-16 text-[#5f6368]" aria-hidden="true" />
           <h2 className="mb-4 text-2xl font-bold text-[#2f2f2f] dark:text-white">Case Study Not Found</h2>
-          <Link href="/case-studies" className="text-[#4584ed] hover:underline">← Back to Case Studies</Link>
+          <Link href="/case-studies" className="inline-flex items-center gap-1.5 text-[#4584ed] hover:underline">
+            <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" /> Back to Case Studies
+          </Link>
         </div>
       </div>
     );
@@ -82,7 +85,9 @@ export default function CaseStudyDetailClient() {
               {/* Challenge */}
               <section>
                 <div className="mb-6 flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-lg dark:bg-red-900/20">⚠️</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 dark:bg-red-900/20">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400" aria-hidden="true" />
+                  </span>
                   <div>
                     <div className="text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">The Challenge</div>
                     <h2 className="text-2xl font-bold text-[#2f2f2f] dark:text-white">What we set out to solve</h2>
@@ -101,7 +106,9 @@ export default function CaseStudyDetailClient() {
               {/* Solution */}
               <section>
                 <div className="mb-6 flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-lg dark:bg-blue-900/20">💡</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                    <LightBulbIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                  </span>
                   <div>
                     <div className="text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">The Solution</div>
                     <h2 className="text-2xl font-bold text-[#2f2f2f] dark:text-white">How we delivered</h2>
@@ -120,7 +127,9 @@ export default function CaseStudyDetailClient() {
               {/* Results */}
               <section>
                 <div className="mb-6 flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-lg dark:bg-green-900/20">✅</span>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-900/20">
+                    <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400" aria-hidden="true" />
+                  </span>
                   <div>
                     <div className="text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">The Results</div>
                     <h2 className="text-2xl font-bold text-[#2f2f2f] dark:text-white">What changed</h2>
@@ -236,7 +245,8 @@ export default function CaseStudyDetailClient() {
             href="/#discovery"
             className="mt-8 inline-flex items-center gap-2.5 rounded-xl bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)]"
           >
-            Book a Discovery Call →
+            Book a Discovery Call
+            <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </section>

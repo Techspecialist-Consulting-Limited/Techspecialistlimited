@@ -1,5 +1,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import {
+  CalendarDaysIcon,
+  CheckBadgeIcon,
+  CogIcon,
+  EnvelopeIcon,
+  GlobeAltIcon,
+  MapPinIcon,
+  PhoneIcon,
+  ShieldCheckIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Footer() {
   return (
@@ -13,7 +23,7 @@ export default function Footer() {
           <div className="footer-social flex gap-4">
             <a href="https://www.linkedin.com/company/techspecialist-limited/posts/?feedView=all" target="_blank" rel="noopener" className="text-white/60 hover:text-white transition">in</a>
             <a href="https://x.com/Tclafrica" target="_blank" rel="noopener" className="text-white/60 hover:text-white transition">𝕏</a>
-            <a href="mailto:info@techspecialistlimited.com" className="text-white/60 hover:text-white transition">✉</a>
+            <a href="mailto:info@techspecialistlimited.com" className="text-white/60 hover:text-white transition"><EnvelopeIcon className="h-4 w-4" aria-hidden="true" /></a>
           </div>
         </div>
 
@@ -39,35 +49,35 @@ export default function Footer() {
         <div className="footer-col">
           <div className="footer-col-title text-sm font-bold uppercase tracking-[0.1em] text-white/80 mb-4">Get in Touch</div>
           <a href="https://maps.google.com/?q=2+Harare+Street+Wuse+Zone+6+Abuja" target="_blank" rel="noopener" className="footer-contact-item flex items-center gap-2 text-sm text-white/60 hover:text-white mb-3">
-            <span className="footer-contact-icon">📍</span><span>2 Harare St, Wuse Zone 6, Abuja, F.C.T.</span>
+            <span className="footer-contact-icon"><MapPinIcon className="h-4 w-4" aria-hidden="true" /></span><span>2 Harare St, Wuse Zone 6, Abuja, F.C.T.</span>
           </a>
           <a href="mailto:info@techspecialistlimited.com" className="footer-contact-item flex items-center gap-2 text-sm text-white/60 hover:text-white mb-3">
-            <span className="footer-contact-icon">✉️</span><span>info@techspecialistlimited.com</span>
+            <span className="footer-contact-icon"><EnvelopeIcon className="h-4 w-4" aria-hidden="true" /></span><span>info@techspecialistlimited.com</span>
           </a>
           <a href="tel:+23409291144" className="footer-contact-item flex items-center gap-2 text-sm text-white/60 hover:text-white mb-3">
-            <span className="footer-contact-icon">📞</span><span>+234 0929 11443</span>
+            <span className="footer-contact-icon"><PhoneIcon className="h-4 w-4" aria-hidden="true" /></span><span>+234 0929 11443</span>
           </a>
           <a href="#discovery" className="footer-contact-item flex items-center gap-2 text-sm text-white/60 hover:text-white">
-            <span className="footer-contact-icon">📅</span><span>Book a Discovery Call</span>
+            <span className="footer-contact-icon"><CalendarDaysIcon className="h-4 w-4" aria-hidden="true" /></span><span>Book a Discovery Call</span>
           </a>
         </div>
       </div>
 
       <div className="footer-badge-row max-w-6xl mx-auto px-16 flex flex-wrap gap-4 py-6 border-t border-white/10">
         {[
-          { icon: '🔵', text: 'Microsoft Solutions Partner' },
-          { icon: '⚡️', text: 'ISO 27001 Compliant' },
-          { icon: '⚙', text: 'Azure Certified Team' },
-          { icon: '🌍', text: 'Pan-African Operations' }
+          { icon: CheckBadgeIcon, text: 'Microsoft Solutions Partner' },
+          { icon: ShieldCheckIcon, text: 'ISO 27001 Compliant' },
+          { icon: CogIcon, text: 'Azure Certified Team' },
+          { icon: GlobeAltIcon, text: 'Pan-African Operations' }
         ].map((badge, i) => (
-          <div key={i} className="footer-badge flex items-center gap-2 text-xs text-white/60"><span>{badge.icon}</span> {badge.text}</div>
+          <div key={i} className="footer-badge flex items-center gap-2 text-xs text-white/60"><badge.icon className="h-4 w-4" aria-hidden="true" /> {badge.text}</div>
         ))}
       </div>
 
       <div className="footer-bottom max-w-6xl mx-auto px-16 flex flex-col sm:flex-row gap-4 justify-between text-xs text-white/40 pt-6 border-t border-white/10">
         <div>© 2026 TechSpecialist Ltd. All rights reserved. Abuja, Nigeria.</div>
         <div>A subsidiary of <a href="https://mswitchgroup.com/" target="_blank" rel="noopener" className="text-white/60 hover:text-white">Mswitch Group</a></div>
-        <div><Link href="/privacy" className="hover:text-white">Privacy</Link> · <Link href="/terms" className="hover:text-white">Terms</Link> · Built on Microsoft · Made in Nigeria 🇳🇬</div>
+        <div><Link href="/privacy" className="hover:text-white">Privacy</Link> · <Link href="/terms" className="hover:text-white">Terms</Link> · Built on Microsoft · Made in Nigeria</div>
       </div>
     </footer>
   );

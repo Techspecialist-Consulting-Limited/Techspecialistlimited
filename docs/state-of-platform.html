@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State of the Platform</title>
+<style>
+  :root {
+    --ground: #FAFBFD;
+    --surface: #FFFFFF;
+    --surface-2: #F1F4F9;
+    --ink: #101728;
+    --ink-2: #4B5668;
+    --ink-3: #7A8497;
+    --rule: #DEE4ED;
+    --rule-strong: #C1CCDC;
+    --accent: #2F6FE0;
+    --accent-soft: #E8F0FD;
+    --stop: #B4341C;
+    --stop-soft: #FBEAE6;
+    --hold: #96600A;
+    --hold-soft: #FBF1E1;
+    --go: #08704F;
+    --go-soft: #E3F2EC;
+    --shadow: 0 1px 2px rgba(16,23,40,.05), 0 10px 26px -14px rgba(16,23,40,.14);
+
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "Segoe UI Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0B1020;
+      --surface: #121A2D;
+      --surface-2: #18223A;
+      --ink: #E9EDF6;
+      --ink-2: #A7B2C6;
+      --ink-3: #77839A;
+      --rule: #263148;
+      --rule-strong: #354360;
+      --accent: #78A8F5;
+      --accent-soft: #17274A;
+      --stop: #F09480;
+      --stop-soft: #3A1E19;
+      --hold: #E3B266;
+      --hold-soft: #362713;
+      --go: #5FCCA4;
+      --go-soft: #0F3129;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 26px -14px rgba(0,0,0,.65);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0B1020;
+    --surface: #121A2D;
+    --surface-2: #18223A;
+    --ink: #E9EDF6;
+    --ink-2: #A7B2C6;
+    --ink-3: #77839A;
+    --rule: #263148;
+    --rule-strong: #354360;
+    --accent: #78A8F5;
+    --accent-soft: #17274A;
+    --stop: #F09480;
+    --stop-soft: #3A1E19;
+    --hold: #E3B266;
+    --hold-soft: #362713;
+    --go: #5FCCA4;
+    --go-soft: #0F3129;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 26px -14px rgba(0,0,0,.65);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 0 28px 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+
+  .measure { max-width: 66ch; }
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 56px 0 28px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 50px);
+    line-height: 1.08;
+    letter-spacing: -.018em;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-family: var(--serif);
+    font-size: clamp(17px, 2.1vw, 20px);
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  section { display: flex; flex-direction: column; gap: 22px; }
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+
+  .sec-num {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(24px, 3.2vw, 31px);
+    line-height: 1.15;
+    letter-spacing: -.012em;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h3 { font-family: var(--sans); font-size: 15.5px; font-weight: 650; margin: 0; letter-spacing: -.004em; }
+  p { margin: 0; }
+  section p + p { margin-top: 12px; }
+  strong { font-weight: 650; color: var(--ink); }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .board > div {
+    background: var(--surface);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .board small {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .board b {
+    font-family: var(--serif);
+    font-size: 23px;
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: -.01em;
+  }
+
+  .board span { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .st-go b { color: var(--go); }
+  .st-hold b { color: var(--hold); }
+  .st-stop b { color: var(--stop); }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 3.5px 9px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .chip-go { background: var(--go-soft); color: var(--go); }
+  .chip-hold { background: var(--hold-soft); color: var(--hold); }
+  .chip-stop { background: var(--stop-soft); color: var(--stop); }
+  .chip-flat { background: var(--surface-2); color: var(--ink-3); }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    background: var(--surface);
+  }
+
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  td.tight { white-space: nowrap; }
+  td b { font-weight: 650; }
+
+  .decisions { display: flex; flex-direction: column; gap: 12px; }
+
+  .decision {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule-strong);
+    border-radius: 8px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .decision.d-stop { border-left-color: var(--stop); }
+  .decision.d-hold { border-left-color: var(--hold); }
+
+  .d-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .decision p { font-size: 14.8px; color: var(--ink-2); }
+  .d-ask { font-size: 14.8px; color: var(--ink); }
+  .d-ask b { font-weight: 650; }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    overflow: hidden;
+  }
+
+  .step {
+    background: var(--surface);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    gap: 4px 14px;
+    align-items: baseline;
+  }
+
+  .step-n {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step p { grid-column: 2 / -1; font-size: 14.3px; color: var(--ink-2); }
+
+  ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+  li { font-size: 15px; color: var(--ink-2); }
+  li strong { color: var(--ink); }
+
+  .note {
+    background: var(--accent-soft);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .note h3 { font-family: var(--serif); font-size: 18px; font-weight: 600; }
+  .note p { font-size: 14.8px; color: var(--ink-2); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 0 18px 60px; gap: 42px; }
+    .masthead { padding-top: 40px; }
+    .step { grid-template-columns: 26px 1fr; }
+  }
+
+  /* Print / save-as-PDF: force the light palette and keep blocks intact across pages. */
+  @media print {
+    :root {
+      --ground: #FFFFFF;
+      --surface: #FFFFFF;
+      --surface-2: #F1F4F9;
+      --ink: #101728;
+      --ink-2: #3C4658;
+      --ink-3: #6B7588;
+      --rule: #D3DBE6;
+      --rule-strong: #B4C0D2;
+      --accent: #23539F;
+      --accent-soft: #EFF4FC;
+      --stop: #96280F;
+      --stop-soft: #FBEAE6;
+      --hold: #7A4E06;
+      --hold-soft: #FBF1E1;
+      --go: #05573D;
+      --go-soft: #E3F2EC;
+      --shadow: none;
+    }
+    @page { margin: 14mm; }
+    body { background: #fff; font-size: 11pt; line-height: 1.5; }
+    .page { max-width: none; padding: 0; gap: 26px; }
+    .masthead { padding: 0 0 16px; }
+    h1 { font-size: 26pt; }
+    h2 { font-size: 16pt; }
+    .standfirst { font-size: 12pt; }
+    section, .decision, .step, .note, .board > div, tr { break-inside: avoid; page-break-inside: avoid; }
+    h2, h3 { break-after: avoid; page-break-after: avoid; }
+    .table-wrap, table { min-width: 0; overflow: visible; }
+    table { font-size: 9.5pt; }
+    .decision { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>Executive Briefing</span>
+      <span>AI Recruitment Platform</span>
+      <span>17 August 2026</span>
+    </div>
+    <h1>State of the Platform</h1>
+    <p class="standfirst">
+      What the system does today, what it costs to run, where it is exposed, and the
+      decisions required to either keep operating it safely or take it to market.
+    </p>
+  </header>
+
+  <section>
+    <div class="board">
+      <div class="st-go">
+        <small>Hiring pipeline</small>
+        <b>Operational</b>
+        <span>Complete and in daily use, from job posting through to hire.</span>
+      </div>
+      <div class="st-stop">
+        <small>Security posture</small>
+        <b>Three items blocking</b>
+        <span>Two credential exposures and one gap in the decision record.</span>
+      </div>
+      <div class="st-hold">
+        <small>Capacity</small>
+        <b>Constrained</b>
+        <span>Two known bottlenecks surface under applicant surges.</span>
+      </div>
+      <div class="st-hold">
+        <small>Sellable as a product</small>
+        <b>Not yet</b>
+        <span>Four structural gaps, one of which gets costlier the longer it waits.</span>
+      </div>
+    </div>
+
+    <div class="measure">
+      <p>
+        <strong>The platform works.</strong> It runs the full hiring process end to end, and the
+        AI-conducted voice interview is genuinely ahead of what most commercial vendors offer.
+        The core asset is real.
+      </p>
+      <p>
+        <strong>It is not currently safe to leave as it is.</strong> An administrative panel
+        holding captured personal data appears to have no access control, production credentials
+        can silently fall back to values published in the source, and the system records what
+        decisions were made about candidates but not who made them. These are days of work, not
+        months, and they should be closed before anything else is considered.
+      </p>
+      <p>
+        <strong>Selling it is credible but requires a deliberate decision now.</strong> The
+        system was built for one company and has no concept of separate customers anywhere in its
+        data. That is the single most expensive thing to change later, and the cost rises with
+        every month of further development.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">Section 01</div>
+      <h2>What the platform does</h2>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Detail</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Job posting and configuration</b></td>
+            <td>Per role: description, requirements, screening rubric, interview question set, topic labels, interview length, and whether shortlisting is manual or automatic.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Candidate application</b></td>
+            <td>Public careers board. CV and cover letter uploaded with no account required. Text extracted automatically from PDF and Word documents.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>AI CV screening</b></td>
+            <td>Every application scored 0 to 100 against the role's rubric, returned with written strengths, concerns, and direct supporting quotations from the candidate's own documents.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Shortlisting</b></td>
+            <td>HR either reviews every candidate individually, or sets a pass mark and lets clearing candidates advance automatically after a short delay. No candidate is ever rejected automatically.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>AI voice interview</b></td>
+            <td>Live speech-to-speech interview, not record-and-reply. Handles thinking pauses and room noise, enforces per-topic time limits, and produces a full transcript plus a scored recommendation for HR.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Candidate readiness checks</b></td>
+            <td>Rules emailed in advance, a comprehension check, and a microphone and camera test before the interview begins.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Interview integrity</b></td>
+            <td>Leaving the interview window ends the session and flags the candidate for HR review rather than failing them outright. HR can grant a retake.</td>
+            <td class="tight"><span class="chip chip-hold">Live, over-sensitive</span></td>
+          </tr>
+          <tr>
+            <td><b>HR review and decision</b></td>
+            <td>Full transcript and scorecard visible. One-click approve, reject or hire, each sending the candidate an automatic notification. Bulk actions available across many candidates at once.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Final interview scheduling</b></td>
+            <td>Virtual or in-person, with calendar invitations issued automatically.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Interviewer scorecards</b></td>
+            <td>Multiple interviewers can each score a candidate on communication, technical ability, culture fit and problem solving, with a recommendation and notes.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Audit trail</b></td>
+            <td>Every action on a candidate is recorded with a timestamp and written justification, and is visible to HR per candidate.</td>
+            <td class="tight"><span class="chip chip-hold">Live, no actor</span></td>
+          </tr>
+          <tr>
+            <td><b>Recruitment analytics</b></td>
+            <td>Reporting across pipeline state, interview outcomes, time to hire and trends.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Candidate self-service</b></td>
+            <td>Instant confirmation on applying, and a status checker the candidate can use at any time without contacting HR. Most employers do not offer this.</td>
+            <td class="tight"><span class="chip chip-go">Live</span></td>
+          </tr>
+          <tr>
+            <td><b>Candidate disclosure and consent</b></td>
+            <td>Candidates are told AI screening is used and must opt in before applying. The notice does not yet name the specific criteria assessed.</td>
+            <td class="tight"><span class="chip chip-hold">Live, generic</span></td>
+          </tr>
+          <tr>
+            <td><b>Access tiers for HR staff</b></td>
+            <td>No role separation exists. Every account holds identical authority.</td>
+            <td class="tight"><span class="chip chip-stop">Not built</span></td>
+          </tr>
+          <tr>
+            <td><b>Data retention controls</b></td>
+            <td>No automatic deletion or anonymisation of candidate data, CVs or interview transcripts.</td>
+            <td class="tight"><span class="chip chip-stop">Not built</span></td>
+          </tr>
+          <tr>
+            <td><b>Candidate feedback on rejection</b></td>
+            <td>Rejection emails are generic. The evidence needed to personalise them is already captured and stored.</td>
+            <td class="tight"><span class="chip chip-stop">Not built</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <h3>How decisions are actually made</h3>
+      <p>
+        The AI scores, transcribes, summarises and prioritises. It does not decide. Advancing a
+        candidate can happen automatically when they clear the pass mark, but no candidate is
+        ever rejected, hired or removed without a member of staff signing in and taking that
+        action. This is the operating model regulators and enterprise buyers expect, and the
+        platform already follows it.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">Section 02</div>
+      <h2>Decisions required now</h2>
+    </div>
+    <p class="measure">
+      Ranked by exposure. Effort figures are engineering estimates for the change itself, not
+      including review and release.
+    </p>
+
+    <div class="decisions">
+
+      <article class="decision d-stop">
+        <div class="d-top">
+          <span class="chip chip-stop">Blocking</span>
+          <span class="chip chip-flat">Days</span>
+          <h3>An administrative panel holding personal data has no access control</h3>
+        </div>
+        <p>
+          The dashboard holding marketing leads captured from the public AI readiness quiz, which
+          includes names, email addresses and company names, appears to have no login at any
+          layer. Anyone who finds the address could view, export or permanently delete that data.
+          Evidence in the codebase suggests protection was started and never finished.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> authorise immediate verification against the live environment, and
+          closure the same week if confirmed. This is the highest exposure item on the list and
+          among the cheapest to fix.
+        </p>
+      </article>
+
+      <article class="decision d-stop">
+        <div class="d-top">
+          <span class="chip chip-stop">Blocking</span>
+          <span class="chip chip-flat">Days</span>
+          <h3>Production credentials can silently fall back to published defaults</h3>
+        </div>
+        <p>
+          The system's API key, session signing secret and HR password all have working default
+          values written into the source code, and the system's development mode is on by
+          default. A correct deployment replaces them, but nothing stops the system starting if a
+          setting is missing. A single dropped configuration value during a deployment would put
+          production onto a publicly known password without any warning.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> confirm current production values, then require the system to refuse to
+          start rather than fall back to a default.
+        </p>
+      </article>
+
+      <article class="decision d-stop">
+        <div class="d-top">
+          <span class="chip chip-stop">Blocking</span>
+          <span class="chip chip-flat">Days</span>
+          <h3>The record shows what was decided, but not who decided it</h3>
+        </div>
+        <p>
+          Every action taken on a candidate is logged with a timestamp and a reason. The field for
+          the member of staff responsible exists and is displayed in the interface, but is never
+          filled in. In practice the platform can show that a candidate was rejected and when, and
+          cannot show who authorised it.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> approve the fix. This is what turns an activity log into a defensible
+          decision record, and it is the difference between being able and unable to answer a
+          candidate challenge or a regulator. Everything needed for it is already built.
+        </p>
+      </article>
+
+      <article class="decision d-hold">
+        <div class="d-top">
+          <span class="chip chip-hold">High</span>
+          <span class="chip chip-flat">1 to 2 weeks</span>
+          <h3>Candidate invitations can be lost without trace</h3>
+        </div>
+        <p>
+          When automatic shortlisting is switched on, the interview invitation is held inside the
+          running web process for a short delay before sending. A restart or redeployment during
+          that window loses the invitation permanently, with no retry and no record. Given that
+          deployments here are already known to sometimes need repeating, this will happen.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> approve moving this onto durable infrastructure. A qualified candidate
+          silently never being contacted is both a hiring loss and a reputational one.
+        </p>
+      </article>
+
+      <article class="decision d-hold">
+        <div class="d-top">
+          <span class="chip chip-hold">High</span>
+          <span class="chip chip-flat">1 to 2 weeks</span>
+          <h3>The application form is the first thing to break under volume</h3>
+        </div>
+        <p>
+          CV screening runs while the candidate waits on the submission page rather than in the
+          background. Each applicant holds a connection open for the length of an AI call. This is
+          the constraint that fails during a hiring surge, which is precisely the situation
+          automatic shortlisting exists to handle.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> approve alongside the item above. They are the same piece of work and
+          should be done together.
+        </p>
+      </article>
+
+      <article class="decision d-hold">
+        <div class="d-top">
+          <span class="chip chip-hold">High</span>
+          <span class="chip chip-flat">1 to 2 weeks</span>
+          <h3>Every HR account can do everything</h3>
+        </div>
+        <p>
+          There is no administrator, recruiter or read-only distinction. Any account can
+          permanently delete a candidate or clear every application on a job. The risk is
+          accidental loss as much as misuse, and it grows with each person given access.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> approve basic role tiers before the team using the system grows
+          further. Adding permissions after the fact is materially harder.
+        </p>
+      </article>
+
+      <article class="decision d-hold">
+        <div class="d-top">
+          <span class="chip chip-hold">Medium</span>
+          <span class="chip chip-flat">Weeks</span>
+          <h3>Candidates below the pass mark wait indefinitely</h3>
+        </div>
+        <p>
+          Because nobody is rejected automatically, candidates who do not clear the mark remain
+          open with no target response time, no automatic communication and nothing prompting HR
+          to act. Silence after applying is the most damaging failure in candidate experience and
+          the one most likely to reach social media.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> set an internal response-time commitment, and approve a queue that
+          shows HR how long people have been waiting.
+        </p>
+      </article>
+
+      <article class="decision d-hold">
+        <div class="d-top">
+          <span class="chip chip-hold">Medium</span>
+          <span class="chip chip-flat">Weeks</span>
+          <h3>Candidate data is kept indefinitely</h3>
+        </div>
+        <p>
+          CVs, cover letters and full interview transcripts are retained with no expiry and no
+          automatic deletion. Common guidance is to hold unsuccessful applicants' data for no more
+          than six to twelve months unless they have agreed to stay on file.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> set the retention period as policy, then approve building the control
+          that enforces it.
+        </p>
+      </article>
+
+      <article class="decision d-hold">
+        <div class="d-top">
+          <span class="chip chip-hold">Policy</span>
+          <span class="chip chip-flat">Months of lead time</span>
+          <h3>Fairness cannot currently be tested</h3>
+        </div>
+        <p>
+          The platform collects no demographic information of any kind. That is a reasonable
+          privacy position, and it also means there is no way to check whether AI scoring produces
+          different outcomes across groups. Independent bias audits are becoming a purchasing
+          requirement, and larger buyers increasingly ask for one before agreeing to a demo.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> decide whether to begin collecting voluntary, separated
+          self-identification data purely for fairness monitoring. This is a policy and consent
+          question, not a technical one, and it has the longest lead time of anything on this
+          list. Nothing else about a bias audit can start until it is answered.
+        </p>
+      </article>
+
+      <article class="decision">
+        <div class="d-top">
+          <span class="chip chip-flat">Low</span>
+          <span class="chip chip-flat">Days</span>
+          <h3>Two candidate-facing refinements</h3>
+        </div>
+        <p>
+          The AI disclosure shown before applying should name the specific criteria assessed, such
+          as years of experience, listed skills and education level, rather than stating only that
+          AI is used. Separately, rejection emails could carry one or two specific lines drawn
+          from evidence the system already captures, which very few employers do at all. The
+          interview lockout should also move from ending the session on the first loss of window
+          focus to flagging repeated occurrences for review, since the current trigger also fires
+          on ordinary desktop interruptions and assistive technology.
+        </p>
+        <p class="d-ask">
+          <b>Decision:</b> approve as a batch. These are copy and configuration changes with a
+          disproportionate effect on how candidates perceive the process.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">Section 03</div>
+      <h2>What it costs to run</h2>
+    </div>
+    <div class="measure">
+      <p>
+        <strong>The voice interview is the dominant cost per candidate.</strong> Live
+        speech-to-speech AI is billed by the minute and is budgeted at twenty minutes per
+        interview by default, with a forty-five minute ceiling. CV screening, email and hosting
+        are minor by comparison.
+      </p>
+      <p>
+        <strong>That cost scales with the number of candidates advanced, not the number who
+        apply.</strong> This matters directly: automatic shortlisting exists to move more people
+        forward with less HR effort, so raising the pass mark lowers cost and lowering it raises
+        cost. The pass mark is therefore a budget control as well as a quality one, and should be
+        set with both in mind.
+      </p>
+      <p>
+        <strong>One operational check is outstanding.</strong> The live voice interview is
+        governed by a switch that is off unless explicitly enabled. Its state in the production
+        environment should be confirmed, since the answer determines whether the most expensive
+        and most differentiating feature is actually running.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">Section 04</div>
+      <h2>Taking it to market</h2>
+    </div>
+    <p class="measure">
+      The AI-native screening and interviewing core is a genuine differentiator and would stand
+      up against established vendors. Four structural gaps sit between the current system and
+      something that can be sold.
+    </p>
+    <ul class="measure">
+      <li>
+        <strong>It has no concept of separate customers.</strong> The company name, brand colour
+        and logo are settings, and nothing in the underlying data separates one organisation's
+        candidates from another's. Introducing that later touches every part of the system. This
+        is the largest and least reversible item, and the only one that gets more expensive the
+        longer normal development continues. It warrants a decision now even if the answer is to
+        defer, because the answer changes how the system should be built in the meantime.
+      </li>
+      <li>
+        <strong>Corporate sign-in is absent.</strong> Business buyers expect staff to log in with
+        their existing company accounts and to have access removed automatically when someone
+        leaves. The platform has its own login only.
+      </li>
+      <li>
+        <strong>Access tiers and retention controls are procurement checklist items.</strong>
+        Both already appear above as operational needs. They are listed again here because their
+        absence will surface in any serious purchasing review.
+      </li>
+      <li>
+        <strong>A current bias audit is increasingly the price of entry.</strong> Gated on the
+        demographic data decision in the previous section, which is why that question has the
+        longest lead time despite looking like the smallest item.
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">Section 05</div>
+      <h2>Recommended sequence</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01</div>
+        <h3>Close the two credential exposures and record who acts</h3>
+        <p>The three blocking items together. Days of work, and they remove the exposures that would be hardest to explain if something went wrong first.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <h3>Make the pipeline durable</h3>
+        <p>Move screening and delayed invitations onto infrastructure that survives a restart. Removes the lost-candidate failure and the volume bottleneck in one piece of work.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <h3>Add role tiers</h3>
+        <p>Before the number of people with access grows further.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">04</div>
+        <h3>Fix the candidate experience batch</h3>
+        <p>Waiting-time queue and response commitment, specific disclosure wording, feedback in rejection emails, and less trigger-happy interview lockout.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">05</div>
+        <h3>Set and enforce retention</h3>
+        <p>Policy decision first, then the control that applies it automatically.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">06</div>
+        <h3>Answer the two strategic questions</h3>
+        <p>Whether to collect fairness-monitoring data, and whether this is being built to sell. Both need answering before further significant development, because both change what should be built next.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Prepared 17 August 2026. Findings verified directly against the platform's source code on
+    that date, except the unauthenticated administrative panel, which is carried from the
+    project's own security documentation and should be confirmed in the live environment as the
+    first action.
+  </footer>
+
+</div>
+
+</body>
+</html>
