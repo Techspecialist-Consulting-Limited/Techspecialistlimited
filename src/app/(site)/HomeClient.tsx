@@ -6,6 +6,7 @@ import Image from 'next/image';
 import ExecutivePanel from '@/components/ExecutivePanel';
 import HeroVideoBackground from '@/components/HeroVideoBackground';
 import { sendDiscoveryCallEmail } from '@/lib/emailjs';
+import { ArrowRightIcon, ArrowUpRightIcon, CheckIcon, CursorArrowRaysIcon, InformationCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 export default function HomeClient() {
   useEffect(() => {
@@ -282,7 +283,7 @@ export default function HomeClient() {
       function setLoading(loading: boolean) {
         if (!btn) return;
         btn.disabled = loading;
-        if (btnText) btnText.style.display = loading ? 'none' : 'inline';
+        if (btnText) btnText.style.display = loading ? 'none' : 'inline-flex';
         if (btnSpinner) btnSpinner.style.display = loading ? 'inline' : 'none';
       }
 
@@ -456,7 +457,7 @@ export default function HomeClient() {
                     <div className="pain-title">{item.title}</div>
                     <div className="pain-desc">{item.desc}</div>
                   </div>
-                  <div className="pain-arrow">↗</div>
+                  <div className="pain-arrow"><ArrowUpRightIcon className="h-4 w-4" aria-hidden="true" /></div>
                 </div>
               ))}
 
@@ -829,7 +830,7 @@ export default function HomeClient() {
                   Kadir built TechSpecialist on the conviction that African organisations deserve world-class intelligence infrastructure — powered by tools they already own. A decade of Microsoft solutions experience across government, NGOs, and private sector.
                 </div>
                 <div className="fc-click-hint" id="founderHint">
-                  <span>👆</span> Tap image to read more
+                  <CursorArrowRaysIcon className="inline h-3.5 w-3.5" aria-hidden="true" /> Tap image to read more
                 </div>
               </div>
             </div>
@@ -1022,12 +1023,12 @@ export default function HomeClient() {
               id="ctaSubmitBtn"
               style={{ background: '#4584ed', color: '#fff', padding: '13px 26px', border: 'none', borderRadius: '6px', fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 600, letterSpacing: '0.01em', cursor: 'pointer', transition: 'background 0.2s, transform 0.15s, box-shadow 0.2s', whiteSpace: 'nowrap' }}
             >
-              <span id="ctaBtnText">Book Your Free Call →</span>
+              <span id="ctaBtnText" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>Book Your Free Call <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" /></span>
               <span id="ctaBtnSpinner" style={{ display: 'none' }}>Sending…</span>
             </button>
           </form>
           <div id="ctaFormMsg" style={{ display: 'none', maxWidth: '500px', margin: '0 auto 14px', padding: '11px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, textAlign: 'center', lineHeight: 1.5 }}></div>
-          <div className="reveal reveal-delay-3" style={{ fontSize: '11.5px', color: 'rgba(255,255,255,0.4)', marginBottom: '40px' }}>🔒 Your information is never shared. Unsubscribe any time.</div>
+          <div className="reveal reveal-delay-3" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11.5px', color: 'rgba(255,255,255,0.4)', marginBottom: '40px' }}><LockClosedIcon className="h-3 w-3" aria-hidden="true" /> Your information is never shared. Unsubscribe any time.</div>
           <div className="reveal" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
               'Free 45-min discovery call',
@@ -1036,7 +1037,7 @@ export default function HomeClient() {
               'Zero new software to purchase'
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'rgba(255,255,255,0.6)' }}>
-                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(69,132,237,0.2)', border: '1px solid rgba(69,132,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#4584ed', fontWeight: 700, flexShrink: 0 }}>✓</div>
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(69,132,237,0.2)', border: '1px solid rgba(69,132,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4584ed', flexShrink: 0 }}><CheckIcon className="h-3 w-3" aria-hidden="true" strokeWidth={3} /></div>
                 {item}
               </div>
             ))}
@@ -1052,7 +1053,7 @@ export default function HomeClient() {
         aria-label="Cookie consent"
       >
         <div className="cookie-banner-content flex-1">
-          <div className="cookie-banner-icon text-2xl mb-2">🍪</div>
+          <div className="cookie-banner-icon mb-2"><InformationCircleIcon className="h-6 w-6 text-[#4584ed]" aria-hidden="true" /></div>
           <div className="cookie-banner-title font-bold text-sm mb-1 dark:text-white">We use cookies to improve your experience</div>
           <div className="cookie-banner-desc text-xs text-gray-500 dark:text-white/60">
             TechSpecialist uses cookies to analyse traffic, personalise content,

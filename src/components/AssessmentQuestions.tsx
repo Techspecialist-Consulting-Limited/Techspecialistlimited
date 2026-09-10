@@ -12,6 +12,7 @@ import {
 import AssessmentStepper from './AssessmentStepper';
 import PillarIcon from './PillarIcon';
 import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 function shuffleOptions(options: Option[]): Option[] {
   const shuffled = [...options];
@@ -221,8 +222,9 @@ export default function AssessmentQuestions({
               onClick={continueFromInterstitial}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              Continue →
+              Continue <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
             </motion.button>
           </div>
         </motion.div>

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getBlogPost, getRelatedPosts } from '@/data/blog'
 import { RichParagraph, RichBullet } from '@/components/RichText'
+import { ArrowLeftIcon, ArrowRightIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
 
 export default function BlogDetailClient() {
   const params = useParams()
@@ -36,9 +37,11 @@ export default function BlogDetailClient() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 text-6xl">📄</div>
+          <DocumentTextIcon className="mx-auto mb-4 h-16 w-16 text-[#5f6368]" aria-hidden="true" />
           <h2 className="mb-4 text-2xl font-bold text-[#2f2f2f] dark:text-white">Post Not Found</h2>
-          <Link href="/insights" className="text-[#4584ed] hover:underline">← Back to Insights</Link>
+          <Link href="/insights" className="inline-flex items-center gap-1.5 text-[#4584ed] hover:underline">
+            <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" /> Back to Insights
+          </Link>
         </div>
       </div>
     )
@@ -194,6 +197,7 @@ export default function BlogDetailClient() {
                   className="mt-6 inline-flex items-center gap-2.5 rounded-xl bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)]"
                 >
                   {post.cta.buttonText}
+                  <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </section>
 
@@ -272,7 +276,8 @@ export default function BlogDetailClient() {
             href="/#discovery"
             className="mt-8 inline-flex items-center gap-2.5 rounded-xl bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)]"
           >
-            Book a Discovery Call →
+            Book a Discovery Call
+            <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </section>

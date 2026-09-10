@@ -2,6 +2,7 @@
 
 import { PillarId, pillars } from '@/data/assessment';
 import styles from '@/app/(site)/ai-readiness-assessment/assessment.module.css';
+import { CheckIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   selectedPillars: PillarId[];
@@ -32,7 +33,7 @@ export default function AssessmentStepper({
                 } ${isDone ? styles.stepperStepDone : ''}`}
               >
                 <span className={styles.stepperDot}>
-                  {isDone ? '✓' : i + 1}
+                  {isDone ? <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={3} /> : i + 1}
                 </span>
                 <span className={styles.stepperLabel}>{pillar.name}</span>
               </div>

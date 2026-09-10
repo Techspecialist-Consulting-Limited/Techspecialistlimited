@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ConfirmDialog } from '@/components/recruitment';
 import { getHRToken } from '@/lib/auth';
+import { CheckIcon } from '@heroicons/react/24/outline';
 
 interface Assessment {
   id: string;
@@ -269,11 +270,11 @@ export default function AdminAssessments() {
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => toggleFollowUp(assessment.id, assessment.followed_up || false)}
-                        className={`rounded px-3 py-1.5 text-xs font-medium text-white transition-colors ${
+                        className={`inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs font-medium text-white transition-colors ${
                           assessment.followed_up ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-red-500 hover:bg-red-600'
                         }`}
                       >
-                        {assessment.followed_up ? '✓ Done' : 'Pending'}
+                        {assessment.followed_up ? (<><CheckIcon className="h-3.5 w-3.5" aria-hidden="true" /> Done</>) : 'Pending'}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -304,11 +305,11 @@ export default function AdminAssessments() {
                   </div>
                   <button
                     onClick={() => toggleFollowUp(assessment.id, assessment.followed_up || false)}
-                    className={`rounded px-2.5 py-1 text-xs font-medium text-white ${
+                    className={`inline-flex items-center gap-1 rounded px-2.5 py-1 text-xs font-medium text-white ${
                       assessment.followed_up ? 'bg-emerald-500' : 'bg-red-500'
                     }`}
                   >
-                    {assessment.followed_up ? '✓ Done' : 'Pending'}
+                    {assessment.followed_up ? (<><CheckIcon className="h-3.5 w-3.5" aria-hidden="true" /> Done</>) : 'Pending'}
                   </button>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
 
 export default function ConsultationClient() {
   return (
@@ -19,13 +20,14 @@ export default function ConsultationClient() {
               href="/#discovery"
               className="inline-flex items-center gap-2.5 rounded-xl bg-[linear-gradient(135deg,#4584ed_0%,#2d65c4_100%)] px-8 py-4 text-sm font-semibold text-white shadow-[0_4px_20px_rgba(59,111,209,0.3)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(59,111,209,0.4)]"
             >
-              Book a Discovery Call →
+              Book a Discovery Call
+              <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
               href="/insights"
               className="inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              ← Back to Insights
+              <ArrowLeftIcon className="h-4 w-4" aria-hidden="true" /> Back to Insights
             </Link>
           </div>
         </div>
@@ -63,7 +65,8 @@ export default function ConsultationClient() {
                   {item.description}
                 </p>
                 <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-[#4584ed]">
-                  Learn More →
+                  Learn More
+                  <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
                 </div>
               </Link>
             ))}
