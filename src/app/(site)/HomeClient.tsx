@@ -846,11 +846,11 @@ export default function HomeClient() {
             </div>
             <div className="team-card-large">
               <div className="large-photo">
-                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_2930,w_3106/TBS_7248.jpg_ipltwe.jpg" alt="Joy Adah" />
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_459,w_407/team8_yingf2.png" alt="Zainab Sanni" />
               </div>
               <div className="large-body">
-                <div className="sc-role">People &amp; Culture Manager</div>
-                <div className="sc-name">Joy Adah</div>
+                <div className="sc-role">Head of Technical Services &amp; Information Security</div>
+                <div className="sc-name">Zainab Sanni</div>
                 <div className="lc-divider"></div>
               </div>
             </div>
@@ -865,16 +865,6 @@ export default function HomeClient() {
               <div className="small-body">
                 <div className="lc-role">Project Management</div>
                 <div className="lc-name">Suleman Olalomi</div>
-                <div className="sc-divider"></div>
-              </div>
-            </div>
-            <div className="team-card-small hidden" data-team-card="true">
-              <div className="small-photo">
-                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_459,w_407/team8_yingf2.png" alt="Zainab Sanni" />
-              </div>
-              <div className="small-body">
-                <div className="lc-role">Head of Technical Services &amp; Information Security</div>
-                <div className="lc-name">Zainab Sanni</div>
                 <div className="sc-divider"></div>
               </div>
             </div>
@@ -900,21 +890,21 @@ export default function HomeClient() {
             </div>
             <div className="team-card-small hidden" data-team-card="true">
               <div className="small-photo">
-                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1115,w_1024/ChatGPT_Image_Mar_23_2026_02_41_23_PM_cuwmuf.png" alt="Abbas Taofeeq" />
-              </div>
-              <div className="small-body">
-                <div className="sc-role">Business Automation Associate</div>
-                <div className="sc-name">Abbas Taofeeq</div>
-                <div className="sc-divider"></div>
-              </div>
-            </div>
-            <div className="team-card-small hidden" data-team-card="true">
-              <div className="small-photo">
                 <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1034,w_1086,y_66/ChatGPT_Image_Jun_1_2026_04_37_34_PM_fyatcn.png" alt="Praise Jacob" />
               </div>
               <div className="small-body">
                 <div className="sc-role">Full stack Software Engineer</div>
                 <div className="sc-name">Mike Kanu</div>
+                <div className="sc-divider"></div>
+              </div>
+            </div>
+            <div className="team-card-small hidden" data-team-card="true">
+              <div className="small-photo">
+                <Image width={300} height={400} src="https://res.cloudinary.com/daqmbfctv/image/upload/c_crop,g_north_west,h_1115,w_1024/ChatGPT_Image_Mar_23_2026_02_41_23_PM_cuwmuf.png" alt="Abbas Taofeeq" />
+              </div>
+              <div className="small-body">
+                <div className="sc-role">Business Automation Associate</div>
+                <div className="sc-name">Abbas Taofeeq</div>
                 <div className="sc-divider"></div>
               </div>
             </div>
