@@ -724,13 +724,8 @@ export default function ServicesClient() {
                 miniTest: 'Leadership can now ask Copilot anything about our data — no more waiting weeks for reports.'
               }
             ].map((step, i) => (
-              <div key={i} className="process-step" style={{ position: 'relative' }}>
+              <div key={i} className={`process-step ${i < 2 ? 'has-connector' : ''}`}>
                 <div className="process-num">{step.num}</div>
-                {i < 2 && (
-                  <div className="process-arrow">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                  </div>
-                )}
                 <h3>{step.title}</h3>
                 <p>{step.desc}</p>
                 <div className="process-time">{step.time}</div>
