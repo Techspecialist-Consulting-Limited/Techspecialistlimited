@@ -553,12 +553,12 @@
   .micro-card {
     position: absolute;
     background: #fff;
-    border: 1px solid var(--border);
+    border: 1px solid #e5e7eb;
     border-radius: 8px;
     padding: 7px 12px;
     font-size: 11px;
     font-weight: 500;
-    color: var(--heading);
+    color: #2f2f2f;
     box-shadow: var(--shadow-md);
     display: flex;
     align-items: center;
@@ -2490,11 +2490,11 @@
     font-size: 11px;
     font-weight: 600;
     color: var(--heading);
-    background: linear-gradient(135deg, var(--bg-soft), #eef2f8);
+    background: var(--bg-soft);
     padding: 8px 16px;
     border-radius: 100px;
     transition: all 0.25s;
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
   }
   .service-card:hover .service-feature-tag {
     background: var(--blue);
@@ -2553,15 +2553,44 @@
     text-align: center;
     position: relative;
     z-index: 1;
-    padding: 0 16px;
-    border-radius: 8px;
-    transition: transform 0.3s;
+    padding: 36px 24px 32px;
+    border-radius: 16px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
   }
-  .process-step:hover { transform: translateY(-4px); }
+  .process-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+    background: linear-gradient(90deg, var(--blue), var(--orange));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .process-step:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(69, 132, 237, 0.3);
+  }
+  .process-step:hover::before { opacity: 1; }
+  .process-step.has-connector::after {
+    content: '';
+    position: absolute;
+    top: 68px;
+    right: -32px;
+    width: 32px;
+    height: 2px;
+    background: rgba(69, 132, 237, 0.35);
+    z-index: 0;
+  }
   .process-num {
     width: 64px;
     height: 64px;
-    background: var(--navy);
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
     border-radius: 16px;
     display: flex;
     align-items: center;
@@ -2572,17 +2601,11 @@
     color: #fff;
     transition: all 0.3s;
     position: relative;
-  }
-  .process-num::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    box-shadow: 0 8px 20px rgba(69, 132, 237, 0.25);
   }
   .process-step:hover .process-num {
-    transform: scale(1.1);
-    box-shadow: 0 12px 32px rgba(10, 14, 30, 0.4);
+    transform: scale(1.06);
+    box-shadow: 0 12px 28px rgba(69, 132, 237, 0.4);
   }
   .process-step h3 {
     font-size: 20px;
@@ -2607,27 +2630,6 @@
     letter-spacing: 0.02em;
     border: 1px solid rgba(59, 111, 209, 0.15);
   }
-  .process-arrow {
-    position: absolute;
-    top: 26px;
-    right: -12px;
-    width: 24px;
-    height: 24px;
-    background: #fff;
-    border: 2px solid var(--blue);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-  }
-  .process-arrow svg {
-    width: 12px;
-    height: 12px;
-    color: var(--blue);
-  }
-  .process-step:hover .process-arrow { background: var(--blue); }
-  .process-step:hover .process-arrow svg { color: #fff; }
   .process-mini-test {
     margin-top: 16px;
     padding: 14px 18px;
@@ -3215,8 +3217,8 @@
       grid-template-columns: 1fr;
       gap: 24px;
     }
-    .process-arrow { display: none; }
-    .process-step { padding: 0; }
+    .process-step.has-connector::after { display: none; }
+    .process-step { padding: 28px 20px 24px; }
     .process-num {
       width: 52px;
       height: 52px;
@@ -3602,7 +3604,6 @@
     background: #1a1f2e !important;
     border-color: #2d3548 !important;
   }
-  .dark .process-step-num { color: #60a5fa !important; }
 
   .dark .why-section { background: #0f1419 !important; }
   .dark .why-card {
@@ -4898,7 +4899,7 @@
   .panel-intro { font-size: 14px; }
   .panel-tabs { flex-direction: column; }
   .process-step { margin-bottom: 20px; }
-  .process-arrow { display: none; }
+  .process-step.has-connector::after { display: none; }
   .process-step { padding: 20px; }
 }
 

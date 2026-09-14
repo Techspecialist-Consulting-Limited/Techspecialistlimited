@@ -25,6 +25,25 @@ export default function Header() {
   const pathname = usePathname();
   const isHome = pathname === '/';
 
+  const isLinkActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const navLinkClass = (active: boolean) =>
+    `text-[13.5px] tracking-[0.01em] no-underline whitespace-nowrap transition ${
+      active
+        ? 'font-semibold text-[#4584ed] dark:text-[#4584ed]'
+        : 'font-medium text-[#5f6368] dark:text-white/65 hover:text-[#4584ed] dark:hover:text-[#4584ed]'
+    }`;
+
+  const mobileNavLinkClass = (active: boolean) =>
+    `flex items-center gap-2 px-6 py-[11px] text-sm no-underline ${
+      active
+        ? 'font-semibold text-[#4584ed] dark:text-[#4584ed]'
+        : 'font-medium text-[#5f6368] dark:text-white/65'
+    }`;
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -113,7 +132,8 @@ export default function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 no-underline whitespace-nowrap transition hover:text-[#4584ed] dark:hover:text-[#4584ed]"
+                aria-current={isLinkActive(link.href) ? 'page' : undefined}
+                className={navLinkClass(isLinkActive(link.href))}
               >
                 {link.label}
               </Link>
@@ -157,7 +177,8 @@ export default function Header() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-[13.5px] font-medium tracking-[0.01em] text-[#5f6368] dark:text-white/65 no-underline whitespace-nowrap transition hover:text-[#4584ed] dark:hover:text-[#4584ed]"
+                aria-current={isLinkActive(link.href) ? 'page' : undefined}
+                className={navLinkClass(isLinkActive(link.href))}
               >
                 {link.label}
               </Link>
@@ -211,8 +232,10 @@ export default function Header() {
             key={link.label}
             href={link.href}
             onClick={() => setIsMenuOpen(false)}
-            className="block px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline"
+            aria-current={isLinkActive(link.href) ? 'page' : undefined}
+            className={mobileNavLinkClass(isLinkActive(link.href))}
           >
+            {isLinkActive(link.href) && <span className="h-1.5 w-1.5 rounded-full bg-[#4584ed]" />}
             {link.label}
           </Link>
         ))}
@@ -271,8 +294,10 @@ export default function Header() {
             key={link.label}
             href={link.href}
             onClick={() => setIsMenuOpen(false)}
-            className="block px-6 py-[11px] text-sm font-medium text-[#5f6368] dark:text-white/65 no-underline"
+            aria-current={isLinkActive(link.href) ? 'page' : undefined}
+            className={mobileNavLinkClass(isLinkActive(link.href))}
           >
+            {isLinkActive(link.href) && <span className="h-1.5 w-1.5 rounded-full bg-[#4584ed]" />}
             {link.label}
           </Link>
         ))}
