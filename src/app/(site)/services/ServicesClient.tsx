@@ -310,11 +310,14 @@ export default function ServicesClient() {
     const faqCategories = document.querySelectorAll('.faq-category-btn') as NodeListOf<HTMLElement>;
     const faqSearchInput = document.getElementById('faqSearchInput') as HTMLInputElement | null;
     const noResults = document.getElementById('faqNoResults') as HTMLElement | null;
+    const viewAllBtn = document.getElementById('faqViewAllBtn') as HTMLButtonElement | null;
+    const FAQ_INITIAL_LIMIT = 8;
     let activeCategory = 'all';
+    let showAllInCurrentView = false;
 
     function filterFAQ() {
       const query = faqSearchInput?.value.toLowerCase().trim() || '';
-      let visibleCount = 0;
+      const matched: HTMLElement[] = [];
 
       faqItems.forEach((item) => {
         const categoryMatch = activeCategory === 'all' || item.dataset.category === activeCategory;
@@ -323,24 +326,44 @@ export default function ServicesClient() {
         const answerText = item.querySelector('.faq-answer-inner')?.textContent?.toLowerCase() || '';
         const searchMatch = !query || keywords.includes(query) || questionText.includes(query) || answerText.includes(query);
 
-        const visible = categoryMatch && searchMatch;
-        item.classList.toggle('is-filtered', !visible);
-        if (visible) visibleCount++;
+        item.classList.toggle('is-filtered', !(categoryMatch && searchMatch));
+        if (categoryMatch && searchMatch) matched.push(item);
       });
 
+      const shouldLimit = !query && !showAllInCurrentView && matched.length > FAQ_INITIAL_LIMIT;
+      matched.forEach((item, index) => {
+        item.classList.toggle('is-hidden-by-limit', shouldLimit && index >= FAQ_INITIAL_LIMIT);
+      });
+
+      if (viewAllBtn) {
+        const hiddenCount = shouldLimit ? matched.length - FAQ_INITIAL_LIMIT : 0;
+        viewAllBtn.style.display = hiddenCount > 0 ? 'inline-flex' : 'none';
+        viewAllBtn.textContent = `View all ${matched.length} questions`;
+      }
+
       if (noResults) {
-        noResults.style.display = visibleCount === 0 && query !== '' ? 'block' : 'none';
+        noResults.style.display = matched.length === 0 && query !== '' ? 'block' : 'none';
       }
     }
 
     faqCategories.forEach((cat) => {
       cat.addEventListener('click', () => {
         activeCategory = cat.dataset.category || 'all';
+        showAllInCurrentView = false;
         faqCategories.forEach(c => c.classList.remove('is-active'));
         cat.classList.add('is-active');
         filterFAQ();
       });
     });
+
+    if (viewAllBtn) {
+      viewAllBtn.addEventListener('click', () => {
+        showAllInCurrentView = true;
+        filterFAQ();
+      });
+    }
+
+    filterFAQ();
 
     faqItems.forEach((item) => {
       const question = item.querySelector('.faq-question');
@@ -460,6 +483,7 @@ export default function ServicesClient() {
               <a href="#services" className="btn-secondary">Explore Services <ArrowRightIcon className="inline h-4 w-4" aria-hidden="true" /></a>
             </div>
 
+            <div className="quick-view-card">
             <div className="hero-tabs">
               <button className="hero-tab is-active" data-service="advisory"><span className="hero-tab-icon"><PillarIcon id="advisory" size={14} /></span> Advisory</button>
               <button className="hero-tab" data-service="automation"><span className="hero-tab-icon"><PillarIcon id="automation" size={14} /></span> Automation</button>
@@ -468,7 +492,6 @@ export default function ServicesClient() {
             </div>
 
             <div className="pillar-preview is-active" id="pillar-preview-advisory">
-              <div className="pillar-preview-title">Quick View</div>
               <div className="pillar-preview-features">
                 <div className="pillar-preview-feature">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>
@@ -491,7 +514,6 @@ export default function ServicesClient() {
             </div>
 
             <div className="pillar-preview" id="pillar-preview-automation">
-              <div className="pillar-preview-title">Quick View</div>
               <div className="pillar-preview-features">
                 <div className="pillar-preview-feature">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>
@@ -514,7 +536,6 @@ export default function ServicesClient() {
             </div>
 
             <div className="pillar-preview" id="pillar-preview-security">
-              <div className="pillar-preview-title">Quick View</div>
               <div className="pillar-preview-features">
                 <div className="pillar-preview-feature">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>
@@ -537,7 +558,6 @@ export default function ServicesClient() {
             </div>
 
             <div className="pillar-preview" id="pillar-preview-itsm">
-              <div className="pillar-preview-title">Quick View</div>
               <div className="pillar-preview-features">
                 <div className="pillar-preview-feature">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>
@@ -557,6 +577,7 @@ export default function ServicesClient() {
                 </div>
               </div>
               <button className="pillar-preview-cta" onClick={() => openPanel('itsm')}>View full details <ArrowRightIcon className="inline h-3.5 w-3.5" aria-hidden="true" /></button>
+            </div>
             </div>
 
             <div className="hero-stats">
@@ -623,13 +644,10 @@ export default function ServicesClient() {
               Comprehensive support<br />
               <em>for your digital journey.</em>
             </h2>
+            <p className="section-sub">
+              From strategic planning to day-to-day IT support, we provide end-to-end services that transform how your organization operates — using Microsoft tools you already own.
+            </p>
           </div>
-          <p className="section-sub">
-            From strategic planning to day-to-day IT support, we provide end-to-end services that transform how your organization operates — using Microsoft tools you already own.
-          </p>
-        </div>
-
-        <div className="services-grid">
           <div className="service-filters">
             <button className="service-filter-btn is-active" data-filter="all">All</button>
             <button className="service-filter-btn" data-filter="advisory"><PillarIcon id="advisory" size={14} /> Advisory</button>
@@ -637,15 +655,20 @@ export default function ServicesClient() {
             <button className="service-filter-btn" data-filter="security"><PillarIcon id="security" size={14} /> Security</button>
             <button className="service-filter-btn" data-filter="itsm"><PillarIcon id="itsm" size={14} /> IT Support</button>
           </div>
+        </div>
+
+        <div className="services-grid">
 
           <article className="service-card featured" data-service="advisory" onClick={() => openPanel('advisory')}>
             <div className="service-img-wrap">
               <Image src="https://res.cloudinary.com/daqmbfctv/image/upload/v1770221473/WhatsApp_Image_2026-02-04_at_17.00.42_2_n8mwjp.jpg" alt="Digital Transformation Advisory" fill className="object-cover" />
               <div className="service-overlay"></div>
-              <div className="service-num-badge">01</div>
             </div>
             <div className="service-body">
-              <h3 className="service-name">Digital Transformation Advisory</h3>
+              <div className="service-title-row">
+                <h3 className="service-name">Digital Transformation Advisory</h3>
+                <span className="service-num-badge">01</span>
+              </div>
               <p className="service-intro">Before you transform, you need a plan that fits.</p>
               <div className="service-features">
                 <span className="service-feature-tag">AI Readiness Assessment</span>
@@ -668,10 +691,12 @@ export default function ServicesClient() {
               <div className="service-img-wrap">
                 <Image src={s.img} alt={s.title} fill className="object-cover" />
                 <div className="service-overlay"></div>
-                <div className="service-num-badge">{s.num}</div>
               </div>
               <div className="service-body">
-                <h3 className="service-name">{s.title}</h3>
+                <div className="service-title-row">
+                  <h3 className="service-name">{s.title}</h3>
+                  <span className="service-num-badge">{s.num}</span>
+                </div>
                 <p className="service-intro">{s.desc}</p>
                 <div className="service-features">
                   {s.tags.map((tag, j) => (
@@ -724,7 +749,7 @@ export default function ServicesClient() {
                 miniTest: 'Leadership can now ask Copilot anything about our data — no more waiting weeks for reports.'
               }
             ].map((step, i) => (
-              <div key={i} className={`process-step ${i < 2 ? 'has-connector' : ''}`}>
+              <div key={i} className={`process-step ${i === 1 ? 'is-highlighted' : ''}`}>
                 <div className="process-num">{step.num}</div>
                 <h3>{step.title}</h3>
                 <p>{step.desc}</p>
@@ -778,20 +803,19 @@ export default function ServicesClient() {
               }
             ].map((card, i) => (
               <div key={i} className="why-card">
-                <div className="why-icon"><WhyIcon id={card.icon} /></div>
+                <div className="why-card-top">
+                  <div className="why-icon"><WhyIcon id={card.icon} /></div>
+                  <div className="why-stat-inline">{card.statNum}</div>
+                </div>
                 <h3>{card.title}</h3>
                 <p>{card.desc}</p>
-                <div className="why-stat">
-                  <div className="why-stat-num">{card.statNum}</div>
-                  <div className="why-stat-label">{card.statLabel}</div>
-                </div>
                 <div className="why-card-expand">
                   <p style={{ fontSize: 13, color: 'var(--body)', lineHeight: 1.7 }}>{card.expandText}</p>
-                  <button className="why-expand-btn">
-                    <span>Learn more</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-                  </button>
                 </div>
+                <button className="why-expand-btn">
+                  <span>Learn more</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
               </div>
             ))}
           </div>
@@ -817,18 +841,74 @@ export default function ServicesClient() {
 
             <div className="faq-categories">
               <button className="faq-category-btn is-active" data-category="all">All</button>
-              <button className="faq-category-btn" data-category="pricing">Pricing &amp; Process</button>
-              <button className="faq-category-btn" data-category="technical">Technical</button>
+              <button className="faq-category-btn" data-category="getting-started">Getting Started</button>
+              <button className="faq-category-btn" data-category="ai-automation">AI &amp; Automation</button>
+              <button className="faq-category-btn" data-category="data-intelligence">Data &amp; Intelligence</button>
+              <button className="faq-category-btn" data-category="security-compliance">Security &amp; Compliance</button>
+              <button className="faq-category-btn" data-category="implementation">Implementation &amp; Support</button>
+              <button className="faq-category-btn" data-category="microsoft-licensing">Microsoft &amp; Licensing</button>
               <button className="faq-category-btn" data-category="sectors">Sectors</button>
             </div>
 
             <div className="faq-list" id="faqList">
               {[
-                { q: 'Do we need to buy new software or licenses?', a: 'No. We build exclusively on Microsoft tools your organization already pays for — M365, Power Platform, Azure, and Copilot. There are no additional license costs, no new software to deploy, and no vendor lock-in.', cat: 'pricing', keywords: 'software licenses cost money buy purchase' },
-                { q: 'How long does a typical engagement take?', a: 'From signed contract to your first live system takes just 10 weeks. Our phased approach means you\'ll see results early — typically within 6 weeks with the first workflow automated and running.', cat: 'pricing', keywords: 'duration timeline weeks months years how long' },
-                { q: 'What happens after the initial deployment?', a: 'Every engagement includes a monthly managed service retainer. This covers new agents, new dashboards, new departments, and continuous improvement. As your organisation evolves, your intelligence system evolves with it.', cat: 'pricing', keywords: 'after deployment ongoing support retainer monthly' },
-                { q: 'Is our data secure?', a: 'Absolutely. We\'re ISO 27001 aligned, implement Zero Trust architecture, and all work stays within your Microsoft environment. Your data never leaves your tenant, and we maintain the highest security standards throughout.', cat: 'technical', keywords: 'security safe data protection iso zero trust' },
-                { q: 'Which sectors do you work with?', a: 'We specialize in three sectors: Government MDAs (digital governance, budget reporting, audit-readiness), International NGOs (donor reporting, grant tracking, beneficiary data), and Private Sector (C-suite dashboards, automation, field operations).', cat: 'sectors', keywords: 'government NGO private company sectors industries' }
+                // Getting Started
+                { q: 'How do I know what TechSpecialist can help us automate?', a: "We start by identifying your most time-consuming, repetitive or error-prone processes. During discovery, we map your workflows and identify where automation, AI, or better data visibility can deliver the greatest business impact.", cat: 'getting-started', keywords: 'know what help automate identify start' },
+                { q: 'Do I need to know exactly what solution I need before contacting TechSpecialist?', a: "No. You don't need to choose the technology first. Tell us what is slowing your organisation down, and we'll help identify the right technology and approach to address it.", cat: 'getting-started', keywords: 'know solution before contacting technology first' },
+                { q: 'What happens during the discovery call?', a: 'We discuss your current processes, systems, pain points and priorities. We then identify potential opportunities for automation, data integration, AI or digital transformation and recommend the most practical next step.', cat: 'getting-started', keywords: 'discovery call what happens process' },
+                { q: 'Can TechSpecialist work with our existing systems?', a: 'Yes. We assess your existing technology environment first and look for opportunities to integrate, improve or automate what you already use before recommending new technology.', cat: 'getting-started', keywords: 'existing systems integrate current technology' },
+                { q: "What if we're not ready for a full digital transformation?", a: "You don't have to transform everything at once. We can start with one high-impact process, automate it, measure the result and use the lessons to guide your next phase.", cat: 'getting-started', keywords: 'not ready full transformation start small phased' },
+                { q: "What if we don't know what our biggest technology problem is?", a: "That's exactly where we can help. We assess your processes, systems and business priorities to identify where technology can create the greatest improvement—then recommend where to start.", cat: 'getting-started', keywords: "don't know biggest problem unsure where to start" },
+                { q: 'How do we get started?', a: "Start with a discovery conversation. We'll understand your priorities, assess potential opportunities and recommend the appropriate next step—whether that's an assessment, implementation project or managed service.", cat: 'getting-started', keywords: 'get started begin first step' },
+                { q: 'How much does a TechSpecialist engagement cost?', a: 'The cost depends on the scope, number of processes, systems involved, implementation requirements and level of ongoing support. We first understand your requirements and then provide a proposal based on the solution required.', cat: 'getting-started', keywords: 'cost price how much money engagement proposal' },
+                { q: 'Is the discovery call free?', a: "Yes. The initial discovery call is designed to understand your organisation's priorities and identify potential opportunities. There is no obligation to proceed beyond the conversation.", cat: 'getting-started', keywords: 'free discovery call cost no obligation' },
+
+                // AI & Automation
+                { q: 'What types of processes can you automate?', a: 'We can automate repetitive processes such as approvals, reporting, data collection, notifications, document workflows, customer requests, compliance checks and operational reporting. We first assess the process to determine whether automation is appropriate.', cat: 'ai-automation', keywords: 'types processes automate approvals reporting workflows' },
+                { q: 'Do we need to have an AI strategy before implementing AI?', a: "No. If you're unsure where AI fits, we can assess your organisation's processes, data and technology environment to identify practical AI opportunities and build a roadmap around them.", cat: 'ai-automation', keywords: 'ai strategy before implementing roadmap unsure' },
+                { q: 'Can you automate a process that currently runs through Excel, email or WhatsApp?', a: 'In many cases, yes. We can assess how information currently moves between people and systems and identify opportunities to replace manual handoffs with structured digital workflows.', cat: 'ai-automation', keywords: 'excel email whatsapp automate manual handoff' },
+                { q: 'Will AI replace our employees?', a: 'Our approach is focused on augmenting your workforce, not simply replacing it. We automate repetitive work so employees can spend more time on decision-making, customer service, analysis and higher-value activities.', cat: 'ai-automation', keywords: 'ai replace employees jobs augment workforce' },
+                { q: 'Can AI work with our existing organizational data?', a: 'Yes, subject to your systems, data structure, permissions and security requirements. We assess your data environment first and determine how your existing information can be connected and used safely.', cat: 'ai-automation', keywords: 'ai existing organizational data permissions safely' },
+                { q: "What happens if our data isn't clean or organised?", a: "That's common. We first assess the quality, structure and accessibility of your data. Where necessary, we help establish the processes and data foundations required before automation or AI is deployed.", cat: 'ai-automation', keywords: 'data not clean organised messy quality foundations' },
+                { q: 'Can we start with one AI use case instead of implementing AI across the organisation?', a: 'Yes. Starting with a focused, high-value use case can help your organisation demonstrate value, learn what works and establish a foundation for broader AI adoption.', cat: 'ai-automation', keywords: 'one use case pilot start small ai adoption' },
+
+                // Data & Executive Intelligence
+                { q: 'We already have data. Why do we need an executive dashboard?', a: "Having data isn't the same as having visibility. We connect relevant data sources into a central view so leaders can see performance, identify exceptions and make decisions without waiting for multiple teams to compile reports.", cat: 'data-intelligence', keywords: 'already have data why executive dashboard visibility' },
+                { q: 'Can you combine data from different departments?', a: 'Yes. We can assess data from multiple systems and sources and determine how they can be connected to create a more consistent view of organisational performance.', cat: 'data-intelligence', keywords: 'combine data departments multiple systems sources' },
+                { q: 'Can our leadership team access the dashboard remotely?', a: "Yes, where the selected Microsoft environment, security configuration and user permissions support it. Access is configured according to your organisation's security and governance requirements.", cat: 'data-intelligence', keywords: 'leadership dashboard remotely access mobile' },
+                { q: 'Can the dashboard be customised for different executives?', a: 'Yes. Dashboards can be designed around the information different roles need—for example, a CEO may need organisational performance while a CFO needs financial and operational indicators.', cat: 'data-intelligence', keywords: 'dashboard customised executives roles ceo cfo' },
+                { q: 'Can we still use Excel alongside the new system?', a: 'Yes. The goal is not necessarily to eliminate every existing tool. We assess where Excel remains useful and where structured automation or integration can reduce manual work and reporting errors.', cat: 'data-intelligence', keywords: 'excel alongside new system keep existing tools' },
+                { q: 'How will we know if the transformation is actually working?', a: 'We define measurable outcomes around the process being improved—for example, reporting time, manual data entry, processing time, error rates or workflow completion. This allows you to measure progress before and after implementation.', cat: 'data-intelligence', keywords: 'know if working measure results outcomes success' },
+
+                // Security & Compliance
+                { q: 'Is our business data secure?', a: "Security is built into the solution design. We assess access, permissions, data flows and security requirements before implementation and configure solutions according to your organisation's security and governance needs.", cat: 'security-compliance', keywords: 'data secure security safe protection' },
+                { q: 'Will our data leave our organisation?', a: 'Where solutions are deployed within your Microsoft environment, we design the architecture to keep data within the appropriate organisational environment and permissions structure. The exact data flow depends on the solution and integrations involved.', cat: 'security-compliance', keywords: 'data leave organisation tenant flow' },
+                { q: 'Can you help us meet compliance requirements?', a: 'Yes. We can assess your technology environment, processes, access controls and information-security practices and help implement controls that support your applicable compliance requirements.', cat: 'security-compliance', keywords: 'compliance requirements regulation controls' },
+                { q: 'Who can access the data and dashboards?', a: 'Access is controlled through user permissions and security roles. We configure access based on organisational responsibilities so users see the information they are authorised to access.', cat: 'security-compliance', keywords: 'who can access data dashboards permissions roles' },
+                { q: 'Do you provide cybersecurity services separately from digital transformation?', a: 'Yes. Information security is one of our service areas and can be delivered as a standalone engagement or incorporated into a broader digital transformation programme.', cat: 'security-compliance', keywords: 'cybersecurity separately standalone service' },
+
+                // Implementation & Support
+                { q: 'How long does implementation take?', a: 'Our typical transformation approach is structured around a 10-week deployment, with the first workflow targeted for automation within the initial phases. The actual timeline depends on the scope, systems, data and complexity of the engagement.', cat: 'implementation', keywords: 'how long implementation take weeks timeline' },
+                { q: 'Will implementation disrupt our existing operations?', a: 'We design implementation in phases so improvements can be introduced without unnecessarily disrupting day-to-day operations. The implementation plan is agreed with your team before deployment.', cat: 'implementation', keywords: 'disrupt existing operations phased plan' },
+                { q: 'Will our team need technical expertise to use the solution?', a: 'Not necessarily. We design solutions around the users who will operate them and provide the necessary guidance, documentation and training to support adoption.', cat: 'implementation', keywords: 'team technical expertise skills training needed' },
+                { q: 'Do you provide training after implementation?', a: 'Yes. Training and knowledge transfer can be incorporated into implementation to help your team understand, use and manage the solution effectively.', cat: 'implementation', keywords: 'training after implementation knowledge transfer' },
+                { q: 'What happens after implementation?', a: 'We can continue supporting your organisation through managed services and continuous improvement. This can include new workflows, dashboards, agents, integrations and optimisation as your needs evolve.', cat: 'implementation', keywords: 'after implementation managed services ongoing support' },
+                { q: 'What if we need changes after deployment?', a: 'We can assess and implement changes based on your support or managed-service arrangement. The goal is to ensure your technology continues to support your organisation as processes and priorities change.', cat: 'implementation', keywords: 'changes after deployment updates support arrangement' },
+
+                // Microsoft & Licensing
+                { q: 'Do we need to buy new software?', a: "Not necessarily. We prioritise using the Microsoft tools and technology your organisation already owns. During discovery, we'll assess your existing licences and determine whether they support the proposed solution or whether additional licensing is required.", cat: 'microsoft-licensing', keywords: 'buy new software licenses cost purchase' },
+                { q: 'What Microsoft technologies do you work with?', a: 'Our solutions can leverage technologies across the Microsoft ecosystem, including Microsoft 365, Power Automate, Power BI, Copilot Studio, Azure, and Microsoft Fabric, depending on your requirements.', cat: 'microsoft-licensing', keywords: 'microsoft technologies 365 power automate bi copilot azure fabric' },
+                { q: "We use Microsoft 365, but we're not using Power BI or Copilot. Can you help?", a: 'Yes. We can assess your current Microsoft environment and identify which capabilities could support your business objectives, including automation, analytics, AI and collaboration.', cat: 'microsoft-licensing', keywords: 'microsoft 365 not using power bi copilot help' },
+                { q: 'Do you work with non-Microsoft systems?', a: 'We assess your existing technology landscape and integration requirements before recommending an approach. Where appropriate, Microsoft technologies can be connected with other business systems through supported integrations and connectors.', cat: 'microsoft-licensing', keywords: 'non-microsoft systems integrate other platforms' },
+                { q: 'Will we need to migrate all our data to Microsoft?', a: 'Not necessarily. We first assess where your data currently resides and determine the most practical integration or migration approach for your use case.', cat: 'microsoft-licensing', keywords: 'migrate data microsoft all necessary' },
+
+                // Sector-Specific
+                { q: 'Can TechSpecialist help an MDA digitise manual government processes?', a: 'Yes. We can assess processes such as approvals, reporting, project monitoring, HR administration and document workflows and identify opportunities for digitisation and automation.', cat: 'sectors', keywords: 'government mda digitise manual processes public sector' },
+                { q: 'Can you work with existing government systems?', a: 'We assess your existing systems, data sources, workflows and integration requirements before designing the appropriate solution.', cat: 'sectors', keywords: 'government existing systems integration public sector' },
+                { q: 'Can TechSpecialist help automate donor reporting?', a: 'Yes. We can help structure programme and beneficiary data so reporting processes can be automated and dashboards can provide more timely visibility into programme performance.', cat: 'sectors', keywords: 'ngo donor reporting automate programme beneficiary' },
+                { q: 'Can you support grant and programme monitoring?', a: 'Yes. Solutions can be designed to track milestones, activities, performance indicators and reporting requirements, subject to the data and systems available.', cat: 'sectors', keywords: 'ngo grant programme monitoring milestones' },
+                { q: 'Can you automate our internal business processes?', a: 'Yes. We can identify repetitive processes across departments such as finance, HR, operations, sales and customer service and assess where automation can improve speed, consistency and visibility.', cat: 'sectors', keywords: 'private sector business processes finance hr operations sales' },
+                { q: 'Can you connect our operational data to management dashboards?', a: 'Yes. We assess your existing data sources and determine how relevant information can be integrated into dashboards for management reporting and decision-making.', cat: 'sectors', keywords: 'private sector operational data management dashboards' }
               ].map((faq, i) => (
                 <div key={i} className="faq-item" data-category={faq.cat} data-keywords={faq.keywords}>
                   <div className="faq-question">
@@ -845,6 +925,10 @@ export default function ServicesClient() {
                 No questions match your search. Try different keywords.
               </div>
             </div>
+
+            <button type="button" className="faq-view-all-btn" id="faqViewAllBtn">
+              View all questions
+            </button>
           </div>
         </div>
       </section>
