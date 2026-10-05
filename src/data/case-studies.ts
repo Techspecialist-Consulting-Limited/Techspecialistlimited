@@ -9,6 +9,12 @@ export interface CaseStudy {
   service: string
   summary: string
   heroImage: string
+  /**
+   * 'cover' (default) crops heroImage to fill the banner — built for photos.
+   * 'contain' is for a logo/wordmark: shown uncropped on a brand-gradient
+   * background with a white plate behind it, instead of being cropped.
+   */
+  heroImageFit?: 'cover' | 'contain'
   stats: { label: string; value: string }[]
   challenge: string[]
   solution: string[]
@@ -17,6 +23,53 @@ export interface CaseStudy {
 }
 
 export const caseStudies: CaseStudy[] = [
+  {
+    id: 'nsia-it-service-delivery',
+    title: 'From Reactive Support to Intelligent Service Delivery: Transforming IT Operations at NSIA',
+    subtitle: 'From Manual Ticket Routing to Automation-First Operations: Rebuilding IT Support at the Nigeria Sovereign Investment Authority',
+    category: 'Government & Public Sector',
+    client: 'Nigeria Sovereign Investment Authority (NSIA)',
+    industry: 'Government & Public Sector',
+    duration: 'Ongoing Engagement', // TODO: replace with the actual engagement length/start date if you have one
+    service: 'IT Service Management & Automation',
+    summary:
+      'As request volumes grew and user expectations evolved across NSIA\'s Microsoft 365 and hybrid infrastructure environment, traditional helpdesk models struggled to scale — leading to slower response times, limited visibility, and inefficient use of IT resources. Techspecialist Consulting Limited partnered with NSIA not just to upgrade tools, but to fundamentally rethink how IT support is delivered — embedding automation and intelligence across the entire IT service lifecycle, from ticket intake to physical infrastructure monitoring.',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/t_faqimage/Nigeria_Sovereign_Investment_Authority_logo.svg_ot8hus',
+    heroImageFit: 'contain',
+    stats: [
+      { label: 'Routine Ticket Volume', value: '-50%' },
+      { label: 'Resolution Speed', value: 'Accelerated' },
+      { label: 'Operations Model', value: 'Proactive' },
+      { label: 'Infrastructure Coverage', value: 'M365 & Hybrid' },
+    ],
+    challenge: [
+      'Manual Ticket Routing: Requests required human triage and assignment, creating delays and inconsistent response times.',
+      'Limited Visibility into Service Performance: Without automated reporting, tracking SLA compliance and identifying recurring issues was difficult.',
+      'Repetitive User Requests: Routine tasks like password resets and access requests consumed significant IT resources.',
+      'Knowledge Silos: Solutions were not consistently documented, limiting reuse and reducing first-contact resolution rates.',
+      'Growing Demand for Digital Workplace Support: Increased reliance on cloud tools required scalable, always-available support systems.',
+    ],
+    solution: [
+      'Automated Ticket Intake & Routing: Requests are automatically logged, categorized, prioritized, and routed based on predefined workflows, eliminating manual triage.',
+      'Self-Service & Knowledge Automation: A centralized knowledge base enables users to resolve common issues independently, supported by guided troubleshooting and automated suggestions.',
+      'Incident & Request Workflow Automation: Standard service requests — onboarding, software installation, access approvals — are fulfilled through automated workflows.',
+      'SLA Monitoring & Performance Insights: Real-time tracking of response and resolution times, supported by dashboards, alerts, and trend reporting.',
+      'Endpoint & Digital Workplace Automation: Automated patching, device monitoring, and software deployment ensure consistent system performance across the enterprise.',
+      'Continuous Service Optimization: Data-driven insights enable ongoing refinement of workflows and identification of recurring issues.',
+      'Infrastructure Safety & Environment Monitoring: Daily physical sweeps of server environments (MDF/IDF) to monitor cooling systems, power infrastructure (inverters, UPS), and overall site conditions.',
+      'Compliance & Vendor Management: Oversight of third-party maintenance providers, including FM200 fire suppression and HVAC infrastructure, ensuring continuous operational readiness.',
+      'Executive Event & Boardroom Support: Dedicated on-site technical support for high-stakes engagements such as Board Meetings and Earnings Presentations.',
+      'Physical Asset Lifecycle Management: End-to-end management of IT hardware assets — inventory tracking, labeling, allocation, and secure decommissioning.',
+    ],
+    results: [
+      'From Manual to Automated: Ticket triage and routing are now fully automated, significantly reducing manual intervention and improving response consistency.',
+      'From Delayed to Accelerated Resolution: Resolution times have improved substantially, with faster response rates and a higher first-contact resolution rate.',
+      'From High Volume to Self-Service Efficiency: Self-service capabilities have reduced routine ticket volumes by up to 50%, freeing IT teams for higher-value tasks.',
+      'From Limited Visibility to Data-Driven Insight: Real-time dashboards and SLA tracking provide clear visibility into service performance.',
+      'From Reactive to Proactive IT Operations: Automation and monitoring tools now anticipate issues, reduce downtime, and ensure a more stable digital workplace.',
+      'From Fragmented to Optimized Workflows: Workloads are better distributed across teams, improving efficiency, governance, and overall service quality.',
+    ],
+  },
   {
     id: 'fga-m365-adoption',
     title: 'Driving Digital Adoption and Workforce Transformation in a Public Sector Institution',

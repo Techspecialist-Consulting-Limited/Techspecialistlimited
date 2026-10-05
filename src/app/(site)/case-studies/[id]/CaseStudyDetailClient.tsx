@@ -31,10 +31,18 @@ export default function CaseStudyDetailClient() {
     <div>
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <Image fill src={cs.heroImage} alt={cs.title} className="object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0b1020]/95 via-[#0b1020]/80 to-[#0b1020]/60" />
-        </div>
+        {cs.heroImageFit === 'contain' ? (
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
+            <div className="absolute right-8 top-1/2 hidden h-56 w-96 -translate-y-1/2 sm:block lg:right-16">
+              <Image src={cs.heroImage} alt={cs.title} fill className="object-contain" />
+            </div>
+          </div>
+        ) : (
+          <div className="absolute inset-0">
+            <Image fill src={cs.heroImage} alt={cs.title} className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0b1020]/95 via-[#0b1020]/80 to-[#0b1020]/60" />
+          </div>
+        )}
         <div className="relative px-4 pb-20 pt-28 sm:px-6 lg:px-8 lg:pb-28 lg:pt-36">
           <div className="mx-auto max-w-6xl">
             <div className="mb-4 flex items-center gap-3">
@@ -68,7 +76,7 @@ export default function CaseStudyDetailClient() {
           <div className="grid gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg dark:border-white/10 dark:bg-[#101827] sm:grid-cols-2 sm:p-8 lg:grid-cols-4">
             {cs.stats.map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-3xl font-bold text-[#4584ed] sm:text-4xl">{stat.value}</div>
+                <div className="text-2xl font-bold text-[#4584ed] sm:text-3xl">{stat.value}</div>
                 <div className="mt-1 text-sm text-[#5f6368] dark:text-gray-400">{stat.label}</div>
               </div>
             ))}
@@ -214,7 +222,18 @@ export default function CaseStudyDetailClient() {
                   className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-lg hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    <Image fill src={item.heroImage} alt={item.title} className="object-cover transition duration-500 group-hover:scale-105" />
+                    {item.heroImageFit === 'contain' ? (
+                      <div className="relative h-full w-full bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
+                        <Image
+                          src={item.heroImage}
+                          alt={item.title}
+                          fill
+                          className="object-contain p-10 transition duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                    ) : (
+                      <Image fill src={item.heroImage} alt={item.title} className="object-cover transition duration-500 group-hover:scale-105" />
+                    )}
                   </div>
                   <div className="p-6">
                     <div className="mb-1 text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">{item.client}</div>

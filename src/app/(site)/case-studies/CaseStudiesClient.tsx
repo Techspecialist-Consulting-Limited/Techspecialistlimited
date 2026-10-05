@@ -85,12 +85,23 @@ export default function CaseStudiesClient() {
                   className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
                 >
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    <Image
-                      src={cs.heroImage}
-                      alt={cs.title}
-                      fill
-                      className="object-cover transition duration-700 group-hover:scale-105"
-                    />
+                    {cs.heroImageFit === 'contain' ? (
+                      <div className="relative h-full w-full bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
+                        <Image
+                          src={cs.heroImage}
+                          alt={cs.title}
+                          fill
+                          className="object-contain p-10 transition duration-700 group-hover:scale-105"
+                        />
+                      </div>
+                    ) : (
+                      <Image
+                        src={cs.heroImage}
+                        alt={cs.title}
+                        fill
+                        className="object-cover transition duration-700 group-hover:scale-105"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4">
                       <span className="inline-block rounded-full bg-white/90 px-3.5 py-1 text-xs font-semibold text-gray-700 backdrop-blur dark:bg-gray-800/90 dark:text-gray-200">
