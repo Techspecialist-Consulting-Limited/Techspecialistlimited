@@ -34,8 +34,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'IT Service Management & Automation',
     summary:
       'As request volumes grew and user expectations evolved across NSIA\'s Microsoft 365 and hybrid infrastructure environment, traditional helpdesk models struggled to scale — leading to slower response times, limited visibility, and inefficient use of IT resources. Techspecialist Consulting Limited partnered with NSIA not just to upgrade tools, but to fundamentally rethink how IT support is delivered — embedding automation and intelligence across the entire IT service lifecycle, from ticket intake to physical infrastructure monitoring.',
-    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/t_faqimage/Nigeria_Sovereign_Investment_Authority_logo.svg_ot8hus',
-    heroImageFit: 'contain',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1791382893/Automation-First_IT_Support_Banner_qehfvv.png',
     stats: [
       { label: 'Routine Ticket Volume', value: '-50%' },
       { label: 'Resolution Speed', value: 'Accelerated' },
@@ -81,7 +80,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'Digital Transformation & User Adoption',
     summary:
       'A major government institution had recently deployed Microsoft 365 as part of its digital transformation agenda. While the technology infrastructure was in place, adoption remained limited, with many employees still relying on traditional communication methods, local file storage, email attachments, and manual document-sharing processes. The organization recognized that without structured user adoption, capacity building, and change management, the expected benefits of the investment would not be realized.',
-    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1772714010/download_1_vpqob8.jpg',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1791382893/Microsoft_365_Workforce_Readiness_z0r996.png',
     stats: [
       { label: 'Workforce Confidence', value: '90%+' },
       { label: 'Practical Adoption', value: '85%+' },
@@ -122,7 +121,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'Digital Transformation & Process Automation',
     summary:
       'Nigeria\'s justice system is undergoing a critical shift, one driven not by policy alone, but by the urgent need for structured, reliable, and real-time data. For decades, law enforcement agencies across the country have generated vast amounts of operational data daily. Yet the real challenge was never volume; it was fragmentation.',
-    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1778489905/min-of-justice_eboxix.jpg',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1791382893/From_Paper_Trails_to_Real-Time_Justice_ajcttb.png',
     stats: [
       { label: 'Agencies Integrated', value: '5' },
       { label: 'Data Flow', value: 'Real-Time' },
@@ -166,7 +165,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'Platform Development & Data Integration',
     summary:
       'Nigeria\'s housing sector is at a turning point—one defined not just by demand, but by the quality of data driving billion-naira decisions. With a national housing deficit exceeding 14 million units, the need for coordinated investment, policy, and reform has never been more urgent. Yet for years, the biggest constraint wasn\'t capital—it was information.',
-    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/t_nmrc/AUHF-blog_featured-image_NMRC-1024x341_lrttwz.jpg',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1791382893/From_Data_Silos_to_Housing_Intelligence_huvnzz.png',
     stats: [
       { label: 'Housing Deficit', value: '14M+ Units' },
       { label: 'Institutions Connected', value: '14' },
@@ -207,7 +206,7 @@ export const caseStudies: CaseStudy[] = [
     service: 'Digital Transformation & Process Automation',
     summary:
       'Public procurement sits at the center of national development. It determines how governments allocate resources, execute infrastructure projects, and deliver public services at a large scale. Yet across many emerging economies, procurement systems continue to struggle with inefficiency, fragmentation, and limited transparency. In Nigeria, procurement officer management has historically relied on manual workflows, paper-heavy records, and opaque administrative processes. Posting decisions often lacked visibility. Training and certification records were scattered across systems. Approvals moved slowly. Accountability mechanisms remained difficult to enforce consistently across Ministries, Departments, and Agencies (MDAs). At a national level, the consequences were significant—not just for operational efficiency, but for public trust. More than a technology initiative, NAPOMS represents a structural shift toward transparency, fairness, and data-driven governance.',
-    heroImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80',
+    heroImage: 'https://res.cloudinary.com/daqmbfctv/image/upload/v1791384916/From_Manual_to_Intelligent_Procurement_g4bpq5.png',
     stats: [
       { label: 'MDAs Connected', value: 'All Federal' },
       { label: 'Posting Process', value: 'Algorithm-Driven' },
