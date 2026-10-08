@@ -219,27 +219,26 @@ export default function CaseStudyDetailClient() {
                 <Link
                   key={item.id}
                   href={`/case-studies/${item.id}`}
-                  className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-lg hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-lg hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
                 >
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    {item.heroImageFit === 'contain' ? (
-                      <div className="relative h-full w-full bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
-                        <Image
-                          src={item.heroImage}
-                          alt={item.title}
-                          fill
-                          className="object-contain p-10 transition duration-500 group-hover:scale-105"
-                        />
-                      </div>
-                    ) : (
-                      <Image fill src={item.heroImage} alt={item.title} className="object-cover transition duration-500 group-hover:scale-105" />
-                    )}
+                  <div className="relative aspect-[5/2] overflow-hidden bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
+                    <Image
+                      src={item.heroImage}
+                      alt={item.title}
+                      fill
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      className={
+                        item.heroImageFit === 'contain'
+                          ? 'object-contain p-8 transition duration-500 group-hover:scale-105'
+                          : 'object-cover transition duration-500 group-hover:scale-105'
+                      }
+                    />
                   </div>
-                  <div className="p-6">
+                  <div className="flex flex-1 flex-col p-6">
                     <div className="mb-1 text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">{item.client}</div>
                     <h3 className="text-lg font-bold text-[#2f2f2f] transition group-hover:text-[#4584ed] dark:text-white">{item.subtitle}</h3>
                     <p className="mt-2 text-sm leading-7 text-[#5f6368] dark:text-gray-300 line-clamp-2">{item.summary}</p>
-                    <div className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-[#4584ed] transition group-hover:gap-2.5">
+                    <div className="mt-auto flex items-center gap-1.5 pt-4 text-sm font-semibold text-[#4584ed] transition group-hover:gap-2.5">
                       Read Case Study
                       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </div>
