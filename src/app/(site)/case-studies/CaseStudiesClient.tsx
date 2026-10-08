@@ -82,26 +82,20 @@ export default function CaseStudiesClient() {
                 <Link
                   key={cs.id}
                   href={`/case-studies/${cs.id}`}
-                  className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:shadow-xl hover:-translate-y-1 dark:border-white/10 dark:bg-[#101827]"
                 >
-                  <div className="relative aspect-[16/9] overflow-hidden">
-                    {cs.heroImageFit === 'contain' ? (
-                      <div className="relative h-full w-full bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
-                        <Image
-                          src={cs.heroImage}
-                          alt={cs.title}
-                          fill
-                          className="object-contain p-10 transition duration-700 group-hover:scale-105"
-                        />
-                      </div>
-                    ) : (
-                      <Image
-                        src={cs.heroImage}
-                        alt={cs.title}
-                        fill
-                        className="object-cover transition duration-700 group-hover:scale-105"
-                      />
-                    )}
+                  <div className="relative aspect-[5/2] overflow-hidden bg-[linear-gradient(135deg,#0b1020_0%,#1a1f2e_50%,#0f1419_100%)]">
+                    <Image
+                      src={cs.heroImage}
+                      alt={cs.title}
+                      fill
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      className={
+                        cs.heroImageFit === 'contain'
+                          ? 'object-contain p-8 transition duration-700 group-hover:scale-105'
+                          : 'object-cover transition duration-700 group-hover:scale-105'
+                      }
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-4">
                       <span className="inline-block rounded-full bg-white/90 px-3.5 py-1 text-xs font-semibold text-gray-700 backdrop-blur dark:bg-gray-800/90 dark:text-gray-200">
@@ -109,7 +103,7 @@ export default function CaseStudiesClient() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-col justify-center p-6 sm:p-8">
+                  <div className="flex flex-1 flex-col p-6 sm:p-8">
                     <div className="mb-2 text-xs font-bold uppercase tracking-[0.1em] text-[#4584ed]">{cs.client}</div>
                     <h3 className="text-xl font-bold text-[#2f2f2f] transition group-hover:text-[#4584ed] dark:text-white">
                       {cs.subtitle}
@@ -138,7 +132,7 @@ export default function CaseStudiesClient() {
                       </span>
                     </div>
 
-                    <div className="mt-6 flex items-center gap-1.5 text-sm font-semibold text-[#4584ed] transition group-hover:gap-2.5">
+                    <div className="mt-auto flex items-center gap-1.5 pt-6 text-sm font-semibold text-[#4584ed] transition group-hover:gap-2.5">
                       Read Case Study
                       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </div>
